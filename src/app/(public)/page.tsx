@@ -90,7 +90,7 @@ export default async function HomePage() {
             {settings?.bannerTitle || "WELCOME TO EL PASO"}
           </h1>
           <p className="text-lg md:text-xl font-medium text-zinc-400 max-w-2xl text-balance leading-relaxed">
-            {settings?.bannerSubtitle || "Your definitive gaming community experience."}
+            {settings?.bannerSubtitle || "Your definitive roblox experience."}
           </p>
           <nav className="mt-10 flex gap-4 flex-wrap justify-center" aria-label="Primary CTA">
             <Link href="/applys" className="group/btn relative px-8 py-4 bg-white text-black rounded-full font-bold uppercase tracking-wider hover:bg-zinc-100 transition-all duration-300 shadow-[0_0_40px_rgba(255,255,255,0.15)] hover:shadow-[0_0_60px_rgba(255,255,255,0.25)] hover:-translate-y-0.5">
