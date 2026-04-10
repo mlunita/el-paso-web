@@ -1,7 +1,5 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -22,31 +20,25 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email,
-          },
-        });
+        const adminEmail = process.env.ADMIN_EMAIL;
+        const adminPassword = process.env.ADMIN_PASSWORD;
 
-        if (!user) {
+        if (!adminEmail || !adminPassword) {
+          console.warn("⚠️ WARNING: Missing ADMIN_EMAIL or ADMIN_PASSWORD in environment variables");
           return null;
         }
 
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
-
-        if (!isPasswordValid) {
-          return null;
+        if (credentials.email === adminEmail && credentials.password === adminPassword) {
+          // Success case
+          return {
+            id: "admin",
+            email: adminEmail,
+            role: "admin",
+          };
         }
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-        };
+        // Invalid credentials
+        return null;
       },
     }),
   ],
