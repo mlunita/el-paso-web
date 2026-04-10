@@ -7,8 +7,28 @@ import { StarBackground } from "@/components/star-background";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "El Paso, Texas: Border Roleplay",
-  description: "Official community website for the border roleplay.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://elpaso-rp.com'),
+  title: {
+    default: "El Paso, Texas: Border Roleplay | GTA RP Frontera",
+    template: "%s | El Paso RP"
+  },
+  description: "Join the premier bilingual Mexico-USA border roleplay server. Experience realistic GTA RP as law enforcement, cartel, or civilian in El Paso & Ciudad Juárez.",
+  keywords: ["Mexico USA border RP", "El Paso roleplay server", "GTA RP frontera", "bilingual roleplay server", "GTA V roleplay", "cartel RP", "border patrol RP"],
+  authors: [{ name: "El Paso RP Community" }],
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    alternateLocale: "es_MX",
+    url: "/",
+    siteName: "El Paso, Texas: Border Roleplay",
+    title: "El Paso, Texas: Border Roleplay | GTA RP Frontera",
+    description: "Join the premier bilingual Mexico-USA border roleplay server. Experience realistic GTA RP as law enforcement, cartel, or civilian.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "El Paso, Texas: Border Roleplay | GTA RP Frontera",
+    description: "Join the premier bilingual Mexico-USA border roleplay server.",
+  },
 };
 
 export default function RootLayout({
