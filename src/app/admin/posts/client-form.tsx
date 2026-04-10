@@ -41,6 +41,18 @@ export function PostForm({ post }: { post?: any }) {
       </div>
 
       <div className="space-y-2">
+        <Label htmlFor="authorName" className="text-zinc-400 font-bold">Author Name</Label>
+        <Input 
+          id="authorName" 
+          name="authorName" 
+          required 
+          defaultValue={post?.authorName} 
+          placeholder="Enter author name..." 
+          className="bg-black/50 border-white/10 focus-visible:ring-violet-500/50"
+        />
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="coverImage" className="text-zinc-400 font-bold">Cover Image URL</Label>
         <Input 
           id="coverImage" 
