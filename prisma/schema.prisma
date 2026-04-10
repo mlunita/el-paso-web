@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      String   @default("ADMIN")
+  posts     Post[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Post {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  coverImage  String?
+  published   Boolean  @default(false)
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Application {
+  id        String   @id @default(cuid())
+  refCode   String   @unique
+  name      String
+  username  String
+  email     String
+  message   String
+  links     String?
+  status    String   @default("PENDING") // PENDING, REVIEWED, APPROVED, REJECTED
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model StaffMember {
+  id        String   @id @default(cuid())
+  name      String
+  role      String
+  image     String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SiteSettings {
+  id               String   @id @default(cuid())
+  bannerImage      String?
+  bannerTitle      String   @default("Welcome to Our Community")
+  bannerSubtitle   String   @default("Your adventure starts here")
+  description      String   @default("Join us to explore new worlds, make friends, and have fun.")
+  socialDiscord    String?
+  socialTwitter    String?
+  socialYoutube    String?
+  appsOpen         Boolean  @default(true)
+  updatedAt        DateTime @updatedAt
+}
