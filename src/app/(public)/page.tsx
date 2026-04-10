@@ -12,9 +12,9 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const settings = await prisma.siteSettings.findFirst().catch(() => null);
 
-  const title = settings?.bannerTitle || "El Paso, Texas: Border Roleplay | GTA RP";
-  const desc = settings?.description || "Join thousands of players in the premier bilingual Mexico-USA border roleplay server. GTA RP frontera.";
-  
+  const title = settings?.bannerTitle || "El Paso, Texas: Border Roleplay ";
+  const desc = settings?.description || "Best RP Game.";
+
   // Use DB banner image if available, otherwise a default (handled by layout)
   const imageUrl = settings?.bannerImage || "/logo.png";
 
@@ -43,8 +43,8 @@ export default async function HomePage() {
     "@context": "https://schema.org",
     "@type": "VideoGame",
     "name": "El Paso, Texas: Border Roleplay",
-    "description": settings?.description || "Bilingual GTA Roleplay Server set in El Paso and Ciudad Juárez border.",
-    "url": process.env.NEXT_PUBLIC_BASE_URL || "https://elpaso-rp.com",
+    "description": settings?.description || "Roblox, The Best Border Roleplay.",
+    "url": process.env.NEXT_PUBLIC_BASE_URL || "https://el-paso-web.vercel.app",
     "playMode": "MultiPlayer",
     "applicationCategory": "GameServer",
     "inLanguage": ["en", "es"]
@@ -67,13 +67,13 @@ export default async function HomePage() {
       <section aria-label="Hero Banner" className="relative w-full rounded-3xl min-h-[350px] md:min-h-[450px] flex items-center justify-center flex-col shadow-2xl overflow-hidden group border border-white/10 border-b-violet-500/30">
         {settings?.bannerImage ? (
           <>
-            <Image 
-              src={settings.bannerImage} 
-              fill 
-              priority 
-              sizes="100vw" 
-              className="object-cover z-0" 
-              alt="El Paso RP Banner" 
+            <Image
+              src={settings.bannerImage}
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover z-0"
+              alt="El Paso RP Banner"
             />
             <div className="absolute inset-0 bg-black/60 z-0 backdrop-blur-[2px]" />
           </>
@@ -138,7 +138,7 @@ export default async function HomePage() {
           <h2 id="seo-info-heading" className="text-3xl md:text-4xl font-black uppercase text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-500 inline-block">
             What is El Paso RP?
           </h2>
-          <p className="text-zinc-500 mt-2 font-medium tracking-wide">¿Qué es este servidor RP?</p>
+          <p className="text-zinc-500 mt-2 font-medium tracking-wide">¿Qué es este juego RP?</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-12">
@@ -148,10 +148,10 @@ export default async function HomePage() {
               <span className="absolute -bottom-2 left-0 w-1/2 h-1 bg-violet-600 rounded-full"></span>
             </h3>
             <p className="text-zinc-400 leading-relaxed text-sm md:text-base">
-              El Paso, Texas: Border Roleplay is a bilingual roleplay community prioritizing realism and deep storylines. Situated on the turbulent boundary between the United States and Mexico, players can join dedicated law enforcement factions, explore the dangerous allure of cartel life, or build a legitimate empire as an everyday civilian.
+              El Paso, Texas: Border Roleplay is a unique experience among thousands on Roblox, one of the best to enjoy, we have strong approval on the platform and recommendations from Roblox.
             </p>
             <p className="text-zinc-400 leading-relaxed text-sm md:text-base mt-2">
-              Our GTA RP frontera server embraces both English and Spanish speakers, ensuring a truly diverse and authentic border experience.
+              our game is one of the best rp experiences u can’t miss, we also have our discord server, totally safe and available at all times.
             </p>
           </article>
 
@@ -161,10 +161,10 @@ export default async function HomePage() {
               <span className="absolute -bottom-2 left-0 w-1/2 h-1 bg-indigo-600 rounded-full"></span>
             </h3>
             <p className="text-zinc-400 leading-relaxed text-sm md:text-base">
-              El Paso, Texas: Border Roleplay es una comunidad bilingüe con enfoque en el realismo y las buenas historias. Situado en la turbulenta frontera entre Estados Unidos y México, los jugadores pueden unirse a facciones policiales, explorar la peligrosa vida de los cárteles o prosperar como civiles.
+              El Paso, Texas: Border Roleplay es una experiencia unica entre miles de roblox, de las mejores para disfrutar, contamos con buena aprobacion en la plataforma y recomendacion de roblox.
             </p>
             <p className="text-zinc-400 leading-relaxed text-sm md:text-base mt-2">
-              Nuestro servidor GTA RP frontera acoge a hispanohablantes y angloparlantes por igual, creando una atmósfera auténtica para todos.
+              Nuestro Juego es una de las mejores experiencias rp que no te puedes perder, al igual contamos con nuestro servidor de discord, totalmente sano y disponible en todo momento.
             </p>
           </article>
         </div>
