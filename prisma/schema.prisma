@@ -23,6 +23,7 @@ model Post {
   content     String
   coverImage  String?
   published   Boolean  @default(false)
+  authorName  String?
   authorId    String
   author      User     @relation(fields: [authorId], references: [id])
   createdAt   DateTime @default(now())

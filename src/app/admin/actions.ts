@@ -110,6 +110,7 @@ export async function createPost(prevState: any, formData: FormData) {
       data: {
         title: formData.get("title") as string,
         content: formData.get("content") as string,
+        authorName: formData.get("authorName") as string || null,
         coverImage: formData.get("coverImage") as string || null,
         published: formData.get("published") === "on",
         authorId: user.id,
@@ -131,6 +132,7 @@ export async function updatePost(id: string, prevState: any, formData: FormData)
       data: {
         title: formData.get("title") as string,
         content: formData.get("content") as string,
+        authorName: formData.get("authorName") as string || null,
         coverImage: formData.get("coverImage") as string || null,
         published: formData.get("published") === "on",
       }

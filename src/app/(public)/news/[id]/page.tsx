@@ -35,7 +35,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
             <div className="p-1.5 bg-violet-500/10 rounded-lg">
               <User className="w-3.5 h-3.5 text-violet-400" />
             </div>
-            <span className="text-zinc-300">{post.author?.name || "Admin"}</span>
+            <span className="text-zinc-300">{post.authorName || post.author?.name || "Admin"}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="p-1.5 bg-violet-500/10 rounded-lg">
