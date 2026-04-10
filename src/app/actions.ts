@@ -37,7 +37,8 @@ export async function submitApplication(prevState: any, formData: FormData) {
     return { success: true, refCode: app.refCode };
   } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return { success: false, error: error.errors?.[0]?.message || "Validation Error" };
+      const e = error as any;
+      return { success: false, error: e.errors?.[0]?.message || "Validation Error" };
     }
     return { success: false, error: "Something went wrong. Please try again." };
   }
