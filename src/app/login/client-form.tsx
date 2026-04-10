@@ -53,7 +53,7 @@ export function LoginForm() {
           onChange={(e) => setEmail(e.target.value)} 
           required 
           placeholder="admin@eprp.gg"
-          className="bg-zinc-950/50 border-white/5 text-white placeholder:text-zinc-700 h-12 focus-visible:ring-violet-500/50 focus-visible:border-violet-500/30 transition-all duration-300"
+          className="bg-zinc-950/50 border-white/5 text-white placeholder:text-zinc-700 h-12 focus-visible:ring-[#a67c52]/50 focus-visible:border-[#a67c52]/30 transition-all duration-300"
         />
       </div>
       <div className="space-y-2">
@@ -65,13 +65,13 @@ export function LoginForm() {
           onChange={(e) => setPassword(e.target.value)} 
           required 
           placeholder="••••••••"
-          className="bg-zinc-950/50 border-white/5 text-white placeholder:text-zinc-700 h-12 focus-visible:ring-violet-500/50 focus-visible:border-violet-500/30 transition-all duration-300"
+          className="bg-zinc-950/50 border-white/5 text-white placeholder:text-zinc-700 h-12 focus-visible:ring-[#a67c52]/50 focus-visible:border-[#a67c52]/30 transition-all duration-300"
         />
       </div>
       <Button 
         type="submit" 
         disabled={loading}
-        className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white py-6 text-sm font-black uppercase tracking-widest shadow-lg shadow-violet-600/15 hover:shadow-violet-500/25 transition-all duration-300 hover:-translate-y-0.5 mt-2 disabled:opacity-50 disabled:hover:translate-y-0"
+        className="w-full bg-gradient-to-r from-[#a67c52] to-[#7ca982] hover:from-[#b8895e] hover:to-[#8fba96] text-white py-6 text-sm font-black uppercase tracking-widest shadow-lg shadow-[#a67c52]/15 hover:shadow-[#a67c52]/25 transition-all duration-300 hover:-translate-y-0.5 mt-2 disabled:opacity-50 disabled:hover:translate-y-0"
       >
         {loading ? (
           <span className="flex items-center gap-2">

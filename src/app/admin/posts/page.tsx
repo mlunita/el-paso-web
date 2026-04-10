@@ -21,7 +21,7 @@ export default async function PostsPage() {
     <div>
       <div className="flex justify-between items-center mb-8 border-b border-white/20 pb-4">
         <h1 className="text-3xl font-black">Manage Posts</h1>
-        <Link href="/admin/posts/create" className="bg-[#8b5cf6] hover:bg-[#7c3aed] text-white py-2 px-4 rounded-lg font-bold transition-colors">Create Post</Link>
+        <Link href="/admin/posts/create" className="bg-[#a67c52] hover:bg-[#956e47] text-white py-2 px-4 rounded-lg font-bold transition-colors">Create Post</Link>
       </div>
       
       <div className="rounded-xl border border-white/10 overflow-hidden">

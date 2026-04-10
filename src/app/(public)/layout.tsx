@@ -8,9 +8,9 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <div className="flex flex-col md:flex-row gap-6 md:gap-8 flex-1 items-start">
         <main className="flex-1 w-full glass-card-strong text-slate-100 min-h-[70vh] rounded-[2rem] p-6 md:p-10 shadow-2xl shadow-black/30 relative overflow-hidden animate-fade-in-up">
           {/* Ambient gradient orb — top left */}
-          <div className="absolute -top-[30%] -left-[15%] w-[60%] h-[60%] rounded-full bg-violet-600/8 blur-[100px] pointer-events-none" />
+          <div className="absolute -top-[30%] -left-[15%] w-[60%] h-[60%] rounded-full bg-amber-800/8 blur-[100px] pointer-events-none" />
           {/* Second accent orb — bottom right */}
-          <div className="absolute -bottom-[20%] -right-[10%] w-[40%] h-[40%] rounded-full bg-indigo-500/6 blur-[80px] pointer-events-none" />
+          <div className="absolute -bottom-[20%] -right-[10%] w-[40%] h-[40%] rounded-full bg-emerald-800/6 blur-[80px] pointer-events-none" />
           
           <div className="relative z-10 w-full">
             {children}

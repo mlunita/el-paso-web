@@ -21,7 +21,7 @@ export default async function StaffPage() {
     <div>
       <div className="flex justify-between items-center mb-8 border-b border-white/20 pb-4">
         <h1 className="text-3xl font-black">Manage Staff</h1>
-        <Link href="/admin/staff/create" className="bg-[#8b5cf6] hover:bg-[#7c3aed] text-white py-2 px-4 rounded-lg font-bold transition-colors">Add Staff Member</Link>
+        <Link href="/admin/staff/create" className="bg-[#a67c52] hover:bg-[#956e47] text-white py-2 px-4 rounded-lg font-bold transition-colors">Add Staff Member</Link>
       </div>
       
       <div className="rounded-xl border border-white/10 overflow-hidden">
@@ -52,7 +52,7 @@ export default async function StaffPage() {
                     <span className="font-bold">{member.name}</span>
                   </div>
                 </TableCell>
-                <TableCell className="text-[#2dd4bf] font-medium">{member.role}</TableCell>
+                <TableCell className="text-[#a67c52] font-medium">{member.role}</TableCell>
                 <TableCell>
                   <div className="flex gap-2">
                     <Link href={`/admin/staff/edit/${member.id}`} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium rounded-md shadow-sm">Edit</Link>

@@ -64,5 +64,17 @@ model SiteSettings {
   socialTwitter    String?
   socialYoutube    String?
   appsOpen         Boolean  @default(true)
+  ticketStatus     String   @default("GREEN") // GREEN, YELLOW, ORANGE, RED
   updatedAt        DateTime @updatedAt
+}
+
+model WikiItem {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  section     String   // GAMEPASS, WEAPONS, EQUIPMENT, CARS
+  image       String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

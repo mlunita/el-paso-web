@@ -36,7 +36,7 @@ export function PostForm({ post }: { post?: any }) {
           required 
           defaultValue={post?.title} 
           placeholder="Enter post title..." 
-          className="bg-black/50 border-white/10 focus-visible:ring-violet-500/50"
+          className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
         />
       </div>
 
@@ -48,7 +48,7 @@ export function PostForm({ post }: { post?: any }) {
           required 
           defaultValue={post?.authorName} 
           placeholder="Enter author name..." 
-          className="bg-black/50 border-white/10 focus-visible:ring-violet-500/50"
+          className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
         />
       </div>
 
@@ -60,7 +60,7 @@ export function PostForm({ post }: { post?: any }) {
           value={coverImage} 
           onChange={(e) => setCoverImage(e.target.value)} 
           placeholder="https://example.com/image.jpg" 
-          className="bg-black/50 border-white/10 focus-visible:ring-violet-500/50"
+          className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
         />
         {coverImage && (
           <div className="mt-4 relative w-full h-48 rounded-lg overflow-hidden border border-white/10">
@@ -77,7 +77,7 @@ export function PostForm({ post }: { post?: any }) {
           required 
           defaultValue={post?.content} 
           placeholder="Write your content here..." 
-          className="min-h-[200px] bg-black/50 border-white/10 focus-visible:ring-violet-500/50"
+          className="min-h-[200px] bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
         />
       </div>
 
@@ -87,7 +87,7 @@ export function PostForm({ post }: { post?: any }) {
           id="published" 
           name="published" 
           defaultChecked={post?.published} 
-          className="w-5 h-5 rounded border-white/10 bg-black/50 accent-violet-600"
+          className="w-5 h-5 rounded border-white/10 bg-black/50 accent-[#a67c52]"
         />
         <Label htmlFor="published" className="text-zinc-300 font-bold cursor-pointer">Publish immediately</Label>
       </div>
@@ -96,7 +96,7 @@ export function PostForm({ post }: { post?: any }) {
         <Button onClick={() => router.push("/admin/posts")} type="button" variant="outline" className="flex-1 border-white/10 bg-transparent hover:bg-white/5">
           Cancel
         </Button>
-        <Button type="submit" disabled={pending} className="flex-1 bg-violet-600 hover:bg-violet-500 text-white font-bold">
+        <Button type="submit" disabled={pending} className="flex-1 bg-[#a67c52] hover:bg-[#956e47] text-white font-bold">
           {pending ? "Saving..." : "Save Post"}
         </Button>
       </div>

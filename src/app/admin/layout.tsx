@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { LayoutDashboard, FileText, Users, Settings, LogOut, FileBadge } from "lucide-react";
+import { LayoutDashboard, FileText, Users, Settings, LogOut, FileBadge, BookOpen } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -13,12 +13,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin/posts", label: "News Posts", icon: FileText },
     { href: "/admin/applications", label: "Applications", icon: FileBadge },
     { href: "/admin/staff", label: "Staff", icon: Users },
+    { href: "/admin/wiki", label: "Wiki", icon: BookOpen },
     { href: "/admin/settings", label: "Site Settings", icon: Settings },
   ];
 
   return (
     <div className="min-h-screen bg-black flex text-white font-sans">
-      <aside className="w-64 bg-[#8b5cf6] p-6 flex flex-col gap-6 fixed h-full border-r border-white/10 shadow-2xl">
+      <aside className="w-64 bg-[#a67c52] p-6 flex flex-col gap-6 fixed h-full border-r border-white/10 shadow-2xl">
         <div className="font-black text-2xl tracking-widest uppercase mb-4 text-center border-b border-white/20 pb-4">
           Admin Panel
         </div>

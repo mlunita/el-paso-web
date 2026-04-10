@@ -56,41 +56,41 @@ export default async function StatusPage({
   };
 
   return (
-    <div className="flex flex-col gap-8 w-full max-w-3xl mx-auto pt-8">
-      <div className="text-center mb-8 animate-fade-in-up">
+    <div className="flex flex-col gap-8 w-full max-w-3xl mx-auto pt-4 sm:pt-8">
+      <div className="text-center mb-4 sm:mb-8 animate-fade-in-up">
         <div className="relative inline-flex items-center justify-center p-4 rounded-full mb-6">
-          <div className="absolute inset-0 bg-violet-500/10 rounded-full animate-pulse-glow" />
-          <div className="relative bg-violet-500/10 p-4 rounded-full border border-violet-500/15">
-            <Activity className="w-10 h-10 text-violet-400" />
+          <div className="absolute inset-0 bg-[#a67c52]/10 rounded-full animate-pulse-glow" />
+          <div className="relative bg-[#a67c52]/10 p-4 rounded-full border border-[#a67c52]/15">
+            <Activity className="w-8 sm:w-10 h-8 sm:h-10 text-[#a67c52]" />
           </div>
         </div>
-        <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white to-zinc-400 mb-4">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white to-zinc-400 mb-4">
           Application Status
         </h1>
-        <p className="text-zinc-500 text-lg">Enter your unique reference code to check the status of your application.</p>
+        <p className="text-zinc-500 text-base sm:text-lg">Enter your unique reference code to check the status of your application.</p>
       </div>
         
       <div className="w-full animate-fade-in-up" style={{ animationDelay: "150ms" }}>
         <CheckStatusForm defaultValue={refCode} />
         
         {refCode && (
-          <div className="mt-12 w-full animate-in slide-in-from-bottom-4 duration-500">
+          <div className="mt-8 sm:mt-12 w-full animate-in slide-in-from-bottom-4 duration-500">
             {application ? (() => {
               const config = getStatusConfig(application.status);
               return (
-                <div className="glass-card-strong rounded-3xl p-8 md:p-12 shadow-2xl shadow-black/30 relative overflow-hidden">
+                <div className="glass-card-strong rounded-3xl p-6 sm:p-8 md:p-12 shadow-2xl shadow-black/30 relative overflow-hidden">
                   {/* Ambient glow */}
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-violet-500/5 rounded-full blur-[80px] pointer-events-none" />
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-[#a67c52]/5 rounded-full blur-[80px] pointer-events-none" />
                   
-                  <h2 className="text-xl font-bold uppercase tracking-widest text-zinc-600 mb-8 border-b border-white/5 pb-4 flex items-center gap-3">
-                    <div className="h-[2px] w-6 bg-violet-500 rounded-full" />
+                  <h2 className="text-xl font-bold uppercase tracking-widest text-zinc-600 mb-6 sm:mb-8 border-b border-white/5 pb-4 flex items-center gap-3">
+                    <div className="h-[2px] w-6 bg-[#a67c52] rounded-full" />
                     Status Report
                   </h2>
                   
-                  <div className="flex flex-col md:flex-row gap-8 justify-between items-center bg-zinc-950/40 p-6 rounded-2xl border border-white/5">
+                  <div className="flex flex-col md:flex-row gap-6 sm:gap-8 justify-between items-center bg-zinc-950/40 p-5 sm:p-6 rounded-2xl border border-white/5">
                     <div className="flex flex-col text-center md:text-left">
                       <span className="text-xs font-black uppercase tracking-widest text-zinc-600 mb-1">Applicant</span>
-                      <span className="text-2xl font-bold text-white">{application.username}</span>
+                      <span className="text-xl sm:text-2xl font-bold text-white">{application.username}</span>
                     </div>
                     
                     <div className="flex flex-col items-center">
@@ -102,10 +102,10 @@ export default async function StatusPage({
                   </div>
 
                   {application.notes && (
-                    <div className="mt-6 bg-violet-500/5 border border-violet-500/10 p-6 rounded-2xl">
+                    <div className="mt-6 bg-[#a67c52]/5 border border-[#a67c52]/10 p-5 sm:p-6 rounded-2xl">
                       <div className="flex items-center gap-2 mb-3">
-                        <div className="h-[2px] w-4 bg-violet-500/50 rounded-full" />
-                        <span className="text-xs font-black uppercase tracking-widest text-violet-400/80">Admin Response</span>
+                        <div className="h-[2px] w-4 bg-[#a67c52]/50 rounded-full" />
+                        <span className="text-xs font-black uppercase tracking-widest text-[#a67c52]/80">Admin Response</span>
                       </div>
                       <p className="text-zinc-400 italic leading-relaxed">{application.notes}</p>
                     </div>
@@ -113,7 +113,7 @@ export default async function StatusPage({
                 </div>
               );
             })() : (
-              <div className="bg-red-500/5 border border-red-500/15 rounded-2xl p-8 text-center">
+              <div className="bg-red-500/5 border border-red-500/15 rounded-2xl p-6 sm:p-8 text-center">
                 <XCircle className="w-10 h-10 text-red-400/60 mx-auto mb-3" />
                 <span className="text-red-400/80 font-bold text-lg">Invalid reference code or application not found.</span>
               </div>

@@ -32,7 +32,7 @@ export function StaffForm({ member }: { member?: any }) {
           required
           defaultValue={member?.name}
           placeholder="e.g. John Doe"
-          className="bg-black/50 border-white/10 focus-visible:ring-violet-500/50"
+          className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
         />
       </div>
 
@@ -44,7 +44,7 @@ export function StaffForm({ member }: { member?: any }) {
           required
           defaultValue={member?.role}
           placeholder="e.g. Server Director"
-          className="bg-black/50 border-white/10 focus-visible:ring-violet-500/50"
+          className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
         />
       </div>
 
@@ -55,7 +55,7 @@ export function StaffForm({ member }: { member?: any }) {
           name="image"
           defaultValue={member?.image || ""}
           placeholder="https://example.com/avatar.jpg"
-          className="bg-black/50 border-white/10 focus-visible:ring-violet-500/50"
+          className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
         />
       </div>
 
@@ -67,7 +67,7 @@ export function StaffForm({ member }: { member?: any }) {
           type="number"
           required
           defaultValue={member?.order || 0}
-          className="bg-black/50 border-white/10 focus-visible:ring-violet-500/50"
+          className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
         />
       </div>
 
@@ -75,7 +75,7 @@ export function StaffForm({ member }: { member?: any }) {
         <Button onClick={() => router.push("/admin/staff")} type="button" variant="outline" className="flex-1 border-white/10 bg-transparent hover:bg-white/5">
           Cancel
         </Button>
-        <Button type="submit" disabled={pending} className="flex-1 bg-violet-600 hover:bg-violet-500 text-white font-bold">
+        <Button type="submit" disabled={pending} className="flex-1 bg-[#a67c52] hover:bg-[#956e47] text-white font-bold">
           {pending ? "Saving..." : "Save Member"}
         </Button>
       </div>

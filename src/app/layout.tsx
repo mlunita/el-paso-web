@@ -42,7 +42,7 @@ export default function RootLayout({
         {/* Starfield behind everything */}
         <StarBackground />
         {/* Subtle global gradient overlay for depth */}
-        <div className="fixed inset-0 bg-gradient-to-b from-violet-950/20 via-transparent to-indigo-950/10 pointer-events-none" style={{ zIndex: 1 }} />
+        <div className="fixed inset-0 bg-gradient-to-b from-amber-950/15 via-transparent to-emerald-950/8 pointer-events-none" style={{ zIndex: 1 }} />
         <div className="relative" style={{ zIndex: 2 }}>
           {children}
         </div>

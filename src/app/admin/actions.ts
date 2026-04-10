@@ -12,6 +12,7 @@ export async function updateSettings(prevState: any, formData: FormData) {
       bannerSubtitle: formData.get("bannerSubtitle") as string,
       description: formData.get("description") as string,
       appsOpen: formData.get("appsOpen") === "on",
+      ticketStatus: formData.get("ticketStatus") as string || "GREEN",
     };
 
     let settings = await prisma.siteSettings.findFirst();
@@ -26,6 +27,7 @@ export async function updateSettings(prevState: any, formData: FormData) {
 
     revalidatePath("/");
     revalidatePath("/applys");
+    revalidatePath("/ticket-status");
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };
@@ -145,3 +147,50 @@ export async function updatePost(id: string, prevState: any, formData: FormData)
     return { success: false, error: err.message };
   }
 }
+
+// Wiki Items
+export async function createWikiItem(prevState: any, formData: FormData) {
+  try {
+    await prisma.wikiItem.create({
+      data: {
+        title: formData.get("title") as string,
+        description: formData.get("description") as string,
+        section: formData.get("section") as string,
+        image: formData.get("image") as string || null,
+        order: parseInt(formData.get("order") as string) || 0,
+      }
+    });
+    revalidatePath("/admin/wiki");
+    revalidatePath("/wiki");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+export async function updateWikiItem(id: string, prevState: any, formData: FormData) {
+  try {
+    await prisma.wikiItem.update({
+      where: { id },
+      data: {
+        title: formData.get("title") as string,
+        description: formData.get("description") as string,
+        section: formData.get("section") as string,
+        image: formData.get("image") as string || null,
+        order: parseInt(formData.get("order") as string) || 0,
+      }
+    });
+    revalidatePath("/admin/wiki");
+    revalidatePath("/wiki");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+export async function deleteWikiItem(id: string) {
+  await prisma.wikiItem.delete({ where: { id } });
+  revalidatePath("/admin/wiki");
+  revalidatePath("/wiki");
+}
+
