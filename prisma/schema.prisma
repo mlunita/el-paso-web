@@ -1,0 +1,175 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      String   @default("ADMIN")
+  posts     Post[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Post {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  coverImage  String?
+  published   Boolean  @default(false)
+  authorName  String?
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Application {
+  id        String   @id @default(cuid())
+  refCode   String   @unique
+  name      String
+  username  String
+  email     String
+  message   String
+  links     String?
+  status    String   @default("PENDING") // PENDING, REVIEWED, APPROVED, REJECTED
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model StaffMember {
+  id        String   @id @default(cuid())
+  name      String
+  role      String
+  image     String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SiteSettings {
+  id               String   @id @default(cuid())
+  bannerImage      String?
+  bannerTitle      String   @default("Welcome to Our Community")
+  bannerSubtitle   String   @default("Your adventure starts here")
+  description      String   @default("Join us to explore new worlds, make friends, and have fun.")
+  socialDiscord    String?
+  socialTwitter    String?
+  socialYoutube    String?
+  appsOpen         Boolean  @default(true)
+  ticketStatus     String   @default("GREEN") // GREEN, YELLOW, ORANGE, RED
+  updatedAt        DateTime @updatedAt
+}
+
+model WikiItem {
+  id           String   @id @default(cuid())
+  title        String
+  description  String
+  section      String   // GAMEPASS, WEAPONS, EQUIPMENT, CARS, TEAMS
+  image        String?
+  order        Int      @default(0)
+  tags         String?  // JSON array of tag strings, e.g. '["Rare","VIP"]'
+  customFields String?  // JSON object for section-specific fields, e.g. '{"mileage":"50k"}'
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// =====================================================
+// Role-Based Moderation System
+// =====================================================
+
+model Role {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  description String?
+  permissions Permission[]
+  tokens      ModeratorToken[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model Permission {
+  id    String @id @default(cuid())
+  key   String @unique // machine key: "view_mod_panel", "create_ban_requests", etc.
+  label String         // human label: "View Mod Panel"
+  roles Role[]
+}
+
+model ModeratorToken {
+  id            String   @id @default(cuid())
+  tokenHash     String   @unique
+  tokenPreview  String   // last 6 chars for display, e.g. "…a3f2b1"
+  moderatorName String
+  moderatorId   String   // admin-assigned external identifier
+  roleId        String
+  role          Role     @relation(fields: [roleId], references: [id])
+  status        String   @default("ACTIVE") // ACTIVE, REVOKED, EXPIRED
+  permSnapshot  String?  // JSON snapshot of permissions at creation time
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  expiresAt     DateTime?
+  loginLogs     ModeratorLoginLog[]
+  banRequests   BanRequest[]
+}
+
+model ModeratorLoginLog {
+  id        String         @id @default(cuid())
+  tokenId   String
+  token     ModeratorToken @relation(fields: [tokenId], references: [id])
+  ipAddress String?
+  userAgent String?
+  success   Boolean
+  reason    String?
+  createdAt DateTime       @default(now())
+}
+
+model BanRequest {
+  id             String               @id @default(cuid())
+  tokenId        String
+  token          ModeratorToken       @relation(fields: [tokenId], references: [id])
+  modName        String
+  modId          String
+  modRole        String
+  modPermissions String?
+  targetUserId   String
+  targetUsername  String
+  reason         String
+  notes          String?
+  status         String               @default("PENDING")
+  adminNotes     String?
+  reviewedBy     String?
+  reviewedAt     DateTime?
+  evidence       BanRequestEvidence[]
+  auditLogs      BanRequestAuditLog[]
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+}
+
+model BanRequestEvidence {
+  id           String     @id @default(cuid())
+  banRequestId String
+  banRequest   BanRequest @relation(fields: [banRequestId], references: [id], onDelete: Cascade)
+  type         String     // "IMAGE" or "VIDEO"
+  url          String
+  caption      String?
+  createdAt    DateTime   @default(now())
+}
+
+model BanRequestAuditLog {
+  id           String     @id @default(cuid())
+  banRequestId String
+  banRequest   BanRequest @relation(fields: [banRequestId], references: [id], onDelete: Cascade)
+  action       String     // "CREATED", "STATUS_CHANGED", "NOTE_ADDED", "REVIEWED"
+  fromStatus   String?
+  toStatus     String?
+  performedBy  String     // "mod:<modId>" or "admin"
+  details      String?
+  createdAt    DateTime   @default(now())
+}
