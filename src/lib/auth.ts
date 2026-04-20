@@ -1,4 +1,4 @@
-import { NextAuthOptions } from "next-auth";
+import { NextAuthOptions, getServerSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 export const authOptions: NextAuthOptions = {
@@ -63,3 +63,13 @@ export const authOptions: NextAuthOptions = {
     },
   },
 };
+
+export async function requireAdminSession() {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user || (session.user as { role?: string }).role !== "admin") {
+    throw new Error("Unauthorized");
+  }
+
+  return session;
+}

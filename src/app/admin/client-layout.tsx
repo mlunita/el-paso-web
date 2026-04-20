@@ -4,15 +4,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { LayoutDashboard, FileText, Users, Settings, LogOut, FileBadge, BookOpen, Shield, Key, AlertTriangle } from "lucide-react";
+import { LayoutDashboard, FileText, Users, Settings, LogOut, FileBadge, BookOpen, Shield, Key, AlertTriangle, LifeBuoy } from "lucide-react";
 import { AdminLoader } from "@/components/admin-loader";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const contentLinks = [
-    { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
     { href: "/admin/posts", label: "News Posts", icon: FileText },
+    { href: "/admin/support", label: "Support", icon: LifeBuoy },
     { href: "/admin/applications", label: "Applications", icon: FileBadge },
     { href: "/admin/staff", label: "Staff", icon: Users },
     { href: "/admin/wiki", label: "Wiki", icon: BookOpen },
@@ -86,7 +87,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
             {contentLinks.map((link, index) => {
               const Icon = link.icon;
-              const isActive = pathname === link.href;
+              const isActive = link.exact ? pathname === link.href : pathname.startsWith(link.href);
               return (
                 <Link
                   key={link.href}

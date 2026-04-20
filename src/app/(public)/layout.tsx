@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Navbar } from "@/components/navbar";
 import { Sidebar } from "@/components/sidebar";
 
@@ -22,6 +23,10 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       {/* Footer */}
       <footer className="mt-12 mb-4 text-center text-zinc-600 text-xs font-medium tracking-wider uppercase">
         <span className="opacity-60">El Paso, Texas: Border Roleplay By Alamo Studios</span>
+        <span className="mx-2 opacity-30">•</span>
+        <Link href="/support" className="opacity-60 hover:opacity-100 hover:text-[#c9a87c] transition-colors">
+          Support Archive
+        </Link>
       </footer>
     </div>
   );

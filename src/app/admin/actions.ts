@@ -1,10 +1,99 @@
 "use server";
 
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { requireAdminSession } from "@/lib/auth";
 import { inspectWikiImageUrl } from "@/lib/wiki-image-url";
+import { slugifySupportValue } from "@/lib/support";
 import { revalidatePath } from "next/cache";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
+import { z } from "zod";
+
+const SUPPORT_CATEGORY_SCHEMA = z.object({
+  name: z.string().trim().min(2, "Category name must be at least 2 characters").max(80, "Category name is too long"),
+  slug: z
+    .string()
+    .trim()
+    .min(2, "Slug must be at least 2 characters")
+    .max(80, "Slug is too long")
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug may only contain lowercase letters, numbers, and hyphens"),
+  description: z.string().trim().max(280, "Description is too long").nullable(),
+  visibility: z.enum(["PUBLIC", "HIDDEN"]),
+  order: z.coerce.number().int().min(0, "Order must be 0 or higher").max(9999, "Order is too large"),
+});
+
+const SUPPORT_ENTRY_SCHEMA = z.object({
+  title: z.string().trim().min(3, "Title must be at least 3 characters").max(140, "Title is too long"),
+  slug: z
+    .string()
+    .trim()
+    .min(2, "Slug must be at least 2 characters")
+    .max(120, "Slug is too long")
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug may only contain lowercase letters, numbers, and hyphens"),
+  content: z.string().trim().min(20, "Content must be at least 20 characters"),
+  status: z.enum(["DRAFT", "PUBLISHED"]),
+  visibility: z.enum(["PUBLIC", "UNLISTED", "HIDDEN"]),
+  order: z.coerce.number().int().min(0, "Order must be 0 or higher").max(9999, "Order is too large"),
+  featured: z.boolean(),
+  publishDate: z.string().trim().nullable(),
+  authorName: z.string().trim().min(2, "Author name must be at least 2 characters").max(80, "Author name is too long"),
+  categoryId: z.string().trim().min(1, "Select a category"),
+});
+
+function normalizeOptionalText(value: FormDataEntryValue | null) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function parseSupportPublishDate(rawValue: string | null) {
+  if (!rawValue) {
+    return null;
+  }
+
+  const parsedDate = new Date(rawValue);
+  if (Number.isNaN(parsedDate.getTime())) {
+    throw new Error("Publish date is invalid");
+  }
+
+  return parsedDate;
+}
+
+function resolveSupportPublishedAt(status: "DRAFT" | "PUBLISHED", publishDate: string | null, existingPublishedAt?: Date | null) {
+  const parsedDate = parseSupportPublishDate(publishDate);
+
+  if (status === "PUBLISHED") {
+    return parsedDate ?? existingPublishedAt ?? new Date();
+  }
+
+  return parsedDate;
+}
+
+function getActionErrorMessage(error: unknown, fallbackMessage: string) {
+  if (error instanceof z.ZodError) {
+    return error.issues[0]?.message || fallbackMessage;
+  }
+
+  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+    const target = Array.isArray(error.meta?.target)
+      ? error.meta.target.join(", ")
+      : String(error.meta?.target ?? "");
+
+    if (target.includes("slug")) {
+      return "That slug is already in use.";
+    }
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return fallbackMessage;
+}
 
 // Settings
 export async function updateSettings(prevState: any, formData: FormData) {
@@ -416,4 +505,255 @@ export async function addBanRequestNote(id: string, note: string) {
 
   revalidatePath(`/admin/ban-requests/${id}`);
   revalidatePath("/admin/ban-requests");
+}
+
+// =====================================================
+// Support Categories
+// =====================================================
+
+export async function createSupportCategory(prevState: any, formData: FormData) {
+  try {
+    await requireAdminSession();
+
+    const validated = SUPPORT_CATEGORY_SCHEMA.parse({
+      name: formData.get("name"),
+      slug: slugifySupportValue((formData.get("slug") as string) || (formData.get("name") as string) || ""),
+      description: normalizeOptionalText(formData.get("description")),
+      visibility: formData.get("visibility") || "PUBLIC",
+      order: formData.get("order") || "0",
+    });
+
+    await prisma.supportCategory.create({
+      data: validated,
+    });
+
+    revalidatePath("/admin/support");
+    revalidatePath("/support");
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: getActionErrorMessage(error, "Unable to create category."),
+    };
+  }
+}
+
+export async function updateSupportCategory(id: string, prevState: any, formData: FormData) {
+  try {
+    await requireAdminSession();
+
+    const existingCategory = await prisma.supportCategory.findUnique({
+      where: { id },
+      select: { slug: true },
+    });
+
+    if (!existingCategory) {
+      throw new Error("Category not found");
+    }
+
+    const validated = SUPPORT_CATEGORY_SCHEMA.parse({
+      name: formData.get("name"),
+      slug: slugifySupportValue((formData.get("slug") as string) || (formData.get("name") as string) || ""),
+      description: normalizeOptionalText(formData.get("description")),
+      visibility: formData.get("visibility") || "PUBLIC",
+      order: formData.get("order") || "0",
+    });
+
+    await prisma.supportCategory.update({
+      where: { id },
+      data: validated,
+    });
+
+    revalidatePath("/admin/support");
+    revalidatePath("/support");
+    revalidatePath(`/support/${existingCategory.slug}`);
+    revalidatePath(`/support/${validated.slug}`);
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: getActionErrorMessage(error, "Unable to update category."),
+    };
+  }
+}
+
+export async function deleteSupportCategory(id: string) {
+  await requireAdminSession();
+
+  const category = await prisma.supportCategory.findUnique({
+    where: { id },
+    include: {
+      _count: {
+        select: { entries: true },
+      },
+    },
+  });
+
+  if (!category) {
+    throw new Error("Category not found");
+  }
+
+  if (category._count.entries > 0) {
+    throw new Error("Delete or move the category entries first.");
+  }
+
+  await prisma.supportCategory.delete({ where: { id } });
+  revalidatePath("/admin/support");
+  revalidatePath("/support");
+  revalidatePath(`/support/${category.slug}`);
+}
+
+// =====================================================
+// Support Entries
+// =====================================================
+
+export async function createSupportEntry(prevState: any, formData: FormData) {
+  try {
+    await requireAdminSession();
+
+    const validated = SUPPORT_ENTRY_SCHEMA.parse({
+      title: formData.get("title"),
+      slug: slugifySupportValue((formData.get("slug") as string) || (formData.get("title") as string) || ""),
+      content: formData.get("content"),
+      status: formData.get("status") || "DRAFT",
+      visibility: formData.get("visibility") || "PUBLIC",
+      order: formData.get("order") || "0",
+      featured: formData.get("featured") === "on",
+      publishDate: normalizeOptionalText(formData.get("publishDate")),
+      authorName: formData.get("authorName"),
+      categoryId: formData.get("categoryId"),
+    });
+
+    const category = await prisma.supportCategory.findUnique({
+      where: { id: validated.categoryId },
+      select: { id: true, slug: true },
+    });
+
+    if (!category) {
+      throw new Error("Selected category does not exist");
+    }
+
+    const entry = await prisma.supportEntry.create({
+      data: {
+        title: validated.title,
+        slug: validated.slug,
+        content: validated.content,
+        status: validated.status,
+        visibility: validated.visibility,
+        order: validated.order,
+        featured: validated.featured,
+        publishedAt: resolveSupportPublishedAt(validated.status, validated.publishDate),
+        authorName: validated.authorName,
+        authorId: null,
+        categoryId: validated.categoryId,
+      },
+      include: {
+        category: true,
+      },
+    });
+
+    revalidatePath("/admin/support");
+    revalidatePath("/support");
+    revalidatePath(`/support/${category.slug}`);
+    revalidatePath(`/support/${entry.category.slug}/${entry.slug}`);
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: getActionErrorMessage(error, "Unable to create entry."),
+    };
+  }
+}
+
+export async function updateSupportEntry(id: string, prevState: any, formData: FormData) {
+  try {
+    await requireAdminSession();
+
+    const existingEntry = await prisma.supportEntry.findUnique({
+      where: { id },
+      include: {
+        category: true,
+      },
+    });
+
+    if (!existingEntry) {
+      throw new Error("Entry not found");
+    }
+
+    const validated = SUPPORT_ENTRY_SCHEMA.parse({
+      title: formData.get("title"),
+      slug: slugifySupportValue((formData.get("slug") as string) || (formData.get("title") as string) || ""),
+      content: formData.get("content"),
+      status: formData.get("status") || "DRAFT",
+      visibility: formData.get("visibility") || "PUBLIC",
+      order: formData.get("order") || "0",
+      featured: formData.get("featured") === "on",
+      publishDate: normalizeOptionalText(formData.get("publishDate")),
+      authorName: formData.get("authorName"),
+      categoryId: formData.get("categoryId"),
+    });
+
+    const category = await prisma.supportCategory.findUnique({
+      where: { id: validated.categoryId },
+      select: { id: true, slug: true },
+    });
+
+    if (!category) {
+      throw new Error("Selected category does not exist");
+    }
+
+    const entry = await prisma.supportEntry.update({
+      where: { id },
+      data: {
+        title: validated.title,
+        slug: validated.slug,
+        content: validated.content,
+        status: validated.status,
+        visibility: validated.visibility,
+        order: validated.order,
+        featured: validated.featured,
+        publishedAt: resolveSupportPublishedAt(validated.status, validated.publishDate, existingEntry.publishedAt),
+        authorName: validated.authorName,
+        authorId: null,
+        categoryId: validated.categoryId,
+      },
+      include: {
+        category: true,
+      },
+    });
+
+    revalidatePath("/admin/support");
+    revalidatePath("/support");
+    revalidatePath(`/support/${existingEntry.category.slug}`);
+    revalidatePath(`/support/${existingEntry.category.slug}/${existingEntry.slug}`);
+    revalidatePath(`/support/${entry.category.slug}`);
+    revalidatePath(`/support/${entry.category.slug}/${entry.slug}`);
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: getActionErrorMessage(error, "Unable to update entry."),
+    };
+  }
+}
+
+export async function deleteSupportEntry(id: string) {
+  await requireAdminSession();
+
+  const entry = await prisma.supportEntry.findUnique({
+    where: { id },
+    include: {
+      category: true,
+    },
+  });
+
+  if (!entry) {
+    throw new Error("Entry not found");
+  }
+
+  await prisma.supportEntry.delete({ where: { id } });
+  revalidatePath("/admin/support");
+  revalidatePath("/support");
+  revalidatePath(`/support/${entry.category.slug}`);
+  revalidatePath(`/support/${entry.category.slug}/${entry.slug}`);
 }
