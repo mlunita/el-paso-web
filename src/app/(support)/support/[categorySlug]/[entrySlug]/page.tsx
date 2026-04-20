@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: SupportEntryPageProps): Promi
       url: `/support/${entry.category.slug}/${entry.slug}`,
       type: "article",
       publishedTime: entry.publishedAt?.toISOString(),
-      authors: [entry.authorName],
+      authors: entry.authorName ? [entry.authorName] : undefined,
     },
   };
 }

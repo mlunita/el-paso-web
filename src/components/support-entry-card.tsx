@@ -7,7 +7,7 @@ type SupportEntryCardProps = {
     title: string;
     slug: string;
     content: string;
-    authorName: string;
+    authorName: string | null;
     featured: boolean;
     publishedAt: Date | string | null;
     createdAt: Date | string;
