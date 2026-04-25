@@ -51,18 +51,13 @@ export function ApplyForm() {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-3">
-          <Label htmlFor="name" className="text-zinc-500 uppercase tracking-widest text-xs font-bold">Real Name</Label>
-          <Input id="name" name="name" required placeholder="John Doe" className="bg-zinc-950/50 border-white/5 text-white placeholder:text-zinc-700 h-12 focus-visible:ring-[#a67c52]/50 focus-visible:border-[#a67c52]/30 transition-all duration-300" />
+          <Label htmlFor="discord" className="text-zinc-500 uppercase tracking-widest text-xs font-bold">Discord Username</Label>
+          <Input id="discord" name="discord" required placeholder="usuario#1234" className="bg-zinc-950/50 border-white/5 text-white placeholder:text-zinc-700 h-12 focus-visible:ring-[#a67c52]/50 focus-visible:border-[#a67c52]/30 transition-all duration-300" />
         </div>
         <div className="space-y-3">
-          <Label htmlFor="username" className="text-zinc-500 uppercase tracking-widest text-xs font-bold">In-game Username</Label>
-          <Input id="username" name="username" required placeholder="xX_Slayer_Xx" className="bg-zinc-950/50 border-white/5 text-white placeholder:text-zinc-700 h-12 focus-visible:ring-[#a67c52]/50 focus-visible:border-[#a67c52]/30 transition-all duration-300" />
+          <Label htmlFor="roblox" className="text-zinc-500 uppercase tracking-widest text-xs font-bold">Roblox Username</Label>
+          <Input id="roblox" name="roblox" required placeholder="RobloxPlayer123" className="bg-zinc-950/50 border-white/5 text-white placeholder:text-zinc-700 h-12 focus-visible:ring-[#a67c52]/50 focus-visible:border-[#a67c52]/30 transition-all duration-300" />
         </div>
-      </div>
-
-      <div className="space-y-3">
-        <Label htmlFor="email" className="text-zinc-500 uppercase tracking-widest text-xs font-bold">Email Address</Label>
-        <Input id="email" name="email" type="email" required placeholder="email@example.com" className="bg-zinc-950/50 border-white/5 text-white placeholder:text-zinc-700 h-12 focus-visible:ring-[#a67c52]/50 focus-visible:border-[#a67c52]/30 transition-all duration-300" />
       </div>
 
       <div className="space-y-3">

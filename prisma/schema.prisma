@@ -34,9 +34,8 @@ model Post {
 model Application {
   id        String   @id @default(cuid())
   refCode   String   @unique
-  name      String
-  username  String
-  email     String
+  discord   String
+  roblox    String
   message   String
   links     String?
   status    String   @default("PENDING") // PENDING, REVIEWED, APPROVED, REJECTED

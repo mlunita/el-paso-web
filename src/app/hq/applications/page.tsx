@@ -24,8 +24,8 @@ export default async function ApplicationsPage() {
           <TableHeader className="bg-white/5">
             <TableRow className="border-white/10 hover:bg-transparent">
               <TableHead className="text-white font-bold">Ref Code</TableHead>
-              <TableHead className="text-white font-bold">Applicant</TableHead>
-              <TableHead className="text-white font-bold">Email</TableHead>
+              <TableHead className="text-white font-bold">Discord</TableHead>
+              <TableHead className="text-white font-bold">Roblox</TableHead>
               <TableHead className="text-white font-bold">Status</TableHead>
               <TableHead className="text-white font-bold">Actions</TableHead>
             </TableRow>
@@ -42,10 +42,9 @@ export default async function ApplicationsPage() {
               <TableRow key={app.id} className="border-white/10 hover:bg-white/5">
                 <TableCell className="font-mono text-[#2dd4bf] font-bold">{app.refCode}</TableCell>
                 <TableCell>
-                  <div className="font-bold">{app.name}</div>
-                  <div className="text-sm opacity-70">@{app.username}</div>
+                  <div className="font-bold">{app.discord}</div>
                 </TableCell>
-                <TableCell>{app.email}</TableCell>
+                <TableCell>{app.roblox}</TableCell>
                 <TableCell>
                   <Badge className={
                     app.status === 'APPROVED' ? 'bg-green-500/20 text-green-300' :

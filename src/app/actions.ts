@@ -5,9 +5,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 const ApplySchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  email: z.string().email("Invalid email address"),
+  discord: z.string().min(2, "Discord username must be at least 2 characters"),
+  roblox: z.string().min(3, "Roblox username must be at least 3 characters"),
   message: z.string().min(10, "Message must be at least 10 characters"),
   links: z.string().optional(),
 });
@@ -15,11 +14,10 @@ const ApplySchema = z.object({
 export async function submitApplication(prevState: any, formData: FormData) {
   try {
     const data = {
-      name: formData.get("name") as string,
-      username: formData.get("username") as string,
-      email: formData.get("email") as string,
-      message: formData.get("message") as string,
-      links: formData.get("links") as string,
+      discord: formData.get("discord")?.toString() || "",
+      roblox: formData.get("roblox")?.toString() || "",
+      message: formData.get("message")?.toString() || "",
+      links: formData.get("links")?.toString() || "",
     };
 
     const validated = ApplySchema.parse(data);
@@ -36,6 +34,7 @@ export async function submitApplication(prevState: any, formData: FormData) {
 
     return { success: true, refCode: app.refCode };
   } catch (error: any) {
+    console.error("Submit application error:", error);
     if (error instanceof z.ZodError) {
       const e = error as any;
       return { success: false, error: e.errors?.[0]?.message || "Validation Error" };

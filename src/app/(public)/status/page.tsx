@@ -90,7 +90,7 @@ export default async function StatusPage({
                   <div className="flex flex-col md:flex-row gap-6 sm:gap-8 justify-between items-center bg-zinc-950/40 p-5 sm:p-6 rounded-2xl border border-white/5">
                     <div className="flex flex-col text-center md:text-left">
                       <span className="text-xs font-black uppercase tracking-widest text-zinc-600 mb-1">Applicant</span>
-                      <span className="text-xl sm:text-2xl font-bold text-white">{application.username}</span>
+                      <span className="text-xl sm:text-2xl font-bold text-white">{application.discord}</span>
                     </div>
                     
                     <div className="flex flex-col items-center">
