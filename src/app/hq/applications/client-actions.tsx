@@ -24,11 +24,9 @@ export function ApplicationActions({ app }: { app: any }) {
   return (
     <div className="flex gap-2 items-center">
       <Dialog>
-        <DialogTrigger asChild>
-          <Button size="sm" variant="outline" className="bg-white/5 border-white/10 hover:bg-white/10">
-            <Eye className="w-4 h-4 mr-2" />
-            View
-          </Button>
+        <DialogTrigger render={<Button size="sm" variant="outline" className="bg-white/5 border-white/10 hover:bg-white/10" />}>
+          <Eye className="w-4 h-4 mr-2" />
+          View
         </DialogTrigger>
         <DialogContent className="sm:max-w-[600px] bg-zinc-950 border-white/10 text-white">
           <DialogHeader>
