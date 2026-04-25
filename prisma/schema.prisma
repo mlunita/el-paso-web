@@ -210,3 +210,32 @@ model BanRequestAuditLog {
   details      String?
   createdAt    DateTime   @default(now())
 }
+
+// =====================================================
+// Admin Token-Based Authentication
+// =====================================================
+
+model AdminToken {
+  id          String          @id @default(cuid())
+  publicId    String          @unique // first half of token for O(1) lookup
+  name        String          // human-readable label, e.g. "Main Admin"
+  tokenHash   String          // bcrypt hash of the secret half
+  notes       String?
+  createdBy   String?         // who ran the script, e.g. "cli:root"
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  lastUsedAt  DateTime?
+  revokedAt   DateTime?
+  expiresAt   DateTime?
+  auditLogs   AdminAuditLog[]
+}
+
+model AdminAuditLog {
+  id        String     @id @default(cuid())
+  tokenId   String
+  token     AdminToken @relation(fields: [tokenId], references: [id], onDelete: Cascade)
+  action    String     // "LOGIN", "LOGIN_FAILED", "TOKEN_REVOKED", "TOKEN_REACTIVATED"
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime   @default(now())
+}

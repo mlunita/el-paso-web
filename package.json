@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "admin:token:create": "tsx scripts/create-admin-token.ts",
+    "admin:token:revoke": "tsx scripts/revoke-admin-token.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

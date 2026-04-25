@@ -1,20 +1,16 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Admin routes — protected by NextAuth JWT
-  if (pathname.startsWith("/admin")) {
-    const token = await getToken({ 
-      req: request, 
-      secret: process.env.NEXTAUTH_SECRET 
-    });
-    
-    // Validate existence and role
-    if (!token || token.role !== "admin") {
-      const loginUrl = new URL("/login", request.url);
+  // Admin routes — check admin_session cookie presence for routing
+  // Note: Full session validation (HMAC signature, expiry, DB token status)
+  // happens in server components/actions via requireAdminSession()
+  if (pathname.startsWith("/hq")) {
+    const adminSession = request.cookies.get("admin_session");
+    if (!adminSession?.value) {
+      const loginUrl = new URL("/hq-login", request.url);
       return NextResponse.redirect(loginUrl);
     }
     return NextResponse.next();
@@ -36,5 +32,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/mod/:path*"],
+  matcher: ["/hq/:path*", "/mod/:path*"],
 };

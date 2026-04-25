@@ -61,8 +61,8 @@ export async function createBanRequest(prevState: any, formData: FormData) {
 
     revalidatePath("/mod/ban-requests");
     revalidatePath("/mod");
-    revalidatePath("/admin/ban-requests");
-    revalidatePath("/admin");
+    revalidatePath("/hq/ban-requests");
+    revalidatePath("/hq");
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };
@@ -106,8 +106,8 @@ export async function createWikiItemAsMod(prevState: any, formData: FormData) {
 
     revalidatePath("/mod/wiki");
     revalidatePath("/wiki");
-    revalidatePath("/admin/wiki");
-    revalidatePath("/admin");
+    revalidatePath("/hq/wiki");
+    revalidatePath("/hq");
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };
@@ -142,8 +142,8 @@ export async function createPostAsMod(prevState: any, formData: FormData) {
 
     revalidatePath("/mod/posts");
     revalidatePath("/news");
-    revalidatePath("/admin/posts");
-    revalidatePath("/admin");
+    revalidatePath("/hq/posts");
+    revalidatePath("/hq");
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };
