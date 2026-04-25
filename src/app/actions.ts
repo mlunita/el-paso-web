@@ -36,8 +36,8 @@ export async function submitApplication(prevState: any, formData: FormData) {
   } catch (error: any) {
     console.error("Submit application error:", error);
     if (error instanceof z.ZodError) {
-      const e = error as any;
-      return { success: false, error: e.errors?.[0]?.message || "Validation Error" };
+      console.error("Zod Validation Errors:", JSON.stringify(error.issues, null, 2));
+      return { success: false, error: error.issues[0]?.message || "Validation Error" };
     }
     return { success: false, error: "Something went wrong. Please try again." };
   }

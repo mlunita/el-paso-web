@@ -56,7 +56,7 @@ export default async function ApplicationsPage() {
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <ApplicationActions id={app.id} currentStatus={app.status} />
+                  <ApplicationActions app={app} />
                 </TableCell>
               </TableRow>
             ))}
