@@ -32,14 +32,14 @@ export default async function ModPostsPage() {
       <div className="flex justify-between items-center mb-8 border-b border-white/20 pb-4">
         <div>
           <h1 className="text-3xl font-black flex items-center gap-3">
-            <FileText className="w-8 h-8 text-[#7ca982]" />
+            <FileText className="w-8 h-8 text-[var(--ep-secondary)]" />
             News Posts
           </h1>
           <p className="text-white/30 text-sm mt-1">Create news posts for the community</p>
         </div>
         <Link
           href="/mod/posts/create"
-          className="flex items-center gap-2 bg-[#7ca982] hover:bg-[#6b9471] text-white py-2 px-4 rounded-lg font-bold transition-colors"
+          className="flex items-center gap-2 bg-[var(--ep-secondary)] hover:bg-[#6b9471] text-white py-2 px-4 rounded-lg font-bold transition-colors"
         >
           <Plus className="w-4 h-4" />
           Create Post

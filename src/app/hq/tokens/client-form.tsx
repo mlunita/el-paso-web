@@ -8,17 +8,19 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Copy, Check, AlertTriangle } from "lucide-react";
+import { useI18n } from "@/components/i18n-provider";
 
 type RoleItem = { id: string; name: string };
 
 export function TokenForm({ roles }: { roles: RoleItem[] }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [state, formAction, pending] = useActionState(generateModeratorToken, null);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (state?.success && state.token) {
-      toast.success("Token generated! Copy it now — it won't be shown again.");
+      toast.success(t.admin.tokens.toastGenerated);
     } else if (state?.error) {
       toast.error(state.error);
     }
@@ -28,7 +30,7 @@ export function TokenForm({ roles }: { roles: RoleItem[] }) {
     if (state?.token) {
       navigator.clipboard.writeText(state.token);
       setCopied(true);
-      toast.success("Token copied to clipboard");
+      toast.success(t.admin.tokens.tokenCopied);
       setTimeout(() => setCopied(false), 3000);
     }
   };
@@ -43,8 +45,8 @@ export function TokenForm({ roles }: { roles: RoleItem[] }) {
               <Check className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-emerald-300">Token Generated Successfully</h3>
-              <p className="text-sm text-emerald-300/60">Copy this token now — it will never be shown again</p>
+              <h3 className="text-lg font-bold text-emerald-300">{t.admin.tokens.tokenGenerated}</h3>
+              <p className="text-sm text-emerald-300/60">{t.admin.tokens.copyNow}</p>
             </div>
           </div>
 
@@ -67,16 +69,16 @@ export function TokenForm({ roles }: { roles: RoleItem[] }) {
           <div className="flex items-start gap-2 bg-yellow-500/10 border border-yellow-500/15 rounded-lg p-3">
             <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
             <p className="text-xs text-yellow-300/80">
-              This token is hashed and cannot be recovered. If lost, you must generate a new one.
+              {t.admin.tokens.tokenWarning}
             </p>
           </div>
         </div>
 
         <Button
           onClick={() => router.push("/hq/tokens")}
-          className="bg-[#a67c52] hover:bg-[#956e47] text-white font-bold"
+          className="bg-[var(--ep-accent)] hover:bg-[#956e47] text-white font-bold"
         >
-          Done — Back to Tokens
+          {t.admin.tokens.doneBack}
         </Button>
       </div>
     );
@@ -85,43 +87,43 @@ export function TokenForm({ roles }: { roles: RoleItem[] }) {
   return (
     <form action={formAction} className="flex flex-col gap-6 max-w-2xl bg-zinc-950/50 p-6 rounded-xl border border-white/10">
       <div className="space-y-2">
-        <Label htmlFor="moderatorName" className="text-zinc-400 font-bold">Moderator Name</Label>
+        <Label htmlFor="moderatorName" className="text-zinc-400 font-bold">{t.admin.tokens.moderatorName}</Label>
         <Input
           id="moderatorName"
           name="moderatorName"
           required
           placeholder="e.g. John Doe"
-          className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+          className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="moderatorId" className="text-zinc-400 font-bold">Moderator ID</Label>
+        <Label htmlFor="moderatorId" className="text-zinc-400 font-bold">{t.admin.tokens.moderatorId}</Label>
         <Input
           id="moderatorId"
           name="moderatorId"
           required
           placeholder="e.g. discord:123456789 or roblox:12345"
-          className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+          className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
         />
-        <p className="text-xs text-white/30">Unique identifier for this moderator (Discord ID, Roblox ID, etc.)</p>
+        <p className="text-xs text-white/30">{t.admin.tokens.uniqueIdHint}</p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="roleId" className="text-zinc-400 font-bold">Assign Role</Label>
+        <Label htmlFor="roleId" className="text-zinc-400 font-bold">{t.admin.tokens.assignRole}</Label>
         <select
           id="roleId"
           name="roleId"
           required
-          className="w-full h-10 px-3 rounded-md bg-black/50 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#a67c52]/50"
+          className="w-full h-10 px-3 rounded-md bg-black/50 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[var(--ep-accent)]/50"
         >
-          <option value="">Select a role...</option>
+          <option value="">{t.admin.tokens.selectRole}</option>
           {roles.map((role) => (
             <option key={role.id} value={role.id}>{role.name}</option>
           ))}
         </select>
         {roles.length === 0 && (
-          <p className="text-xs text-red-400">No roles available. Create a role first.</p>
+          <p className="text-xs text-red-400">{t.admin.tokens.noRoles}</p>
         )}
       </div>
 
@@ -132,14 +134,14 @@ export function TokenForm({ roles }: { roles: RoleItem[] }) {
           variant="outline"
           className="flex-1 border-white/10 bg-transparent hover:bg-white/5"
         >
-          Cancel
+          {t.common.cancel}
         </Button>
         <Button
           type="submit"
           disabled={pending || roles.length === 0}
-          className="flex-1 bg-[#a67c52] hover:bg-[#956e47] text-white font-bold"
+          className="flex-1 bg-[var(--ep-accent)] hover:bg-[#956e47] text-white font-bold"
         >
-          {pending ? "Generating..." : "Generate Token"}
+          {pending ? t.admin.tokens.generating : t.admin.tokens.generateButton}
         </Button>
       </div>
     </form>

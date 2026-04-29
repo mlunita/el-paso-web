@@ -53,7 +53,7 @@ export function SupportEntryForm({ entry, categories }: SupportEntryFormProps) {
           required
           defaultValue={entry?.title}
           placeholder="e.g. Ticket response times"
-          className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+          className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
         />
       </div>
 
@@ -64,7 +64,7 @@ export function SupportEntryForm({ entry, categories }: SupportEntryFormProps) {
           name="slug"
           defaultValue={entry?.slug || ""}
           placeholder="Generated from the title if left blank"
-          className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+          className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
         />
         <p className="text-xs text-zinc-500">Used in the public URL.</p>
       </div>
@@ -77,7 +77,7 @@ export function SupportEntryForm({ entry, categories }: SupportEntryFormProps) {
             name="categoryId"
             required
             defaultValue={entry?.categoryId || categories[0]?.id || ""}
-            className="w-full h-10 px-3 rounded-md bg-black/50 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#a67c52]/50"
+            className="w-full h-10 px-3 rounded-md bg-black/50 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[var(--ep-accent)]/50"
           >
             {categories.map((category) => (
               <option key={category.id} value={category.id}>{category.name}</option>
@@ -93,7 +93,7 @@ export function SupportEntryForm({ entry, categories }: SupportEntryFormProps) {
             required
             defaultValue={entry?.authorName || ""}
             placeholder="e.g. Community Operations"
-            className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+            className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
           />
           <p className="text-xs text-zinc-500">This is stored as the exact public byline text.</p>
         </div>
@@ -106,7 +106,7 @@ export function SupportEntryForm({ entry, categories }: SupportEntryFormProps) {
             id="status"
             name="status"
             defaultValue={entry?.status || "DRAFT"}
-            className="w-full h-10 px-3 rounded-md bg-black/50 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#a67c52]/50"
+            className="w-full h-10 px-3 rounded-md bg-black/50 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[var(--ep-accent)]/50"
           >
             {SUPPORT_ENTRY_STATUS_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
@@ -120,7 +120,7 @@ export function SupportEntryForm({ entry, categories }: SupportEntryFormProps) {
             id="visibility"
             name="visibility"
             defaultValue={entry?.visibility || "PUBLIC"}
-            className="w-full h-10 px-3 rounded-md bg-black/50 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#a67c52]/50"
+            className="w-full h-10 px-3 rounded-md bg-black/50 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[var(--ep-accent)]/50"
           >
             {SUPPORT_ENTRY_VISIBILITY_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
@@ -136,7 +136,7 @@ export function SupportEntryForm({ entry, categories }: SupportEntryFormProps) {
             type="number"
             required
             defaultValue={entry?.order ?? 0}
-            className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+            className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
           />
         </div>
       </div>
@@ -148,7 +148,7 @@ export function SupportEntryForm({ entry, categories }: SupportEntryFormProps) {
           name="publishDate"
           type="datetime-local"
           defaultValue={toDateTimeLocal(entry?.publishedAt)}
-          className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+          className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
         />
         <p className="text-xs text-zinc-500">Optional. If the entry is published and this is blank, the current time will be used.</p>
       </div>
@@ -163,7 +163,7 @@ export function SupportEntryForm({ entry, categories }: SupportEntryFormProps) {
           id="featured"
           name="featured"
           defaultChecked={entry?.featured}
-          className="w-5 h-5 rounded border-white/10 bg-black/50 accent-[#a67c52]"
+          className="w-5 h-5 rounded border-white/10 bg-black/50 accent-[var(--ep-accent)]"
         />
         <Label htmlFor="featured" className="text-zinc-300 font-bold cursor-pointer">Feature this entry</Label>
       </div>
@@ -176,7 +176,7 @@ export function SupportEntryForm({ entry, categories }: SupportEntryFormProps) {
           required
           defaultValue={entry?.content}
           placeholder="Write the article, FAQ answer, or newsroom note here."
-          className="min-h-[260px] bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+          className="min-h-[260px] bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
         />
         <p className="text-xs text-zinc-500">Plain text is supported. Lines starting with `#` or `##` will render as headings on the public page.</p>
       </div>
@@ -185,7 +185,7 @@ export function SupportEntryForm({ entry, categories }: SupportEntryFormProps) {
         <Button onClick={() => router.push("/hq/support")} type="button" variant="outline" className="flex-1 border-white/10 bg-transparent hover:bg-white/5">
           Cancel
         </Button>
-        <Button type="submit" disabled={pending} className="flex-1 bg-[#a67c52] hover:bg-[#956e47] text-white font-bold">
+        <Button type="submit" disabled={pending} className="flex-1 bg-[var(--ep-accent)] hover:bg-[#956e47] text-white font-bold">
           {pending ? "Saving..." : "Save Entry"}
         </Button>
       </div>

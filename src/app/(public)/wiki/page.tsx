@@ -1,48 +1,50 @@
-import { prisma } from "@/lib/prisma";
+import type { Metadata } from "next";
 import { BookOpen } from "lucide-react";
+import { prisma } from "@/lib/prisma";
 import { WikiSections } from "./wiki-sections";
+import { SectionHeading } from "@/components/section-heading";
+import { getRequestLocale, getTranslations } from "@/lib/i18n/server";
+import { createLocalizedMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  const t = await getTranslations();
+
+  return createLocalizedMetadata({
+    locale,
+    path: "/wiki",
+    title: t.seo.pages.wiki.title,
+    description: t.seo.pages.wiki.description,
+    twitterCard: "summary",
+  });
+}
+
 export default async function WikiPage() {
-  let items: any[] = [];
-  try {
-    items = await prisma.wikiItem.findMany({
-      orderBy: [{ section: "asc" }, { order: "asc" }],
-    });
-  } catch (e) {
-    // ignore
-  }
+  const t = await getTranslations();
+  const items = await prisma.wikiItem.findMany({
+    orderBy: [{ section: "asc" }, { order: "asc" }],
+  }).catch(() => []);
 
   return (
-    <div className="flex flex-col gap-10 w-full">
-      <div className="flex flex-col mb-2 animate-fade-in-up">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-3 rounded-2xl bg-[#a67c52]/10 border border-[#a67c52]/20">
-            <BookOpen className="w-8 h-8 text-[#a67c52]" />
+    <div className="ep-section py-8 sm:py-12">
+      <div className="ep-section-inner">
+        <SectionHeading title={t.wiki.heading} subtitle={t.wiki.subtitle} icon={BookOpen} />
+
+        <WikiSections items={items} />
+
+        {items.length === 0 && (
+          <div className="ep-card rounded-2xl border-dashed min-h-[300px] flex flex-col items-center justify-center text-[var(--ep-text-muted)] gap-5 ep-fade-up">
+            <div className="relative">
+              <BookOpen className="w-14 h-14 text-[var(--ep-text-muted)] ep-float" />
+              <div className="absolute inset-0 bg-[var(--ep-accent)]/10 blur-2xl rounded-full" />
+            </div>
+            <span className="font-[family-name:var(--font-heading)] text-lg font-bold uppercase tracking-widest">{t.wiki.comingSoon}</span>
+            <p className="text-sm">{t.wiki.comingSoonSub}</p>
           </div>
-          <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#a67c52] via-[#c9a87c] to-[#a67c52]">
-            Wiki
-          </h1>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="h-[2px] w-12 bg-gradient-to-r from-[#a67c52] to-transparent rounded-full" />
-          <p className="text-zinc-500 text-lg">Everything you need to know about El Paso RP items.</p>
-        </div>
+        )}
       </div>
-
-      <WikiSections items={items} />
-
-      {items.length === 0 && (
-        <div className="w-full min-h-[300px] glass-card border-dashed rounded-3xl flex flex-col items-center justify-center text-zinc-500 gap-5 animate-fade-in-up">
-          <div className="relative">
-            <BookOpen className="w-16 h-16 text-zinc-700 animate-float" />
-            <div className="absolute inset-0 bg-[#a67c52]/10 blur-2xl rounded-full" />
-          </div>
-          <span className="text-xl font-medium uppercase tracking-widest">Wiki Coming Soon</span>
-          <p className="text-zinc-600 text-sm">Content is being added by the admins.</p>
-        </div>
-      )}
     </div>
   );
 }

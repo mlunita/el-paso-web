@@ -1,70 +1,89 @@
-import { Metadata, ResolvingMetadata } from "next";
+import type { Metadata } from "next";
 import Image from "next/image";
-import { Card } from "@/components/ui/card";
-import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import { ChevronRight, Gamepad2, Shield, Users, Zap } from "lucide-react";
+import { prisma } from "@/lib/prisma";
+import { getRequestLocale, getTranslations } from "@/lib/i18n/server";
+import { createLocalizedMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata(
-  { params }: any,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  const t = await getTranslations();
   const settings = await prisma.siteSettings.findFirst().catch(() => null);
+  const useDynamicCopy = locale === "en";
+  const title = useDynamicCopy && settings?.bannerTitle ? `${settings.bannerTitle} | El Paso RP` : t.seo.pages.home.title;
+  const description = useDynamicCopy && settings?.description ? settings.description : t.seo.pages.home.description;
 
-  const title = settings?.bannerTitle || "El Paso, Texas: Border Roleplay ";
-  const desc = settings?.description || "Best RP Game.";
-
-  // Use DB banner image if available, otherwise a default (handled by layout)
-  const imageUrl = settings?.bannerImage || "/logo.png";
-
-  return {
+  return createLocalizedMetadata({
+    locale,
+    path: "/",
     title,
-    description: desc,
-    openGraph: {
-      images: [imageUrl],
-    },
-    twitter: {
-      images: [imageUrl],
-    },
-  };
+    description,
+    image: settings?.bannerImage || "/logo.png",
+    imageAlt: t.seo.pages.home.imageAlt,
+  });
 }
 
 export default async function HomePage() {
-  let settings = null;
-  try {
-    settings = await prisma.siteSettings.findFirst();
-  } catch (e) {
-    // ignore
-  }
+  const locale = await getRequestLocale();
+  const t = await getTranslations();
+  const settings = await prisma.siteSettings.findFirst().catch(() => null);
+  const useDynamicCopy = locale === "en";
 
-  // Schema.org structured data (JSON-LD) for Server/Organization/WebSite
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "VideoGame",
-    "name": "El Paso, Texas: Border Roleplay",
-    "description": settings?.description || "Roblox, The Best Border Roleplay.",
-    "url": process.env.NEXT_PUBLIC_BASE_URL || "https://el-paso-web.vercel.app",
-    "playMode": "MultiPlayer",
-    "applicationCategory": "GameServer",
-    "inLanguage": ["en", "es"]
+    name: t.site.fullName,
+    description: useDynamicCopy && settings?.description ? settings.description : t.seo.pages.home.description,
+    url: process.env.NEXT_PUBLIC_BASE_URL || "https://elpaso-rp.com",
+    playMode: "MultiPlayer",
+    applicationCategory: "Game",
+    inLanguage: t.locale.htmlLang,
+    genre: "Roleplay",
+    gamePlatform: "Roblox",
   };
 
-  const SocialLinks = [
-    { name: "Discord", icon: <Image src="/discord.png" alt="Discord Server" width={56} height={56} className="object-contain filter invert" unoptimized />, color: "from-indigo-600 to-blue-500", glow: "rgba(99, 102, 241, 0.4)", link: settings?.socialDiscord || "https://discord.gg/elpaso" },
-    { name: "Roblox", icon: <Image src="/roblox.png" alt="Roblox Group" width={56} height={56} className="object-contain filter invert" unoptimized />, color: "from-zinc-700 to-zinc-900", glow: "rgba(39, 39, 42, 0.4)", link: settings?.socialTwitter || "https://www.roblox.com/es/games/109872214376771/El-Paso-Texas-Border-Roleplay" },
-    { name: "TikTok", icon: <Image src="/tiktok.png" alt="TikTok Profile" width={48} height={48} className="object-contain filter invert" unoptimized />, color: "from-rose-500 to-pink-600", glow: "rgba(244, 63, 94, 0.4)", link: settings?.socialYoutube || "https://www.tiktok.com/@elpasotexasoficial" },
+  const socialLinks = [
+    {
+      name: "Discord",
+      icon: "/discord.png",
+      color: "#5865F2",
+      link: settings?.socialDiscord || "https://discord.gg/elpaso",
+      label: t.home.social.discord,
+    },
+    {
+      name: "Roblox",
+      icon: "/roblox.png",
+      color: "#393b3d",
+      link: settings?.socialTwitter || "https://www.roblox.com/games/109872214376771/El-Paso-Texas-Border-Roleplay",
+      label: t.home.social.roblox,
+    },
+    {
+      name: "TikTok",
+      icon: "/tiktok.png",
+      color: "#ff0050",
+      link: settings?.socialYoutube || "https://www.tiktok.com/@elpasotexasoficial",
+      label: t.home.social.tiktok,
+    },
+  ];
+
+  const features = [
+    { icon: Gamepad2, title: t.home.features.immersive.title, description: t.home.features.immersive.description },
+    { icon: Users, title: t.home.features.community.title, description: t.home.features.community.description },
+    { icon: Shield, title: t.home.features.moderation.title, description: t.home.features.moderation.description },
+    { icon: Zap, title: t.home.features.updates.title, description: t.home.features.updates.description },
   ];
 
   return (
-    <main className="flex flex-col gap-8 sm:gap-10 w-full mb-12">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+    <main className="flex flex-col w-full">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      {/* HERO SECTION */}
-      <section aria-label="Hero Banner" className="relative w-full rounded-3xl min-h-[280px] sm:min-h-[350px] md:min-h-[450px] flex items-center justify-center flex-col shadow-2xl overflow-hidden group border border-white/10 border-b-[#a67c52]/30">
+      <section
+        aria-label={t.home.hero.aria}
+        className="relative w-full min-h-[85vh] sm:min-h-[90vh] flex items-center justify-center overflow-hidden"
+      >
         {settings?.bannerImage ? (
           <>
             <Image
@@ -72,116 +91,207 @@ export default async function HomePage() {
               fill
               priority
               sizes="100vw"
-              className="object-cover z-0"
-              alt="El Paso RP Banner"
+              className="object-cover"
+              alt={t.home.hero.bannerAlt}
             />
-            <div className="absolute inset-0 bg-black/60 z-0 backdrop-blur-[2px]" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[var(--ep-bg-deep)]/70 via-[var(--ep-bg-deep)]/40 to-[var(--ep-bg-deep)]" />
           </>
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-950/60 via-zinc-900/80 to-emerald-950/60 animate-gradient-shift z-0" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[var(--ep-bg-deep)] via-[var(--ep-bg-surface)] to-[var(--ep-bg-deep)]">
+            <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-[var(--ep-accent)]/[0.05] rounded-full blur-[120px]" />
+            <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-[var(--ep-secondary)]/[0.03] rounded-full blur-[100px]" />
+          </div>
         )}
-        <div className="absolute inset-0 opacity-[0.03] z-0" style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-[#a67c52]/15 blur-[120px] rounded-full pointer-events-none group-hover:bg-[#a67c52]/20 transition-all duration-1000 z-0" />
-        <div className="absolute -bottom-[20%] -right-[10%] w-[40%] h-[40%] bg-[#7ca982]/10 blur-[80px] rounded-full pointer-events-none z-0" />
 
-        <div className="relative z-10 flex flex-col items-center p-6 sm:p-8 text-center mt-6">
+        <div
+          className="absolute inset-0 opacity-[0.02]"
+          aria-hidden="true"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+          }}
+        />
+
+        <div className="relative z-10 flex flex-col items-center text-center px-4 sm:px-6 max-w-5xl mx-auto">
           <BadgePulse appsOpen={settings?.appsOpen ?? true} />
-          <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-8xl font-black mb-4 sm:mb-6 uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-zinc-500 drop-shadow-sm leading-[0.9]">
-            {settings?.bannerTitle || "WELCOME TO EL PASO"}
+
+          <h1 className="font-[family-name:var(--font-heading)] text-4xl sm:text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-black mb-6 uppercase tracking-tighter text-[var(--ep-text-primary)] leading-[0.9] ep-fade-up">
+            {useDynamicCopy && settings?.bannerTitle ? settings.bannerTitle : t.home.hero.defaultTitle}
           </h1>
-          <p className="text-base sm:text-lg md:text-xl font-medium text-zinc-400 max-w-2xl text-balance leading-relaxed">
-            {settings?.bannerSubtitle || "Your definitive roblox experience."}
+
+          <p
+            className="text-base sm:text-lg md:text-xl text-[var(--ep-text-secondary)] max-w-2xl text-balance leading-relaxed ep-fade-up"
+            style={{ animationDelay: "100ms" }}
+          >
+            {useDynamicCopy && settings?.bannerSubtitle ? settings.bannerSubtitle : t.home.hero.defaultSubtitle}
           </p>
-          <nav className="mt-8 sm:mt-10 flex gap-3 sm:gap-4 flex-wrap justify-center" aria-label="Primary CTA">
-            <Link href="/applys" className="group/btn relative px-6 sm:px-8 py-3 sm:py-4 bg-white text-black rounded-full font-bold uppercase tracking-wider hover:bg-zinc-100 transition-all duration-300 shadow-[0_0_40px_rgba(255,255,255,0.15)] hover:shadow-[0_0_60px_rgba(255,255,255,0.25)] hover:-translate-y-0.5 text-sm sm:text-base">
-              <span className="relative z-10">Join Now</span>
+
+          <nav
+            className="mt-8 sm:mt-10 flex gap-3 sm:gap-4 flex-wrap justify-center ep-fade-up"
+            style={{ animationDelay: "200ms" }}
+            aria-label={t.nav.mainNavigation}
+          >
+            <Link
+              href="/applys"
+              className="group inline-flex items-center gap-2 px-7 sm:px-8 py-3.5 sm:py-4 bg-[var(--ep-accent)] text-[var(--ep-bg-deep)] rounded-xl font-bold uppercase tracking-wider hover:bg-[var(--ep-accent-hover)] transition-all duration-300 shadow-lg shadow-[var(--ep-accent-glow)] hover:shadow-xl hover:shadow-[var(--ep-accent-glow)] hover:-translate-y-0.5 text-sm sm:text-base"
+            >
+              {t.home.cta.joinNow}
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
             </Link>
-            <Link href="/news" className="px-6 sm:px-8 py-3 sm:py-4 glass-card text-white rounded-full font-bold uppercase tracking-wider hover:bg-white/10 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#a67c52]/10 text-sm sm:text-base">
-              Read News
+            <Link
+              href="/news"
+              className="px-7 sm:px-8 py-3.5 sm:py-4 ep-card-glass text-[var(--ep-text-primary)] rounded-xl font-bold uppercase tracking-wider hover:bg-white/[0.06] transition-all duration-300 hover:-translate-y-0.5 text-sm sm:text-base"
+            >
+              {t.home.cta.readNews}
             </Link>
           </nav>
         </div>
+
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[var(--ep-bg-deep)] to-transparent" aria-hidden="true" />
       </section>
 
-      {/* SHORT DESC SECTION */}
-      <section aria-label="Community Overview" className="w-full bg-gradient-to-r from-[#a67c52]/10 via-[#7ca982]/10 to-[#a67c52]/10 backdrop-blur-sm border border-[#a67c52]/15 rounded-[2rem] p-6 sm:p-8 text-center text-base sm:text-lg md:text-xl font-medium text-amber-100/90 shadow-inner relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#a67c52]/5 to-transparent animate-shimmer pointer-events-none" />
-        <p className="relative z-10">
-          {settings?.description || "Join thousands of players connecting daily on our platform. Find groups, enter tournaments, and level up together."}
-        </p>
+      <section aria-label={t.home.overview.aria} className="ep-section">
+        <div className="ep-section-inner">
+          <div className="relative rounded-2xl p-8 sm:p-10 md:p-12 text-center overflow-hidden ep-card-glass">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[var(--ep-accent)]/[0.03] to-transparent ep-shimmer pointer-events-none" aria-hidden="true" />
+            <p className="relative z-10 text-lg sm:text-xl md:text-2xl font-medium text-[var(--ep-text-secondary)] leading-relaxed max-w-3xl mx-auto">
+              {useDynamicCopy && settings?.description ? settings.description : t.home.overview.fallback}
+            </p>
+          </div>
+        </div>
       </section>
 
-      {/* SOCIAL CARDS */}
-      <section aria-label="Social Links" className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 relative">
-        {SocialLinks.map((social, i) => (
-          <Link
-            href={social.link}
-            key={social.name}
-            className={`group block relative rounded-3xl p-[1px] bg-gradient-to-br ${social.color} opacity-85 hover:opacity-100 hover:-translate-y-2 transition-all duration-400`}
-            style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
-          >
-            <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" style={{ background: `radial-gradient(circle, ${social.glow}, transparent 70%)` }} />
-            <Card className="h-full bg-zinc-950/85 backdrop-blur-md border-0 text-white rounded-[1.4rem] p-6 sm:p-8 flex flex-col items-center justify-center gap-4 overflow-hidden relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.04] to-transparent z-0" />
-              <div className="text-5xl z-10 group-hover:scale-110 transition-transform duration-300 drop-shadow-md animate-float" style={{ animationDelay: `${i * 0.5}s` }}>
-                {social.icon}
-              </div>
-              <span className="text-lg font-bold uppercase tracking-[0.2em] z-10 text-zinc-300 group-hover:text-white transition-colors duration-300">{social.name}</span>
-            </Card>
-          </Link>
-        ))}
-      </section>
-
-      {/* BILINGUAL SEO CONTENT SECTION */}
-      <section aria-labelledby="seo-info-heading" className="flex flex-col gap-8 sm:gap-12 mt-8 sm:mt-12 mb-8 bg-zinc-950/40 rounded-3xl p-6 sm:p-8 md:p-12 border border-white/5">
-        <div className="text-center mb-4">
-          <h2 id="seo-info-heading" className="text-2xl sm:text-3xl md:text-4xl font-black uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#a67c52] to-[#7ca982] inline-block">
-            What is El Paso RP?
+      <section aria-labelledby="features-heading" className="ep-section py-8 sm:py-12">
+        <div className="ep-section-inner">
+          <h2 id="features-heading" className="sr-only">
+            {t.home.features.heading}
           </h2>
-          <p className="text-zinc-500 mt-2 font-medium tracking-wide">¿Qué es este juego RP?</p>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-8 sm:gap-12">
-          <article className="space-y-4">
-            <h3 className="text-xl font-bold text-white uppercase tracking-wider relative inline-block">
-              Welcome to the Border
-              <span className="absolute -bottom-2 left-0 w-1/2 h-1 bg-[#a67c52] rounded-full"></span>
-            </h3>
-            <p className="text-zinc-400 leading-relaxed text-sm md:text-base">
-              El Paso, Texas: Border Roleplay is a unique experience among thousands on Roblox, one of the best to enjoy, we have strong approval on the platform and recommendations from Roblox.
-            </p>
-            <p className="text-zinc-400 leading-relaxed text-sm md:text-base mt-2">
-              our game is one of the best rp experiences u can&apos;t miss, we also have our discord server, totally safe and available at all times.
-            </p>
-          </article>
-
-          <article className="space-y-4">
-            <h3 className="text-xl font-bold text-white uppercase tracking-wider relative inline-block">
-              Bienvenidos a la Frontera
-              <span className="absolute -bottom-2 left-0 w-1/2 h-1 bg-[#7ca982] rounded-full"></span>
-            </h3>
-            <p className="text-zinc-400 leading-relaxed text-sm md:text-base">
-              El Paso, Texas: Border Roleplay es una experiencia unica entre miles de roblox, de las mejores para disfrutar, contamos con buena aprobacion en la plataforma y recomendacion de roblox.
-            </p>
-            <p className="text-zinc-400 leading-relaxed text-sm md:text-base mt-2">
-              Nuestro Juego es una de las mejores experiencias rp que no te puedes perder, al igual contamos con nuestro servidor de discord, totalmente sano y disponible en todo momento.
-            </p>
-          </article>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            {features.map((feature, i) => {
+              const Icon = feature.icon;
+              return (
+                <div
+                  key={feature.title}
+                  className="ep-card group p-6 sm:p-7 ep-fade-up"
+                  style={{ animationDelay: `${i * 80}ms` }}
+                >
+                  <div className="w-11 h-11 rounded-xl bg-[var(--ep-accent-muted)] flex items-center justify-center mb-4 group-hover:bg-[var(--ep-accent)]/20 transition-colors duration-300">
+                    <Icon className="w-5 h-5 text-[var(--ep-accent)]" aria-hidden="true" />
+                  </div>
+                  <h3 className="font-[family-name:var(--font-heading)] text-base font-bold text-[var(--ep-text-primary)] mb-2 uppercase tracking-wide">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm text-[var(--ep-text-secondary)] leading-relaxed">
+                    {feature.description}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </section>
 
+      <section aria-label={t.home.social.aria} className="ep-section py-8 sm:py-12">
+        <div className="ep-section-inner">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+            {socialLinks.map((social, i) => (
+              <Link
+                href={social.link}
+                key={social.name}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group ep-card flex items-center gap-4 p-5 sm:p-6 ep-fade-up"
+                style={{ animationDelay: `${i * 80}ms` }}
+                aria-label={social.label}
+              >
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110"
+                  style={{ backgroundColor: `${social.color}20` }}
+                >
+                  <Image
+                    src={social.icon}
+                    alt={social.name}
+                    width={24}
+                    height={24}
+                    className="object-contain invert opacity-80"
+                    unoptimized
+                  />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="font-[family-name:var(--font-heading)] text-base font-bold text-[var(--ep-text-primary)] uppercase tracking-wider group-hover:text-[var(--ep-accent)] transition-colors duration-200">
+                    {social.name}
+                  </span>
+                  <span className="text-xs text-[var(--ep-text-muted)] tracking-wide">
+                    {t.home.social.joinCommunity}
+                  </span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-[var(--ep-text-muted)] ml-auto group-hover:text-[var(--ep-accent)] group-hover:translate-x-1 transition-all duration-200" aria-hidden="true" />
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="about-heading" className="ep-section">
+        <div className="ep-section-inner">
+          <div className="ep-card-elevated rounded-2xl p-8 sm:p-10 md:p-14">
+            <div className="text-center mb-8 sm:mb-12">
+              <h2
+                id="about-heading"
+                className="font-[family-name:var(--font-heading)] text-2xl sm:text-3xl md:text-4xl font-extrabold uppercase tracking-tight text-[var(--ep-text-primary)] inline-block"
+              >
+                {t.home.about.heading}
+              </h2>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8 sm:gap-12 md:gap-16">
+              <article className="space-y-4">
+                <h3 className="font-[family-name:var(--font-heading)] text-lg font-bold text-[var(--ep-text-primary)] uppercase tracking-wider relative inline-block">
+                  {t.home.about.col1.heading}
+                  <span className="absolute -bottom-2 left-0 w-12 h-[2px] bg-[var(--ep-accent)] rounded-full" aria-hidden="true" />
+                </h3>
+                <p className="text-[var(--ep-text-secondary)] leading-relaxed text-sm md:text-base">
+                  {t.home.about.col1.p1}
+                </p>
+                <p className="text-[var(--ep-text-secondary)] leading-relaxed text-sm md:text-base">
+                  {t.home.about.col1.p2}
+                </p>
+              </article>
+
+              <article className="space-y-4">
+                <h3 className="font-[family-name:var(--font-heading)] text-lg font-bold text-[var(--ep-text-primary)] uppercase tracking-wider relative inline-block">
+                  {t.home.about.col2.heading}
+                  <span className="absolute -bottom-2 left-0 w-12 h-[2px] bg-[var(--ep-secondary)] rounded-full" aria-hidden="true" />
+                </h3>
+                <p className="text-[var(--ep-text-secondary)] leading-relaxed text-sm md:text-base">
+                  {t.home.about.col2.p1}
+                </p>
+                <p className="text-[var(--ep-text-secondary)] leading-relaxed text-sm md:text-base">
+                  {t.home.about.col2.p2}
+                </p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
 
-function BadgePulse({ appsOpen }: { appsOpen: boolean }) {
+async function BadgePulse({ appsOpen }: { appsOpen: boolean }) {
+  const t = await getTranslations();
   return (
-    <div className="inline-flex items-center gap-2.5 px-4 py-1.5 mb-8 rounded-full glass-card text-sm font-medium text-zinc-300 animate-fade-in-up shadow-sm shadow-black/20">
-      <span className="relative flex h-2 w-2">
-        <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${appsOpen ? "bg-emerald-400" : "bg-red-400"} opacity-75`}></span>
-        <span className={`relative inline-flex rounded-full h-2 w-2 ${appsOpen ? "bg-emerald-500" : "bg-red-500"}`}></span>
+    <div className="inline-flex items-center gap-2.5 px-4 py-2 mb-8 rounded-full bg-[var(--ep-bg-surface)] border border-[var(--ep-border)] text-sm font-medium text-[var(--ep-text-secondary)] ep-fade-up shadow-lg shadow-black/20">
+      <span className="relative flex h-2 w-2" aria-hidden="true">
+        <span
+          className={`animate-ping absolute inline-flex h-full w-full rounded-full ${appsOpen ? "bg-[var(--ep-success)]" : "bg-[var(--ep-danger)]"} opacity-75`}
+        />
+        <span
+          className={`relative inline-flex rounded-full h-2 w-2 ${appsOpen ? "bg-[var(--ep-success)]" : "bg-[var(--ep-danger)]"}`}
+        />
       </span>
-      {appsOpen ? "Accepting Applications" : "Applications Closed"}
+      {appsOpen ? t.home.badge.open : t.home.badge.closed}
     </div>
   );
 }

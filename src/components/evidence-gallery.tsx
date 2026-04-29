@@ -31,7 +31,7 @@ export function EvidenceGallery({ evidence }: { evidence: Evidence[] }) {
               setLightboxUrl(item.url);
               setLightboxType(item.type);
             }}
-            className="group relative aspect-video rounded-xl overflow-hidden border border-white/10 hover:border-[#a67c52]/40 transition-all duration-300 bg-black/40"
+            className="group relative aspect-video rounded-xl overflow-hidden border border-white/10 hover:border-[var(--ep-accent)]/40 transition-all duration-300 bg-black/40"
           >
             {item.type === "IMAGE" ? (
               <Image

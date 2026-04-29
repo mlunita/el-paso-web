@@ -8,10 +8,11 @@ import {
 } from "lucide-react";
 import { ModLoader } from "@/components/mod-loader";
 import { useEffect, useState } from "react";
+import { useI18n } from "@/components/i18n-provider";
 
-// We fetch permissions from the server on mount
 export default function ModLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { t } = useI18n();
   const [modInfo, setModInfo] = useState<{
     modName: string;
     roleName: string;
@@ -28,10 +29,10 @@ export default function ModLayout({ children }: { children: React.ReactNode }) {
   }, []);
 
   const allLinks = [
-    { href: "/mod", label: "Dashboard", icon: LayoutDashboard, perm: "view_mod_panel" },
-    { href: "/mod/ban-requests", label: "Ban Requests", icon: AlertTriangle, perm: "create_ban_requests" },
-    { href: "/mod/wiki", label: "Wiki", icon: BookOpen, perm: "create_wiki_items" },
-    { href: "/mod/posts", label: "Posts", icon: FileText, perm: "create_posts" },
+    { href: "/mod", label: t.mod.nav.dashboard, icon: LayoutDashboard, perm: "view_mod_panel" },
+    { href: "/mod/ban-requests", label: t.mod.nav.banRequests, icon: AlertTriangle, perm: "create_ban_requests" },
+    { href: "/mod/wiki", label: t.mod.nav.wiki, icon: BookOpen, perm: "create_wiki_items" },
+    { href: "/mod/posts", label: t.mod.nav.posts, icon: FileText, perm: "create_posts" },
   ];
 
   const permissions = modInfo?.permissions || [];
@@ -45,33 +46,31 @@ export default function ModLayout({ children }: { children: React.ReactNode }) {
 
       <div
         className="min-h-screen flex text-white font-sans"
-        style={{ background: "linear-gradient(145deg, #060a08 0%, #0a0f0c 50%, #060a08 100%)" }}
+        style={{ background: "linear-gradient(145deg, var(--ep-bg-deep) 0%, #080d0b 50%, var(--ep-bg-deep) 100%)" }}
       >
         {/* Sidebar */}
         <aside
-          className="w-64 flex flex-col fixed h-full"
+          className="w-64 flex flex-col fixed h-full z-30"
           style={{
-            background:
-              "linear-gradient(180deg, rgba(12, 20, 15, 0.95) 0%, rgba(8, 12, 10, 0.98) 100%)",
-            borderRight: "1px solid rgba(124, 169, 130, 0.12)",
-            boxShadow: "4px 0 24px rgba(0,0,0,0.3)",
+            background: "linear-gradient(180deg, rgba(8, 14, 12, 0.97) 0%, rgba(6, 8, 10, 0.99) 100%)",
+            borderRight: "1px solid var(--ep-border)",
+            boxShadow: "4px 0 24px rgba(0,0,0,0.4)",
           }}
         >
           <div
             className="absolute top-0 right-0 w-[1px] h-full"
             style={{
-              background:
-                "linear-gradient(180deg, transparent, rgba(124,169,130,0.2) 30%, rgba(80,160,128,0.15) 70%, transparent)",
+              background: "linear-gradient(180deg, transparent, rgba(78,205,196,0.15) 30%, rgba(34,197,94,0.1) 70%, transparent)",
             }}
           />
 
           {/* Logo & Brand */}
-          <div className="p-5 pb-4 border-b border-white/[0.06]">
+          <div className="p-5 pb-4 border-b border-[var(--ep-border)]">
             <div className="flex items-center gap-3">
               <div className="relative w-10 h-10 flex-shrink-0">
                 <Image
                   src="/alamo-logo.png"
-                  alt="El Paso RP"
+                  alt={t.site.name}
                   width={40}
                   height={40}
                   className="rounded-lg drop-shadow-lg"
@@ -80,8 +79,8 @@ export default function ModLayout({ children }: { children: React.ReactNode }) {
                 <div className="absolute inset-0 rounded-lg ring-1 ring-white/10" />
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-sm font-black tracking-wider uppercase text-white/90 truncate">
-                  Mod Panel
+                <span className="font-[family-name:var(--font-heading)] text-sm font-bold tracking-wider uppercase text-white/90 truncate">
+                  {t.mod.panel}
                 </span>
                 <span className="text-[10px] font-medium tracking-widest uppercase text-white/30">
                   El Paso RP
@@ -89,16 +88,15 @@ export default function ModLayout({ children }: { children: React.ReactNode }) {
               </div>
             </div>
 
-            {/* Mod badge */}
-            <div className="mt-3 flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#7ca982]/10 border border-[#7ca982]/15">
-              <Shield className="w-3 h-3 text-[#7ca982]" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#7ca982]/80">
-                {modInfo?.roleName || "Moderator"}
+            <div className="mt-3 flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[var(--ep-secondary-muted)] border border-[var(--ep-secondary)]/20">
+              <Shield className="w-3 h-3 text-[var(--ep-secondary)]" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--ep-secondary)]">
+                {modInfo?.roleName || t.mod.defaultRole}
               </span>
             </div>
             {modInfo && (
               <p className="text-[10px] text-white/30 mt-2 truncate px-1">
-                Signed in as <span className="text-white/50 font-semibold">{modInfo.modName}</span>
+                {t.common.signedInAs(modInfo.modName)}
               </p>
             )}
           </div>
@@ -106,7 +104,7 @@ export default function ModLayout({ children }: { children: React.ReactNode }) {
           {/* Nav */}
           <nav className="flex-1 p-3 flex flex-col gap-1 overflow-y-auto">
             <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white/20">
-              Navigation
+              {t.mod.navSection}
             </div>
             {links.map((link, index) => {
               const Icon = link.icon;
@@ -115,17 +113,17 @@ export default function ModLayout({ children }: { children: React.ReactNode }) {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`admin-nav-slide group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
+                  className={`ep-nav-slide group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
                     isActive ? "text-white" : "text-white/40 hover:text-white/70"
                   }`}
-                  style={{ animationDelay: `${index * 60}ms` }}
+                  style={{ animationDelay: `${index * 50}ms` }}
                 >
                   {isActive && (
                     <div
                       className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full"
                       style={{
-                        background: "linear-gradient(180deg, #7ca982, #50a080)",
-                        boxShadow: "0 0 8px rgba(124,169,130,0.4)",
+                        background: "linear-gradient(180deg, #4ecdc4, #22c55e)",
+                        boxShadow: "0 0 8px rgba(78,205,196,0.4)",
                       }}
                     />
                   )}
@@ -133,16 +131,15 @@ export default function ModLayout({ children }: { children: React.ReactNode }) {
                     <div
                       className="absolute inset-0 rounded-xl"
                       style={{
-                        background:
-                          "linear-gradient(90deg, rgba(124,169,130,0.1) 0%, rgba(80,160,128,0.05) 100%)",
-                        border: "1px solid rgba(124,169,130,0.1)",
+                        background: "linear-gradient(90deg, rgba(78,205,196,0.1) 0%, rgba(34,197,94,0.05) 100%)",
+                        border: "1px solid rgba(78,205,196,0.1)",
                       }}
                     />
                   )}
                   <div className="absolute inset-0 rounded-xl bg-white/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                   <Icon
                     className={`relative z-10 w-[18px] h-[18px] transition-colors duration-200 ${
-                      isActive ? "text-[#7ca982]" : "group-hover:text-white/60"
+                      isActive ? "text-[var(--ep-secondary)]" : "group-hover:text-white/60"
                     }`}
                   />
                   <span
@@ -158,13 +155,13 @@ export default function ModLayout({ children }: { children: React.ReactNode }) {
           </nav>
 
           {/* Logout */}
-          <div className="p-3 border-t border-white/[0.06]">
+          <div className="p-3 border-t border-[var(--ep-border)]">
             <a
               href="/mod/logout"
               className="group flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-white/30 hover:text-red-400 transition-all duration-200 hover:bg-red-500/[0.06]"
             >
               <LogOut className="w-[18px] h-[18px] transition-transform duration-200 group-hover:-translate-x-0.5" />
-              <span className="text-[13px] font-semibold">Logout</span>
+              <span className="text-[13px] font-semibold">{t.mod.nav.logout}</span>
             </a>
           </div>
         </aside>
@@ -177,7 +174,7 @@ export default function ModLayout({ children }: { children: React.ReactNode }) {
               alt=""
               width={500}
               height={500}
-              className="admin-watermark"
+              className="ep-watermark"
               style={{ width: "auto", height: "auto", filter: "hue-rotate(80deg)" }}
               aria-hidden="true"
             />
@@ -187,16 +184,14 @@ export default function ModLayout({ children }: { children: React.ReactNode }) {
             className="relative z-10 rounded-2xl min-h-[calc(100vh-3rem)] p-8"
             style={{
               background: "rgba(255,255,255,0.02)",
-              border: "1px solid rgba(255,255,255,0.05)",
-              boxShadow:
-                "0 4px 40px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.03)",
+              border: "1px solid var(--ep-border)",
+              boxShadow: "0 4px 40px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.03)",
             }}
           >
             <div
               className="absolute top-0 left-8 right-8 h-[1px]"
               style={{
-                background:
-                  "linear-gradient(90deg, transparent, rgba(124,169,130,0.2) 30%, rgba(80,160,128,0.15) 70%, transparent)",
+                background: "linear-gradient(90deg, transparent, rgba(78,205,196,0.15) 30%, rgba(34,197,94,0.1) 70%, transparent)",
               }}
             />
             {children}

@@ -6,8 +6,10 @@ import Link from "next/link";
 import { Key, Plus } from "lucide-react";
 import { StatusBadge } from "@/components/status-badge";
 import { TokenActions } from "./client-actions";
+import { getTranslations } from "@/lib/i18n/server";
 
 export default async function TokensPage() {
+  const t = await getTranslations();
   const tokens = await prisma.moderatorToken.findMany({
     include: {
       role: true,
@@ -21,17 +23,17 @@ export default async function TokensPage() {
       <div className="flex justify-between items-center mb-8 border-b border-white/20 pb-4">
         <div>
           <h1 className="text-3xl font-black flex items-center gap-3">
-            <Key className="w-8 h-8 text-[#a67c52]" />
-            Moderator Tokens
+            <Key className="w-8 h-8 text-[var(--ep-accent)]" />
+            {t.admin.tokens.title}
           </h1>
-          <p className="text-white/30 text-sm mt-1">Generate and manage moderator access tokens</p>
+          <p className="text-white/30 text-sm mt-1">{t.admin.tokens.subtitle}</p>
         </div>
         <Link
           href="/hq/tokens/create"
-          className="flex items-center gap-2 bg-[#a67c52] hover:bg-[#956e47] text-white py-2 px-4 rounded-lg font-bold transition-colors"
+          className="flex items-center gap-2 bg-[var(--ep-accent)] hover:bg-[#956e47] text-white py-2 px-4 rounded-lg font-bold transition-colors"
         >
           <Plus className="w-4 h-4" />
-          Generate Token
+          {t.admin.tokens.generateButton}
         </Link>
       </div>
 
@@ -39,22 +41,22 @@ export default async function TokensPage() {
         <Table>
           <TableHeader className="bg-white/5">
             <TableRow className="border-white/10 hover:bg-transparent">
-              <TableHead className="text-white font-bold">Preview</TableHead>
-              <TableHead className="text-white font-bold">Moderator</TableHead>
-              <TableHead className="text-white font-bold">Mod ID</TableHead>
-              <TableHead className="text-white font-bold">Role</TableHead>
-              <TableHead className="text-white font-bold">Status</TableHead>
-              <TableHead className="text-white font-bold">Logins</TableHead>
-              <TableHead className="text-white font-bold">Bans</TableHead>
-              <TableHead className="text-white font-bold">Created</TableHead>
-              <TableHead className="text-white font-bold">Actions</TableHead>
+              <TableHead className="text-white font-bold">{t.common.preview}</TableHead>
+              <TableHead className="text-white font-bold">{t.admin.tokens.moderator}</TableHead>
+              <TableHead className="text-white font-bold">{t.admin.tokens.moderatorId}</TableHead>
+              <TableHead className="text-white font-bold">{t.common.role}</TableHead>
+              <TableHead className="text-white font-bold">{t.common.status}</TableHead>
+              <TableHead className="text-white font-bold">{t.admin.tokens.logins}</TableHead>
+              <TableHead className="text-white font-bold">{t.admin.tokens.bans}</TableHead>
+              <TableHead className="text-white font-bold">{t.common.created}</TableHead>
+              <TableHead className="text-white font-bold">{t.common.actions}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {tokens.length === 0 && (
               <TableRow className="border-white/10 hover:bg-white/5">
                 <TableCell colSpan={9} className="text-center py-8 text-white/50">
-                  No tokens generated yet.
+                  {t.admin.tokens.noTokens}
                 </TableCell>
               </TableRow>
             )}
@@ -68,7 +70,7 @@ export default async function TokensPage() {
                 <TableCell className="font-bold">{token.moderatorName}</TableCell>
                 <TableCell className="text-white/50 font-mono text-xs">{token.moderatorId}</TableCell>
                 <TableCell>
-                  <span className="text-[#c9a87c] font-semibold text-sm">{token.role.name}</span>
+                  <span className="text-[var(--ep-accent-hover)] font-semibold text-sm">{token.role.name}</span>
                 </TableCell>
                 <TableCell>
                   <StatusBadge status={token.status} />

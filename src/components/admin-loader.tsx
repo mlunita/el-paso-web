@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useI18n } from "@/components/i18n-provider";
 
 export function AdminLoader() {
+  const { t } = useI18n();
   const [visible, setVisible] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    // Start fade-out at 1.7s, giving 300ms for the fade animation
     const fadeTimer = setTimeout(() => setFadeOut(true), 1700);
-    // Fully remove at 2.2s (2s display + 200ms buffer for animation)
     const removeTimer = setTimeout(() => setVisible(false), 2200);
 
     return () => {
@@ -24,43 +24,42 @@ export function AdminLoader() {
   return (
     <div
       className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center ${
-        fadeOut ? "admin-loader-fadeout" : ""
+        fadeOut ? "ep-loader-fadeout" : ""
       }`}
       style={{
         background:
-          "radial-gradient(ellipse at center, rgba(30, 25, 20, 0.98) 0%, rgba(10, 10, 10, 0.99) 70%, rgba(0,0,0,1) 100%)",
+          "radial-gradient(ellipse at center, rgba(18, 16, 12, 0.98) 0%, rgba(6, 8, 10, 0.99) 70%, rgba(0,0,0,1) 100%)",
         backdropFilter: "blur(20px)",
       }}
     >
-      {/* Ambient glow behind logo */}
+      {/* Ambient glow */}
       <div
         className="absolute w-80 h-80 rounded-full"
         style={{
           background:
-            "radial-gradient(circle, rgba(166,124,82,0.15) 0%, rgba(124,169,130,0.08) 50%, transparent 70%)",
+            "radial-gradient(circle, rgba(232,164,74,0.12) 0%, rgba(78,205,196,0.06) 50%, transparent 70%)",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -55%)",
         }}
       />
 
-      {/* Pulsing ring 1 */}
+      {/* Pulsing rings */}
       <div
-        className="absolute w-48 h-48 rounded-full border-2 admin-loader-ring"
-        style={{ animationDelay: "0s" }}
+        className="absolute w-48 h-48 rounded-full border-2 ep-loader-ring"
+        style={{ animationDelay: "0s", borderColor: "var(--ep-accent)" }}
       />
-      {/* Pulsing ring 2 */}
       <div
-        className="absolute w-48 h-48 rounded-full border-2 admin-loader-ring"
-        style={{ animationDelay: "0.7s" }}
+        className="absolute w-48 h-48 rounded-full border-2 ep-loader-ring"
+        style={{ animationDelay: "0.7s", borderColor: "var(--ep-accent)" }}
       />
 
       {/* Logo */}
-      <div className="relative admin-loader-entrance">
-        <div className="admin-loader-breathe">
+      <div className="relative ep-loader-entrance">
+        <div className="ep-loader-breathe">
           <Image
             src="/alamo-logo.png"
-            alt="El Paso Texas Border"
+            alt={t.site.alamoLogoAlt}
             width={200}
             height={200}
             className="drop-shadow-2xl"
@@ -71,20 +70,20 @@ export function AdminLoader() {
       </div>
 
       {/* Text */}
-      <div className="mt-8 text-center admin-loader-entrance" style={{ animationDelay: "0.3s" }}>
-        <h2 className="text-white/90 text-sm font-bold uppercase tracking-[0.3em]">
-          Admin Panel
+      <div className="mt-8 text-center ep-loader-entrance" style={{ animationDelay: "0.3s" }}>
+        <h2 className="font-[family-name:var(--font-heading)] text-white/90 text-sm font-bold uppercase tracking-[0.3em]">
+          {t.admin.panel}
         </h2>
-        <p className="text-white/30 text-xs mt-1 tracking-widest">Loading...</p>
+        <p className="text-white/30 text-xs mt-1 tracking-widest">{t.common.loading}</p>
       </div>
 
       {/* Progress bar */}
       <div className="absolute bottom-0 left-0 w-full h-[2px] bg-white/5">
         <div
-          className="h-full admin-loader-bar"
+          className="h-full ep-loader-bar"
           style={{
             background:
-              "linear-gradient(90deg, transparent, #a67c52, #7ca982, transparent)",
+              "linear-gradient(90deg, transparent, var(--ep-accent), var(--ep-secondary), transparent)",
           }}
         />
       </div>

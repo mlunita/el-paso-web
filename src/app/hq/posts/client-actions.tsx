@@ -3,9 +3,11 @@
 import { togglePublishPost, deletePost } from "@/app/hq/actions";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/components/i18n-provider";
 
 export function PostActions({ id, published }: { id: string; published: boolean }) {
   const [isUpdating, setIsUpdating] = useState(false);
+  const { t } = useI18n();
 
   const handleToggle = async () => {
     setIsUpdating(true);
@@ -14,7 +16,7 @@ export function PostActions({ id, published }: { id: string; published: boolean 
   };
 
   const handleDelete = async () => {
-    if (confirm("Are you sure you want to delete this post?")) {
+    if (confirm(t.admin.posts.confirmDelete)) {
       setIsUpdating(true);
       await deletePost(id);
       setIsUpdating(false);
@@ -29,7 +31,7 @@ export function PostActions({ id, published }: { id: string; published: boolean 
         disabled={isUpdating}
         className={published ? "bg-yellow-600 hover:bg-yellow-500 text-white" : "bg-green-600 hover:bg-green-500 text-white"}
       >
-        {published ? "Unpublish" : "Publish"}
+        {published ? t.admin.posts.unpublish : t.admin.posts.publish}
       </Button>
       <Button 
         size="sm" 
@@ -37,7 +39,7 @@ export function PostActions({ id, published }: { id: string; published: boolean 
         disabled={isUpdating}
         className="bg-red-600 hover:bg-red-500 text-white"
       >
-        Delete
+        {t.common.delete}
       </Button>
     </div>
   );

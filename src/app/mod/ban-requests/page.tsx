@@ -34,7 +34,7 @@ export default async function ModBanRequestsPage() {
       <div className="flex justify-between items-center mb-8 border-b border-white/20 pb-4">
         <div>
           <h1 className="text-3xl font-black flex items-center gap-3">
-            <AlertTriangle className="w-8 h-8 text-[#7ca982]" />
+            <AlertTriangle className="w-8 h-8 text-[var(--ep-secondary)]" />
             My Ban Requests
           </h1>
           <p className="text-white/30 text-sm mt-1">Track your submitted ban requests and their status</p>
@@ -42,7 +42,7 @@ export default async function ModBanRequestsPage() {
         {session.permissions.includes("create_ban_requests") && (
           <Link
             href="/mod/ban-requests/create"
-            className="flex items-center gap-2 bg-[#7ca982] hover:bg-[#6b9471] text-white py-2 px-4 rounded-lg font-bold transition-colors"
+            className="flex items-center gap-2 bg-[var(--ep-secondary)] hover:bg-[#6b9471] text-white py-2 px-4 rounded-lg font-bold transition-colors"
           >
             <Plus className="w-4 h-4" />
             New Request
@@ -91,7 +91,7 @@ export default async function ModBanRequestsPage() {
                 <TableCell>
                   <Link
                     href={`/mod/ban-requests/${req.id}`}
-                    className="px-3 py-1.5 bg-[#7ca982]/80 hover:bg-[#7ca982] text-white text-xs font-medium rounded-md shadow-sm"
+                    className="px-3 py-1.5 bg-[var(--ep-secondary)]/80 hover:bg-[var(--ep-secondary)] text-white text-xs font-medium rounded-md shadow-sm"
                   >
                     View
                   </Link>

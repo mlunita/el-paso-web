@@ -101,7 +101,7 @@ export function WikiForm({ item }: { item?: any }) {
           required
           defaultValue={item?.title}
           placeholder="e.g. VIP Gamepass"
-          className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+          className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
         />
       </div>
 
@@ -113,7 +113,7 @@ export function WikiForm({ item }: { item?: any }) {
           required
           value={selectedSection}
           onChange={(e) => setSelectedSection(e.target.value)}
-          className="w-full h-10 px-3 rounded-md bg-black/50 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#a67c52]/50"
+          className="w-full h-10 px-3 rounded-md bg-black/50 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[var(--ep-accent)]/50"
         >
           {SECTIONS.map((s) => (
             <option key={s.value} value={s.value}>{s.label}</option>
@@ -129,7 +129,7 @@ export function WikiForm({ item }: { item?: any }) {
           required
           defaultValue={item?.description}
           placeholder="Describe this item..."
-          className="min-h-[120px] bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+          className="min-h-[120px] bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
         />
       </div>
 
@@ -141,7 +141,7 @@ export function WikiForm({ item }: { item?: any }) {
           value={imageUrl}
           onChange={(e) => setImageUrl(e.target.value)}
           placeholder="https://example.com/image.jpg"
-          className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+          className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
         />
         <p className={`text-xs ${imageInspection.issue ? "text-amber-300" : "text-zinc-500"}`}>
           {imageInspection.issue || "Use a permanent direct image URL. Discord media/share links with security tokens expire."}
@@ -161,7 +161,7 @@ export function WikiForm({ item }: { item?: any }) {
           type="number"
           required
           defaultValue={item?.order || 0}
-          className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+          className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
         />
       </div>
 
@@ -174,7 +174,7 @@ export function WikiForm({ item }: { item?: any }) {
             onChange={(e) => setTagInput(e.target.value)}
             onKeyDown={handleTagKeyDown}
             placeholder="Type a tag and press Enter..."
-            className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50 flex-1"
+            className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50 flex-1"
           />
           <Button type="button" onClick={addTag} variant="outline" className="border-white/10 bg-transparent hover:bg-white/5 px-3">
             <Plus className="w-4 h-4" />
@@ -185,7 +185,7 @@ export function WikiForm({ item }: { item?: any }) {
             {tags.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#a67c52]/20 text-[#c9a87c] text-xs font-semibold border border-[#a67c52]/20"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--ep-accent)]/20 text-[var(--ep-accent-hover)] text-xs font-semibold border border-[var(--ep-accent)]/20"
               >
                 {tag}
                 <button
@@ -225,7 +225,7 @@ export function WikiForm({ item }: { item?: any }) {
                   })
                 }
                 placeholder={field.placeholder}
-                className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+                className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
               />
             </div>
           ))}
@@ -236,7 +236,7 @@ export function WikiForm({ item }: { item?: any }) {
         <Button onClick={() => router.push("/hq/wiki")} type="button" variant="outline" className="flex-1 border-white/10 bg-transparent hover:bg-white/5">
           Cancel
         </Button>
-        <Button type="submit" disabled={pending} className="flex-1 bg-[#a67c52] hover:bg-[#956e47] text-white font-bold">
+        <Button type="submit" disabled={pending} className="flex-1 bg-[var(--ep-accent)] hover:bg-[#956e47] text-white font-bold">
           {pending ? "Saving..." : "Save Item"}
         </Button>
       </div>

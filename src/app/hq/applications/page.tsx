@@ -9,32 +9,35 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { getTranslations } from "@/lib/i18n/server";
+import { formatStatus } from "@/lib/i18n";
 
 export default async function ApplicationsPage() {
+  const t = await getTranslations();
   const applications = await prisma.application.findMany({
     orderBy: { createdAt: "desc" },
   });
 
   return (
     <div>
-      <h1 className="text-3xl font-black mb-8 border-b border-white/20 pb-4">Manage Applications</h1>
+      <h1 className="text-3xl font-black mb-8 border-b border-white/20 pb-4">{t.admin.applications.title}</h1>
       
       <div className="rounded-xl border border-white/10 overflow-hidden">
         <Table>
           <TableHeader className="bg-white/5">
             <TableRow className="border-white/10 hover:bg-transparent">
-              <TableHead className="text-white font-bold">Ref Code</TableHead>
-              <TableHead className="text-white font-bold">Discord</TableHead>
-              <TableHead className="text-white font-bold">Roblox</TableHead>
-              <TableHead className="text-white font-bold">Status</TableHead>
-              <TableHead className="text-white font-bold">Actions</TableHead>
+              <TableHead className="text-white font-bold">{t.admin.applications.refCode}</TableHead>
+              <TableHead className="text-white font-bold">{t.admin.applications.discord}</TableHead>
+              <TableHead className="text-white font-bold">{t.admin.applications.roblox}</TableHead>
+              <TableHead className="text-white font-bold">{t.common.status}</TableHead>
+              <TableHead className="text-white font-bold">{t.common.actions}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {applications.length === 0 && (
               <TableRow className="border-white/10 hover:bg-white/5">
                 <TableCell colSpan={5} className="text-center py-8 text-white/50">
-                  No applications found.
+                  {t.admin.applications.noApplications}
                 </TableCell>
               </TableRow>
             )}
@@ -52,7 +55,7 @@ export default async function ApplicationsPage() {
                     app.status === 'REVIEWED' ? 'bg-yellow-500/20 text-yellow-300' :
                     'bg-white/10 text-white'
                   }>
-                    {app.status}
+                    {formatStatus(app.status, t)}
                   </Badge>
                 </TableCell>
                 <TableCell>

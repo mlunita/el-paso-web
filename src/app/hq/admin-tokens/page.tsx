@@ -5,6 +5,8 @@ import {
 } from "@/components/ui/table";
 import { KeyRound } from "lucide-react";
 import { AdminTokenActions } from "./client-actions";
+import { getTranslations } from "@/lib/i18n/server";
+import { formatStatus } from "@/lib/i18n";
 
 function getTokenStatus(token: { revokedAt: Date | null; expiresAt: Date | null }) {
   if (token.revokedAt) return "REVOKED";
@@ -27,6 +29,7 @@ function statusColor(status: string) {
 
 export default async function AdminTokensPage() {
   await requireAdminSession();
+  const t = await getTranslations();
 
   const tokens = await prisma.adminToken.findMany({
     orderBy: { createdAt: "desc" },
@@ -38,10 +41,10 @@ export default async function AdminTokensPage() {
         <div>
           <h1 className="text-3xl font-black flex items-center gap-3">
             <KeyRound className="w-8 h-8 text-amber-500" />
-            Admin Tokens
+            {t.admin.adminTokens.title}
           </h1>
           <p className="text-white/30 text-sm mt-1">
-            Manage admin access tokens. Tokens can only be created via the CLI.
+            {t.admin.adminTokens.subtitle}
           </p>
         </div>
         <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10">
@@ -55,20 +58,20 @@ export default async function AdminTokensPage() {
         <Table>
           <TableHeader className="bg-white/5">
             <TableRow className="border-white/10 hover:bg-transparent">
-              <TableHead className="text-white font-bold">Name</TableHead>
-              <TableHead className="text-white font-bold">Status</TableHead>
-              <TableHead className="text-white font-bold">Created</TableHead>
-              <TableHead className="text-white font-bold">Last Used</TableHead>
-              <TableHead className="text-white font-bold">Expires</TableHead>
-              <TableHead className="text-white font-bold">Notes</TableHead>
-              <TableHead className="text-white font-bold">Actions</TableHead>
+              <TableHead className="text-white font-bold">{t.admin.adminTokens.name}</TableHead>
+              <TableHead className="text-white font-bold">{t.common.status}</TableHead>
+              <TableHead className="text-white font-bold">{t.common.created}</TableHead>
+              <TableHead className="text-white font-bold">{t.admin.adminTokens.lastUsed}</TableHead>
+              <TableHead className="text-white font-bold">{t.admin.adminTokens.expires}</TableHead>
+              <TableHead className="text-white font-bold">{t.common.notes}</TableHead>
+              <TableHead className="text-white font-bold">{t.common.actions}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {tokens.length === 0 && (
               <TableRow className="border-white/10 hover:bg-white/5">
                 <TableCell colSpan={7} className="text-center py-8 text-white/50">
-                  No admin tokens yet. Create one via the CLI.
+                  {t.admin.adminTokens.noTokens}
                 </TableCell>
               </TableRow>
             )}
@@ -79,7 +82,7 @@ export default async function AdminTokensPage() {
                   <TableCell className="font-bold">{token.name}</TableCell>
                   <TableCell>
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${statusColor(status)}`}>
-                      {status}
+                      {formatStatus(status, t)}
                     </span>
                   </TableCell>
                   <TableCell className="text-white/40 text-xs">
@@ -88,15 +91,15 @@ export default async function AdminTokensPage() {
                   <TableCell className="text-white/40 text-xs">
                     {token.lastUsedAt
                       ? new Date(token.lastUsedAt).toLocaleString()
-                      : "—"}
+                      : t.common.unavailable}
                   </TableCell>
                   <TableCell className="text-white/40 text-xs">
                     {token.expiresAt
                       ? new Date(token.expiresAt).toLocaleDateString()
-                      : "Never"}
+                      : t.common.never}
                   </TableCell>
                   <TableCell className="text-white/50 text-xs max-w-[200px] truncate">
-                    {token.notes || "—"}
+                    {token.notes || t.common.unavailable}
                   </TableCell>
                   <TableCell>
                     <AdminTokenActions id={token.id} status={status} />

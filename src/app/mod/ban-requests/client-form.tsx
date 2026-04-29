@@ -56,7 +56,7 @@ export function BanRequestForm() {
           name="targetUserId"
           required
           placeholder="e.g. roblox:12345678"
-          className="bg-black/50 border-white/10 focus-visible:ring-[#7ca982]/50"
+          className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-secondary)]/50"
         />
       </div>
 
@@ -67,7 +67,7 @@ export function BanRequestForm() {
           name="targetUsername"
           required
           placeholder="e.g. PlayerName123"
-          className="bg-black/50 border-white/10 focus-visible:ring-[#7ca982]/50"
+          className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-secondary)]/50"
         />
       </div>
 
@@ -78,7 +78,7 @@ export function BanRequestForm() {
           name="reason"
           required
           placeholder="Describe the reason for this ban request..."
-          className="min-h-[120px] bg-black/50 border-white/10 focus-visible:ring-[#7ca982]/50"
+          className="min-h-[120px] bg-black/50 border-white/10 focus-visible:ring-[var(--ep-secondary)]/50"
         />
       </div>
 
@@ -88,7 +88,7 @@ export function BanRequestForm() {
           id="notes"
           name="notes"
           placeholder="Any additional context..."
-          className="min-h-[80px] bg-black/50 border-white/10 focus-visible:ring-[#7ca982]/50"
+          className="min-h-[80px] bg-black/50 border-white/10 focus-visible:ring-[var(--ep-secondary)]/50"
         />
       </div>
 
@@ -109,7 +109,7 @@ export function BanRequestForm() {
               value={evidenceUrl}
               onChange={(e) => setEvidenceUrl(e.target.value)}
               placeholder="Paste URL..."
-              className="bg-black/50 border-white/10 focus-visible:ring-[#7ca982]/50 flex-1"
+              className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-secondary)]/50 flex-1"
             />
             <Button type="button" onClick={addEvidence} variant="outline" className="border-white/10 bg-transparent hover:bg-white/5 px-3">
               <Plus className="w-4 h-4" />
@@ -119,7 +119,7 @@ export function BanRequestForm() {
             value={evidenceCaption}
             onChange={(e) => setEvidenceCaption(e.target.value)}
             placeholder="Caption (optional)..."
-            className="bg-black/50 border-white/10 focus-visible:ring-[#7ca982]/50"
+            className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-secondary)]/50"
           />
 
           {evidence.length > 0 && (
@@ -152,9 +152,9 @@ export function BanRequestForm() {
       </div>
 
       {/* Info box */}
-      <div className="flex items-start gap-3 p-3 rounded-lg bg-[#7ca982]/10 border border-[#7ca982]/15">
-        <div className="w-2 h-2 rounded-full bg-[#7ca982] mt-1.5 flex-shrink-0" />
-        <p className="text-xs text-[#9fcba5]/80">
+      <div className="flex items-start gap-3 p-3 rounded-lg bg-[var(--ep-secondary)]/10 border border-[var(--ep-secondary)]/15">
+        <div className="w-2 h-2 rounded-full bg-[var(--ep-secondary)] mt-1.5 flex-shrink-0" />
+        <p className="text-xs text-[var(--ep-secondary)]/80">
           Your moderator identity will be automatically attached to this request.
           You cannot modify the submitter information.
         </p>
@@ -172,7 +172,7 @@ export function BanRequestForm() {
         <Button
           type="submit"
           disabled={pending}
-          className="flex-1 bg-[#7ca982] hover:bg-[#6b9471] text-white font-bold"
+          className="flex-1 bg-[var(--ep-secondary)] hover:bg-[#6b9471] text-white font-bold"
         >
           {pending ? "Submitting..." : "Submit Ban Request"}
         </Button>

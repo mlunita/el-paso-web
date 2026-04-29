@@ -28,7 +28,7 @@ export default async function WikiAdminPage() {
     <div>
       <div className="flex justify-between items-center mb-8 border-b border-white/20 pb-4">
         <h1 className="text-3xl font-black">Manage Wiki</h1>
-        <Link href="/hq/wiki/create" className="bg-[#a67c52] hover:bg-[#956e47] text-white py-2 px-4 rounded-lg font-bold transition-colors">Add Wiki Item</Link>
+        <Link href="/hq/wiki/create" className="bg-[var(--ep-accent)] hover:bg-[#956e47] text-white py-2 px-4 rounded-lg font-bold transition-colors">Add Wiki Item</Link>
       </div>
       
       <div className="rounded-xl border border-white/10 overflow-hidden">

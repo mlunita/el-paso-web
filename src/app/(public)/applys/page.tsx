@@ -1,60 +1,58 @@
+import type { Metadata } from "next";
+import { FileText } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { ApplyForm } from "./client-form";
-import { FileText } from "lucide-react";
+import { SectionHeading } from "@/components/section-heading";
+import { getRequestLocale, getTranslations } from "@/lib/i18n/server";
+import { createLocalizedMetadata } from "@/lib/seo";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  const t = await getTranslations();
+
+  return createLocalizedMetadata({
+    locale,
+    path: "/applys",
+    title: t.seo.pages.apply.title,
+    description: t.seo.pages.apply.description,
+    robots: { index: false, follow: true },
+  });
+}
 
 export default async function ApplyPage() {
-  let settings = null;
-
-  try {
-    settings = await prisma.siteSettings.findFirst();
-  } catch (e) {
-    // IGNORE
-  }
-
+  const t = await getTranslations();
+  const settings = await prisma.siteSettings.findFirst().catch(() => null);
   const applicationsOpen = settings ? settings.appsOpen : true;
 
   return (
-    <div className="flex flex-col gap-8 sm:gap-12 w-full">
-      <div className="text-center md:text-left mb-2 animate-fade-in-up">
-        <div className="flex items-center gap-3 justify-center md:justify-start mb-4">
-          <div className="p-3 rounded-2xl bg-[#a67c52]/10 border border-[#a67c52]/20">
-            <FileText className="w-8 h-8 text-[#a67c52]" />
+    <div className="ep-section py-8 sm:py-12">
+      <div className="ep-section-inner">
+        <SectionHeading title={t.apply.heading} subtitle={t.apply.subtitle} icon={FileText} />
+
+        <div className="max-w-3xl w-full mx-auto ep-fade-up" style={{ animationDelay: "100ms" }}>
+          <div className="ep-card-elevated rounded-2xl p-6 sm:p-8 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[var(--ep-accent)] via-[var(--ep-accent-hover)] to-[var(--ep-secondary)]" />
+            <div className="absolute -top-[30%] -right-[15%] w-[50%] h-[50%] bg-[var(--ep-accent)]/[0.03] blur-[80px] rounded-full pointer-events-none" />
+
+            <h2 className="font-[family-name:var(--font-heading)] text-2xl sm:text-3xl font-extrabold mb-4 uppercase tracking-wider text-[var(--ep-text-primary)] mt-2 flex items-center gap-3">
+              <div className="h-[2px] w-6 bg-[var(--ep-accent)] rounded-full" />
+              {t.apply.cardTitle}
+            </h2>
+            <p className="mb-6 sm:mb-8 text-[var(--ep-text-secondary)] font-medium line-clamp-2">
+              {applicationsOpen ? t.apply.cardDesc.open : t.apply.cardDesc.closed}
+            </p>
+
+            {applicationsOpen ? (
+              <ApplyForm />
+            ) : (
+              <div className="bg-[var(--ep-danger)]/5 p-8 sm:p-12 rounded-xl text-center border border-[var(--ep-danger)]/15">
+                <div className="font-[family-name:var(--font-heading)] text-3xl font-extrabold uppercase tracking-widest text-[var(--ep-danger)]/70">
+                  {t.apply.closed}
+                </div>
+                <p className="text-[var(--ep-danger)]/50 mt-4 font-medium">{t.apply.closedSub}</p>
+              </div>
+            )}
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#a67c52] via-[#c9a87c] to-[#a67c52]">
-            Apply Now
-          </h1>
-        </div>
-        <div className="flex items-center gap-3 justify-center md:justify-start">
-          <div className="h-[2px] w-12 bg-gradient-to-r from-[#a67c52] to-transparent rounded-full" />
-          <p className="text-zinc-500 text-base sm:text-lg">Think you have what it takes? Join our team.</p>
-        </div>
-      </div>
-
-      <div className="max-w-3xl w-full mx-auto animate-fade-in-up" style={{ animationDelay: "100ms" }}>
-        <div className="glass-card-strong rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-2xl shadow-black/30">
-          {/* Top gradient bar */}
-          <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#a67c52] via-[#c9a87c] to-[#7ca982]" />
-          {/* Corner glow */}
-          <div className="absolute -top-[30%] -right-[15%] w-[50%] h-[50%] bg-[#a67c52]/5 blur-[80px] rounded-full pointer-events-none" />
-
-          <h2 className="text-2xl sm:text-3xl font-black mb-4 uppercase tracking-wider text-white mt-2 flex items-center gap-3">
-            <div className="h-[2px] w-6 bg-[#a67c52] rounded-full" />
-            Join The Ranks
-          </h2>
-          <p className="mb-6 sm:mb-8 text-zinc-500 font-medium line-clamp-2">
-            {applicationsOpen
-              ? "We are currently looking for dedicated individuals. Think you have what it takes? Submit your application below."
-              : "The application window is currently closed. Keep an eye on the news for our next recruitment wave!"}
-          </p>
-
-          {applicationsOpen ? (
-            <ApplyForm />
-          ) : (
-            <div className="bg-red-500/5 p-8 sm:p-12 rounded-2xl text-center border border-red-500/15">
-              <div className="text-3xl font-black uppercase tracking-widest text-red-400/70">Closed</div>
-              <p className="text-red-300/50 mt-4 font-medium">Recruitment is frozen at this time.</p>
-            </div>
-          )}
         </div>
       </div>
     </div>

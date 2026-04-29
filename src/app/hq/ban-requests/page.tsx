@@ -45,7 +45,7 @@ export default async function BanRequestsPage({
       <div className="flex justify-between items-center mb-6 border-b border-white/20 pb-4">
         <div>
           <h1 className="text-3xl font-black flex items-center gap-3">
-            <AlertTriangle className="w-8 h-8 text-[#a67c52]" />
+            <AlertTriangle className="w-8 h-8 text-[var(--ep-accent)]" />
             Ban Requests
           </h1>
           <p className="text-white/30 text-sm mt-1">Review and manage all moderator ban requests</p>
@@ -82,7 +82,7 @@ export default async function BanRequestsPage({
         />
         <button
           type="submit"
-          className="h-9 px-4 rounded-lg bg-[#a67c52]/80 hover:bg-[#a67c52] text-white text-xs font-bold transition-colors flex items-center gap-1.5"
+          className="h-9 px-4 rounded-lg bg-[var(--ep-accent)]/80 hover:bg-[var(--ep-accent)] text-white text-xs font-bold transition-colors flex items-center gap-1.5"
         >
           <Search className="w-3.5 h-3.5" />
           Filter
@@ -135,7 +135,7 @@ export default async function BanRequestsPage({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <span className="text-[#c9a87c] font-semibold text-xs">{req.modRole}</span>
+                  <span className="text-[var(--ep-accent-hover)] font-semibold text-xs">{req.modRole}</span>
                 </TableCell>
                 <TableCell>
                   <StatusBadge status={req.status} />

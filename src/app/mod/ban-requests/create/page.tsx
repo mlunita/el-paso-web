@@ -20,7 +20,7 @@ export default async function CreateBanRequestPage() {
       <div className="mb-8 border-b border-white/20 pb-4">
         <h1 className="text-3xl font-black">Submit Ban Request</h1>
         <p className="text-white/30 text-sm mt-1">
-          Submitting as <span className="text-[#9fcba5] font-bold">{session.modName}</span> ({session.roleName})
+          Submitting as <span className="text-[var(--ep-secondary)] font-bold">{session.modName}</span> ({session.roleName})
         </p>
       </div>
       <BanRequestForm />

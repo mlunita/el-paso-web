@@ -9,9 +9,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useI18n } from "@/components/i18n-provider";
 
 export function PostForm({ post }: { post?: any }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [coverImage, setCoverImage] = useState(post?.coverImage || "");
 
   const updateFn = post ? updatePost.bind(null, post.id) : createPost;
@@ -19,7 +21,7 @@ export function PostForm({ post }: { post?: any }) {
 
   useEffect(() => {
     if (state?.success) {
-      toast.success(post ? "Post updated successfully" : "Post created successfully");
+      toast.success(post ? t.admin.posts.toastUpdated : t.admin.posts.toastCreated);
       router.push("/hq/posts");
     } else if (state?.error) {
       toast.error(state.error);
@@ -29,55 +31,55 @@ export function PostForm({ post }: { post?: any }) {
   return (
     <form action={formAction} className="flex flex-col gap-6 max-w-2xl bg-zinc-950/50 p-6 rounded-xl border border-white/10">
       <div className="space-y-2">
-        <Label htmlFor="title" className="text-zinc-400 font-bold">Post Title</Label>
+        <Label htmlFor="title" className="text-zinc-400 font-bold">{t.admin.posts.postTitle}</Label>
         <Input 
           id="title" 
           name="title" 
           required 
           defaultValue={post?.title} 
-          placeholder="Enter post title..." 
-          className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+          placeholder={t.admin.posts.placeholders.title}
+          className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="authorName" className="text-zinc-400 font-bold">Author Name</Label>
+        <Label htmlFor="authorName" className="text-zinc-400 font-bold">{t.admin.posts.authorName}</Label>
         <Input 
           id="authorName" 
           name="authorName" 
           required 
           defaultValue={post?.authorName} 
-          placeholder="Enter author name..." 
-          className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+          placeholder={t.admin.posts.placeholders.author}
+          className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="coverImage" className="text-zinc-400 font-bold">Cover Image URL</Label>
+        <Label htmlFor="coverImage" className="text-zinc-400 font-bold">{t.admin.posts.coverImage}</Label>
         <Input 
           id="coverImage" 
           name="coverImage" 
           value={coverImage} 
           onChange={(e) => setCoverImage(e.target.value)} 
           placeholder="https://example.com/image.jpg" 
-          className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+          className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
         />
         {coverImage && (
           <div className="mt-4 relative w-full h-48 rounded-lg overflow-hidden border border-white/10">
-            <Image src={coverImage} alt="Cover Preview" fill className="object-cover" unoptimized />
+            <Image src={coverImage} alt={t.admin.posts.coverPreview} fill className="object-cover" unoptimized />
           </div>
         )}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="content" className="text-zinc-400 font-bold">Post Content</Label>
+        <Label htmlFor="content" className="text-zinc-400 font-bold">{t.admin.posts.content}</Label>
         <Textarea 
           id="content" 
           name="content" 
           required 
           defaultValue={post?.content} 
-          placeholder="Write your content here..." 
-          className="min-h-[200px] bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+          placeholder={t.admin.posts.placeholders.content}
+          className="min-h-[200px] bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
         />
       </div>
 
@@ -87,17 +89,17 @@ export function PostForm({ post }: { post?: any }) {
           id="published" 
           name="published" 
           defaultChecked={post?.published} 
-          className="w-5 h-5 rounded border-white/10 bg-black/50 accent-[#a67c52]"
+          className="w-5 h-5 rounded border-white/10 bg-black/50 accent-[var(--ep-accent)]"
         />
-        <Label htmlFor="published" className="text-zinc-300 font-bold cursor-pointer">Publish immediately</Label>
+        <Label htmlFor="published" className="text-zinc-300 font-bold cursor-pointer">{t.admin.posts.publishImmediately}</Label>
       </div>
 
       <div className="pt-4 flex gap-4 border-t border-white/10">
         <Button onClick={() => router.push("/hq/posts")} type="button" variant="outline" className="flex-1 border-white/10 bg-transparent hover:bg-white/5">
-          Cancel
+          {t.common.cancel}
         </Button>
-        <Button type="submit" disabled={pending} className="flex-1 bg-[#a67c52] hover:bg-[#956e47] text-white font-bold">
-          {pending ? "Saving..." : "Save Post"}
+        <Button type="submit" disabled={pending} className="flex-1 bg-[var(--ep-accent)] hover:bg-[#956e47] text-white font-bold">
+          {pending ? t.common.saving : t.admin.posts.savePost}
         </Button>
       </div>
     </form>

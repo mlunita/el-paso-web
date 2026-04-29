@@ -56,7 +56,7 @@ export default async function SupportAdminPage() {
           <Link href="/hq/support/categories/create" className="bg-white/5 hover:bg-white/10 text-white py-2 px-4 rounded-lg font-bold transition-colors border border-white/10">
             Create Category
           </Link>
-          <Link href="/hq/support/entries/create" className="bg-[#a67c52] hover:bg-[#956e47] text-white py-2 px-4 rounded-lg font-bold transition-colors">
+          <Link href="/hq/support/entries/create" className="bg-[var(--ep-accent)] hover:bg-[#956e47] text-white py-2 px-4 rounded-lg font-bold transition-colors">
             Create Entry
           </Link>
         </div>
@@ -159,7 +159,7 @@ export default async function SupportAdminPage() {
                     <div className="flex flex-wrap gap-2">
                       <Badge className={getEntryStatusBadgeClass(entry.status)}>{entry.status}</Badge>
                       <Badge className={getEntryVisibilityBadgeClass(entry.visibility)}>{entry.visibility}</Badge>
-                      {entry.featured && <Badge className="bg-[#a67c52]/20 text-[#c9a87c]">FEATURED</Badge>}
+                      {entry.featured && <Badge className="bg-[var(--ep-accent)]/20 text-[var(--ep-accent-hover)]">FEATURED</Badge>}
                     </div>
                   </TableCell>
                   <TableCell className="text-zinc-400">

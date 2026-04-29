@@ -50,7 +50,7 @@ export function BanRequestStatusChanger({
       <select
         value={newStatus}
         onChange={(e) => setNewStatus(e.target.value)}
-        className="w-full h-10 px-3 rounded-md bg-black/50 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#a67c52]/50"
+        className="w-full h-10 px-3 rounded-md bg-black/50 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[var(--ep-accent)]/50"
       >
         {STATUS_OPTIONS.map((s) => (
           <option key={s} value={s}>{s.replace(/_/g, " ")}</option>
@@ -60,12 +60,12 @@ export function BanRequestStatusChanger({
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
         placeholder="Add review notes (optional)..."
-        className="min-h-[80px] bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+        className="min-h-[80px] bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
       />
       <Button
         onClick={handleStatusChange}
         disabled={loading || (newStatus === currentStatus && !notes)}
-        className="w-full bg-[#a67c52] hover:bg-[#956e47] text-white font-bold"
+        className="w-full bg-[var(--ep-accent)] hover:bg-[#956e47] text-white font-bold"
       >
         {loading ? "Updating..." : "Update Status"}
       </Button>
@@ -100,7 +100,7 @@ export function AddNoteForm({ requestId }: { requestId: string }) {
         value={note}
         onChange={(e) => setNote(e.target.value)}
         placeholder="Write an internal note..."
-        className="min-h-[60px] bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+        className="min-h-[60px] bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
       />
       <Button
         onClick={handleSubmit}

@@ -19,7 +19,7 @@ export default async function ModCreateWikiPage() {
       <div className="mb-8 border-b border-white/20 pb-4">
         <h1 className="text-3xl font-black">Create Wiki Item</h1>
         <p className="text-white/30 text-sm mt-1">
-          Creating as <span className="text-[#9fcba5] font-bold">{session.modName}</span>
+          Creating as <span className="text-[var(--ep-secondary)] font-bold">{session.modName}</span>
         </p>
       </div>
       <ModWikiForm />

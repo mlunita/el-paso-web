@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useI18n } from "@/components/i18n-provider";
 
 export function ModLoader() {
+  const { t } = useI18n();
   const [visible, setVisible] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
 
@@ -21,67 +23,66 @@ export function ModLoader() {
   return (
     <div
       className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center ${
-        fadeOut ? "admin-loader-fadeout" : ""
+        fadeOut ? "ep-loader-fadeout" : ""
       }`}
       style={{
         background:
-          "radial-gradient(ellipse at center, rgba(15, 25, 20, 0.98) 0%, rgba(8, 12, 10, 0.99) 70%, rgba(0,0,0,1) 100%)",
+          "radial-gradient(ellipse at center, rgba(10, 18, 15, 0.98) 0%, rgba(6, 8, 10, 0.99) 70%, rgba(0,0,0,1) 100%)",
         backdropFilter: "blur(20px)",
       }}
     >
-      {/* Ambient glow behind logo */}
+      {/* Ambient glow */}
       <div
         className="absolute w-80 h-80 rounded-full"
         style={{
           background:
-            "radial-gradient(circle, rgba(124,169,130,0.15) 0%, rgba(80,140,120,0.08) 50%, transparent 70%)",
+            "radial-gradient(circle, rgba(78,205,196,0.12) 0%, rgba(34,197,94,0.06) 50%, transparent 70%)",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -55%)",
         }}
       />
 
-      {/* Pulsing ring 1 */}
+      {/* Pulsing rings */}
       <div
-        className="absolute w-48 h-48 rounded-full border-2 mod-loader-ring"
-        style={{ animationDelay: "0s" }}
+        className="absolute w-48 h-48 rounded-full border-2 ep-loader-ring"
+        style={{ animationDelay: "0s", borderColor: "var(--ep-secondary)" }}
       />
-      {/* Pulsing ring 2 */}
       <div
-        className="absolute w-48 h-48 rounded-full border-2 mod-loader-ring"
-        style={{ animationDelay: "0.7s" }}
+        className="absolute w-48 h-48 rounded-full border-2 ep-loader-ring"
+        style={{ animationDelay: "0.7s", borderColor: "var(--ep-secondary)" }}
       />
 
       {/* Logo */}
-      <div className="relative admin-loader-entrance">
-        <div className="admin-loader-breathe" style={{ filter: "hue-rotate(80deg)" }}>
+      <div className="relative ep-loader-entrance">
+        <div className="ep-loader-breathe" style={{ "--ep-accent-glow": "rgba(78,205,196,0.25)" } as React.CSSProperties}>
           <Image
             src="/alamo-logo.png"
-            alt="El Paso Texas Border"
+            alt={t.site.alamoLogoAlt}
             width={200}
             height={200}
             className="drop-shadow-2xl"
-            style={{ width: "auto", height: "auto" }}
+            style={{ width: "auto", height: "auto", filter: "hue-rotate(80deg)" }}
             priority
           />
         </div>
       </div>
 
       {/* Text */}
-      <div className="mt-8 text-center admin-loader-entrance" style={{ animationDelay: "0.3s" }}>
-        <h2 className="text-white/90 text-sm font-bold uppercase tracking-[0.3em]">
-          Mod Panel
+      <div className="mt-8 text-center ep-loader-entrance" style={{ animationDelay: "0.3s" }}>
+        <h2 className="font-[family-name:var(--font-heading)] text-white/90 text-sm font-bold uppercase tracking-[0.3em]">
+          {t.mod.panel}
         </h2>
-        <p className="text-white/30 text-xs mt-1 tracking-widest">Loading...</p>
+        <p className="text-white/30 text-xs mt-1 tracking-widest">{t.common.loading}</p>
       </div>
 
       {/* Progress bar */}
       <div className="absolute bottom-0 left-0 w-full h-[2px] bg-white/5">
         <div
-          className="h-full admin-loader-bar"
+          className="h-full ep-loader-bar"
           style={{
             background:
-              "linear-gradient(90deg, transparent, #7ca982, #50a080, transparent)",
+              "linear-gradient(90deg, transparent, var(--ep-secondary), #22c55e, transparent)",
           }}
         />
       </div>

@@ -3,24 +3,25 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { SupportEntryCard } from "@/components/support-entry-card";
 import { getSupportHomeData } from "@/lib/support-data";
+import { getRequestLocale, getTranslations } from "@/lib/i18n/server";
+import { createLocalizedMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Support Archive",
-  description: "Browse official support notes, policies, and published updates for El Paso RP.",
-  alternates: {
-    canonical: "/support",
-  },
-  openGraph: {
-    title: "Support Archive",
-    description: "Browse official support notes, policies, and published updates for El Paso RP.",
-    url: "/support",
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  const t = await getTranslations();
+
+  return createLocalizedMetadata({
+    locale,
+    path: "/support",
+    title: t.seo.pages.support.title,
+    description: t.seo.pages.support.description,
+  });
+}
 
 export default async function SupportPage() {
+  const t = await getTranslations();
   const { latestEntries, featuredEntries, categories } = await getSupportHomeData();
 
   return (
@@ -28,20 +29,20 @@ export default async function SupportPage() {
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-10">
         <div className="space-y-5">
           <div className="max-w-2xl space-y-3">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#7a736b]">
-              Support and updates
+            <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[var(--ep-text-muted)]">
+              {t.support.tagline}
             </div>
-            <h1 className="text-3xl font-semibold tracking-tight text-[#171412] sm:text-4xl">
-              A quieter archive for official notes.
+            <h1 className="font-[family-name:var(--font-heading)] text-3xl font-bold tracking-tight text-[var(--ep-text-primary)] sm:text-4xl">
+              {t.support.heading}
             </h1>
-            <p className="text-[15px] leading-7 text-[#5f5751] sm:text-base">
-              Published answers, newsroom updates, and operational guidance live here in a calmer, more focused space than the main site.
+            <p className="text-[15px] leading-7 text-[var(--ep-text-secondary)] sm:text-base">
+              {t.support.desc}
             </p>
           </div>
 
           {latestEntries.length === 0 ? (
-            <div className="rounded-[1.75rem] border border-dashed border-black/10 bg-white/70 px-6 py-14 text-center text-[#6b635b]">
-              No public entries have been published yet.
+            <div className="rounded-2xl border border-dashed border-[var(--ep-border)] bg-[var(--ep-bg-surface)]/70 px-6 py-14 text-center text-[var(--ep-text-secondary)]">
+              {t.support.noEntries}
             </div>
           ) : (
             <div className="space-y-4">
@@ -55,8 +56,8 @@ export default async function SupportPage() {
         <aside className="space-y-5">
           {featuredEntries.length > 0 && (
             <section className="space-y-3">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#7a736b]">
-                Featured
+              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--ep-text-muted)]">
+                {t.support.featured}
               </div>
               <div className="space-y-3">
                 {featuredEntries.map((entry) => (
@@ -66,11 +67,11 @@ export default async function SupportPage() {
             </section>
           )}
 
-          <section className="rounded-[1.5rem] border border-black/8 bg-white p-5 sm:p-6">
+          <section className="rounded-2xl border border-[var(--ep-border)] bg-[var(--ep-bg-surface)] p-5 sm:p-6">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold text-[#171412]">Sections</h2>
-                <p className="mt-1 text-sm leading-6 text-[#6b635b]">Browse the archive by topic.</p>
+                <h2 className="font-[family-name:var(--font-heading)] text-lg font-bold text-[var(--ep-text-primary)]">{t.support.sections}</h2>
+                <p className="mt-1 text-sm leading-6 text-[var(--ep-text-secondary)]">{t.support.sectionsSub}</p>
               </div>
             </div>
 
@@ -79,15 +80,15 @@ export default async function SupportPage() {
                 <Link
                   key={category.id}
                   href={`/support/${category.slug}`}
-                  className="group flex min-h-12 items-start justify-between gap-4 rounded-2xl border border-black/8 px-4 py-3 transition-colors hover:border-black/15 hover:bg-black/[0.02]"
+                  className="group flex min-h-12 items-start justify-between gap-4 rounded-xl border border-[var(--ep-border)] px-4 py-3 transition-colors hover:border-[var(--ep-border-accent)] hover:bg-[var(--ep-bg-hover)]"
                 >
                   <div className="min-w-0">
-                    <div className="text-sm font-semibold text-[#171412]">{category.name}</div>
-                    <div className="mt-1 text-sm leading-6 text-[#6b635b]">
-                      {category.description || category.latestEntry?.title || "Published notes are available in this section."}
+                    <div className="text-sm font-semibold text-[var(--ep-text-primary)]">{category.name}</div>
+                    <div className="mt-1 text-sm leading-6 text-[var(--ep-text-secondary)]">
+                      {category.description || category.latestEntry?.title || t.support.fallbackCategoryDescription}
                     </div>
                   </div>
-                  <ArrowUpRight className="mt-0.5 h-4 w-4 shrink-0 text-[#7a736b] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                  <ArrowUpRight className="mt-0.5 h-4 w-4 shrink-0 text-[var(--ep-text-muted)] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                 </Link>
               ))}
             </div>

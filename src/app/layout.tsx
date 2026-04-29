@@ -1,56 +1,59 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Outfit, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
-import { StarBackground } from "@/components/star-background";
+import { AmbientBackground } from "@/components/ambient-background";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { ThemeProvider } from "@/components/theme-provider";
+import { I18nProvider } from "@/components/i18n-provider";
+import { CookieBanner } from "@/components/cookie-banner";
+import { getRequestLocale } from "@/lib/i18n/server";
+import { createRootMetadata } from "@/lib/seo";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-heading",
+  weight: ["400", "500", "600", "700", "800", "900"],
+});
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  weight: ["400", "500", "700"],
+});
 
-export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://elpaso-rp.com'),
-  title: {
-    default: "El Paso, Texas: Border Roleplay | Roblox Frontera RP",
-    template: "%s | El Paso RP"
-  },
-  description: "Join the premier bilingual Mexico-USA border roleplay experience on Roblox. Experience realistic RP as law enforcement, cartel, or civilian in El Paso & Ciudad Juárez.",
-  keywords: ["Mexico USA border RP", "El Paso roleplay game", "Roblox RP frontera", "bilingual roleplay server", "Roblox roleplay", "cartel RP", "border patrol RP"],
-  authors: [{ name: "El Paso RP Community" }],
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    alternateLocale: "es_MX",
-    url: "/",
-    siteName: "El Paso, Texas: Border Roleplay",
-    title: "El Paso, Texas: Border Roleplay | Roblox Frontera RP",
-    description: "Join the premier bilingual Mexico-USA border roleplay experience on Roblox. Experience realistic RP as law enforcement, cartel, or civilian.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "El Paso, Texas: Border Roleplay | Roblox Frontera RP",
-    description: "Join the premier bilingual Mexico-USA border roleplay experience on Roblox.",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return createRootMetadata(await getRequestLocale());
+}
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getRequestLocale();
+
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.className} bg-black min-h-screen text-slate-100 antialiased`}>
-        {/* Starfield behind everything */}
-        <StarBackground />
-        {/* Subtle global gradient overlay for depth */}
-        <div className="fixed inset-0 bg-gradient-to-b from-amber-950/15 via-transparent to-emerald-950/8 pointer-events-none" style={{ zIndex: 1 }} />
-        <div className="relative" style={{ zIndex: 2 }}>
-          {children}
-        </div>
-        <Toaster />
-        <Analytics />
-        <SpeedInsights />
+    <html lang={locale} suppressHydrationWarning>
+      <body className={`${inter.variable} ${outfit.variable} ${jetbrainsMono.variable} font-sans bg-[var(--ep-bg-deep)] min-h-screen text-[var(--ep-text-primary)] antialiased transition-colors duration-300`}>
+        <I18nProvider initialLocale={locale}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange={false}
+          >
+            <AmbientBackground />
+            <div className="relative" style={{ zIndex: 2 }}>
+              {children}
+            </div>
+            <CookieBanner />
+            <Toaster />
+            <Analytics />
+            <SpeedInsights />
+          </ThemeProvider>
+        </I18nProvider>
       </body>
     </html>
   );

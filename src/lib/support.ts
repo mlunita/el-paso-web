@@ -36,12 +36,12 @@ export function getSupportPublishedDate(entry: { publishedAt?: Date | string | n
   return entry.publishedAt || entry.createdAt;
 }
 
-export function getSupportByline(entry: { authorName?: string | null }) {
-  return entry.authorName?.trim() || "El Paso RP Team";
+export function getSupportByline(entry: { authorName?: string | null }, fallback = "El Paso RP Team") {
+  return entry.authorName?.trim() || fallback;
 }
 
-export function formatSupportDate(value: Date | string) {
-  return new Intl.DateTimeFormat("en-US", {
+export function formatSupportDate(value: Date | string, locale = "en") {
+  return new Intl.DateTimeFormat(locale === "es" ? "es-MX" : "en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",

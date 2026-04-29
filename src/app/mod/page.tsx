@@ -3,8 +3,10 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { AlertTriangle, CheckCircle, Clock, XCircle, Shield } from "lucide-react";
+import { getTranslations } from "@/lib/i18n/server";
 
 export default async function ModDashboard() {
+  const t = await getTranslations();
   const session = await getModSession();
   if (!session) redirect("/mod-login");
 
@@ -17,52 +19,52 @@ export default async function ModDashboard() {
 
   const stats = [
     {
-      label: "Total Requests",
+      label: t.mod.dashboard.stats.totalRequests,
       count: totalRequests,
       icon: AlertTriangle,
-      gradient: "linear-gradient(135deg, #7ca982 0%, #5d8a63 100%)",
-      shadow: "rgba(124,169,130,0.25)",
+      gradient: "linear-gradient(135deg, #4ecdc4 0%, #36b3aa 100%)",
+      shadow: "rgba(78,205,196,0.3)",
     },
     {
-      label: "Pending",
+      label: t.mod.dashboard.stats.pending,
       count: pendingCount,
       icon: Clock,
-      gradient: "linear-gradient(135deg, #d97706 0%, #b45309 100%)",
-      shadow: "rgba(217,119,6,0.25)",
+      gradient: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+      shadow: "rgba(245,158,11,0.3)",
     },
     {
-      label: "Approved",
+      label: t.mod.dashboard.stats.approved,
       count: approvedCount,
       icon: CheckCircle,
-      gradient: "linear-gradient(135deg, #059669 0%, #047857 100%)",
-      shadow: "rgba(5,150,105,0.25)",
+      gradient: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+      shadow: "rgba(34,197,94,0.3)",
     },
     {
-      label: "Rejected",
+      label: t.mod.dashboard.stats.rejected,
       count: rejectedCount,
       icon: XCircle,
-      gradient: "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)",
-      shadow: "rgba(220,38,38,0.25)",
+      gradient: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+      shadow: "rgba(239,68,68,0.3)",
     },
   ];
 
   return (
     <div>
-      <div className="mb-8 pb-6 border-b border-white/[0.06]">
-        <h1 className="text-3xl font-black tracking-tight">
-          Welcome back,{" "}
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#7ca982] to-[#50a080]">
+      <div className="mb-8 pb-6 border-b border-[var(--ep-border)]">
+        <h1 className="font-[family-name:var(--font-heading)] text-3xl font-extrabold tracking-tight">
+          {t.mod.dashboard.welcome("")}{" "}
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--ep-secondary)] to-emerald-400">
             {session.modName}
           </span>
         </h1>
         <div className="flex items-center gap-3 mt-2">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#7ca982]/10 border border-[#7ca982]/15">
-            <Shield className="w-3 h-3 text-[#7ca982]" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#7ca982]/80">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--ep-secondary-muted)] border border-[var(--ep-secondary)]/15">
+            <Shield className="w-3 h-3 text-[var(--ep-secondary)]" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--ep-secondary)]">
               {session.roleName}
             </span>
           </div>
-          <span className="text-white/20 text-sm">ID: {session.modId}</span>
+          <span className="text-white/20 text-sm">{t.common.id(session.modId)}</span>
         </div>
       </div>
 
@@ -73,7 +75,7 @@ export default async function ModDashboard() {
           return (
             <Card
               key={stat.label}
-              className="admin-card-enter group relative border-0 text-white p-0 rounded-2xl overflow-hidden cursor-default"
+              className="ep-card-enter group relative border-0 text-white p-0 rounded-2xl overflow-hidden cursor-default"
               style={{
                 animationDelay: `${index * 80}ms`,
                 background: stat.gradient,
@@ -89,7 +91,7 @@ export default async function ModDashboard() {
                 >
                   <Icon className="w-5 h-5 text-white/90" />
                 </div>
-                <div className="text-4xl font-black tabular-nums">{stat.count}</div>
+                <div className="text-4xl font-extrabold tabular-nums">{stat.count}</div>
                 <div className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-60">
                   {stat.label}
                 </div>
@@ -100,15 +102,15 @@ export default async function ModDashboard() {
       </div>
 
       {/* Permissions overview */}
-      <div className="p-5 rounded-xl bg-white/[0.03] border border-white/10">
-        <h2 className="text-sm font-bold text-white/50 uppercase tracking-wider mb-3">
-          Your Permissions
+      <div className="p-5 rounded-xl bg-white/[0.03] border border-[var(--ep-border)]">
+        <h2 className="font-[family-name:var(--font-heading)] text-sm font-bold text-white/50 uppercase tracking-wider mb-3">
+          {t.mod.dashboard.permissions}
         </h2>
         <div className="flex flex-wrap gap-2">
           {session.permissions.map((perm) => (
             <span
               key={perm}
-              className="inline-flex items-center px-3 py-1.5 rounded-lg bg-[#7ca982]/15 text-[#9fcba5] text-xs font-semibold border border-[#7ca982]/15"
+              className="inline-flex items-center px-3 py-1.5 rounded-lg bg-[var(--ep-secondary-muted)] text-[var(--ep-secondary)] text-xs font-semibold border border-[var(--ep-secondary)]/15"
             >
               {perm.replace(/_/g, " ")}
             </span>

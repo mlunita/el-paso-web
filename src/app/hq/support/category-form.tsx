@@ -34,7 +34,7 @@ export function SupportCategoryForm({ category }: { category?: any }) {
           required
           defaultValue={category?.name}
           placeholder="e.g. Account Help"
-          className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+          className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
         />
       </div>
 
@@ -45,7 +45,7 @@ export function SupportCategoryForm({ category }: { category?: any }) {
           name="slug"
           defaultValue={category?.slug || ""}
           placeholder="Generated from the category name if left blank"
-          className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+          className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
         />
         <p className="text-xs text-zinc-500">Used in the public URL.</p>
       </div>
@@ -57,7 +57,7 @@ export function SupportCategoryForm({ category }: { category?: any }) {
           name="description"
           defaultValue={category?.description || ""}
           placeholder="A short, quiet description for the section."
-          className="min-h-[120px] bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+          className="min-h-[120px] bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
         />
       </div>
 
@@ -68,7 +68,7 @@ export function SupportCategoryForm({ category }: { category?: any }) {
             id="visibility"
             name="visibility"
             defaultValue={category?.visibility || "PUBLIC"}
-            className="w-full h-10 px-3 rounded-md bg-black/50 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#a67c52]/50"
+            className="w-full h-10 px-3 rounded-md bg-black/50 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[var(--ep-accent)]/50"
           >
             {SUPPORT_CATEGORY_VISIBILITY_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
@@ -84,7 +84,7 @@ export function SupportCategoryForm({ category }: { category?: any }) {
             type="number"
             required
             defaultValue={category?.order ?? 0}
-            className="bg-black/50 border-white/10 focus-visible:ring-[#a67c52]/50"
+            className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
           />
         </div>
       </div>
@@ -93,7 +93,7 @@ export function SupportCategoryForm({ category }: { category?: any }) {
         <Button onClick={() => router.push("/hq/support")} type="button" variant="outline" className="flex-1 border-white/10 bg-transparent hover:bg-white/5">
           Cancel
         </Button>
-        <Button type="submit" disabled={pending} className="flex-1 bg-[#a67c52] hover:bg-[#956e47] text-white font-bold">
+        <Button type="submit" disabled={pending} className="flex-1 bg-[var(--ep-accent)] hover:bg-[#956e47] text-white font-bold">
           {pending ? "Saving..." : "Save Category"}
         </Button>
       </div>

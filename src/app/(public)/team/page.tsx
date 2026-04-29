@@ -1,42 +1,38 @@
-import { prisma } from "@/lib/prisma";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type { Metadata } from "next";
 import { Users } from "lucide-react";
+import { prisma } from "@/lib/prisma";
 import { TeamSections } from "./team-sections";
+import { SectionHeading } from "@/components/section-heading";
+import { getRequestLocale, getTranslations } from "@/lib/i18n/server";
+import { createLocalizedMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export default async function OurTeamPage() {
-  let staff: any[] = [];
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  const t = await getTranslations();
 
-  try {
-    staff = await prisma.staffMember.findMany({
-      orderBy: { order: "asc" },
-    });
-  } catch (e) {
-    // ignore
-  }
+  return createLocalizedMetadata({
+    locale,
+    path: "/team",
+    title: t.seo.pages.team.title,
+    description: t.seo.pages.team.description,
+    twitterCard: "summary",
+  });
+}
+
+export default async function OurTeamPage() {
+  const t = await getTranslations();
+  const staff = await prisma.staffMember.findMany({
+    orderBy: { order: "asc" },
+  }).catch(() => []);
 
   return (
-    <div className="flex flex-col gap-8 sm:gap-12 w-full">
-      {/* Header */}
-      <div className="text-center mb-2 animate-fade-in-up">
-        <div className="flex items-center gap-3 justify-center mb-4">
-          <div className="p-3 rounded-2xl bg-[#a67c52]/10 border border-[#a67c52]/20">
-            <Users className="w-8 h-8 text-[#a67c52]" />
-          </div>
-          <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#a67c52] via-[#c9a87c] to-[#a67c52]">
-            Our Team
-          </h1>
-        </div>
-        <div className="flex items-center gap-3 justify-center">
-          <div className="h-[2px] w-12 bg-gradient-to-r from-transparent via-[#a67c52] to-transparent rounded-full" />
-        </div>
-        <p className="text-zinc-500 text-lg mt-3 max-w-xl mx-auto">
-          The dedicated people keeping El Paso RP safe. Meet the faces behind the community.
-        </p>
+    <div className="ep-section py-8 sm:py-12">
+      <div className="ep-section-inner">
+        <SectionHeading title={t.team.heading} subtitle={t.team.subtitle} icon={Users} align="center" />
+        <TeamSections staff={staff} />
       </div>
-
-      <TeamSections staff={staff} />
     </div>
   );
 }
