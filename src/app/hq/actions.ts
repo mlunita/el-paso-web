@@ -146,6 +146,7 @@ export async function createStaff(prevState: any, formData: FormData) {
         name: formData.get("name") as string,
         role: formData.get("role") as string,
         image: formData.get("image") as string || null,
+        discordId: formData.get("discordId") as string || null,
         order: parseInt(formData.get("order") as string) || 0,
       }
     });
@@ -166,6 +167,7 @@ export async function updateStaff(id: string, prevState: any, formData: FormData
         name: formData.get("name") as string,
         role: formData.get("role") as string,
         image: formData.get("image") as string || null,
+        discordId: formData.get("discordId") as string || null,
         order: parseInt(formData.get("order") as string) || 0,
       }
     });

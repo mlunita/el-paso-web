@@ -27,11 +27,22 @@ export default async function OurTeamPage() {
     orderBy: { order: "asc" },
   }).catch(() => []);
 
+  // Serialize for client component: convert Dates to ISO strings
+  const serializedStaff = staff.map((m) => ({
+    id: m.id,
+    name: m.name,
+    role: m.role,
+    image: m.image,
+    discordId: m.discordId,
+    order: m.order,
+    createdAt: m.createdAt.toISOString(),
+  }));
+
   return (
     <div className="ep-section py-8 sm:py-12">
       <div className="ep-section-inner">
         <SectionHeading title={t.team.heading} subtitle={t.team.subtitle} icon={Users} align="center" />
-        <TeamSections staff={staff} />
+        <TeamSections staff={serializedStaff} />
       </div>
     </div>
   );
