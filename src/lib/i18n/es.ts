@@ -368,6 +368,15 @@ const es = {
       moderator: "Moderador",
       staffTeam: "Equipo de Staff",
     },
+    profile: {
+      title: "Perfil del Staff",
+      close: "Cerrar perfil",
+      viewDiscord: "Ver Perfil de Discord",
+      userId: "ID de Usuario",
+      memberSince: "Miembro Desde",
+      role: "Rol",
+      clickToView: "Clic para ver perfil",
+    },
   },
 
   apply: {
@@ -583,11 +592,14 @@ const es = {
       name: "Nombre",
       roleTitle: "Rol / Título",
       avatarUrl: "URL de Imagen de Avatar (Opcional)",
+      discordId: "ID de Usuario de Discord (Opcional)",
+      discordIdHint: "ID numérico de usuario de Discord. Habilita el enlace al perfil de Discord en la página pública del equipo.",
       displayOrder: "Orden de Visualización",
       saveMember: "Guardar Miembro",
       placeholders: {
         name: "ej. John Doe",
         role: "ej. Director del Servidor",
+        discordId: "ej. 123456789012345678",
       },
       toastCreated: "Miembro del staff creado correctamente",
       toastUpdated: "Miembro del staff actualizado correctamente",

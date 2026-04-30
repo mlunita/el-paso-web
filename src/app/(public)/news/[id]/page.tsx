@@ -81,7 +81,7 @@ export default async function NewsDetailPage({ params }: NewsDetailProps) {
             </div>
           )}
 
-          <div className="prose prose-invert max-w-none prose-lg md:prose-xl prose-p:leading-relaxed prose-headings:font-[family-name:var(--font-heading)] prose-headings:font-extrabold prose-a:text-[var(--ep-accent)] hover:prose-a:text-[var(--ep-accent-hover)]">
+          <div className="prose dark:prose-invert max-w-none prose-lg md:prose-xl prose-p:leading-relaxed prose-headings:font-[family-name:var(--font-heading)] prose-headings:font-extrabold prose-a:text-[var(--ep-accent)] hover:prose-a:text-[var(--ep-accent-hover)]">
             {post.content.split("\n").map((line, i) => {
               if (line.trim() === "") return <br key={i} />;
               if (line.startsWith("# ")) return <h1 key={i} className="text-3xl md:text-4xl mt-12 mb-6 text-[var(--ep-text-primary)]">{line.replace("# ", "")}</h1>;

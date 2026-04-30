@@ -214,7 +214,7 @@ export default async function HomePage() {
                     alt={social.name}
                     width={24}
                     height={24}
-                    className="object-contain invert opacity-80"
+                    className="object-contain dark:invert opacity-80"
                     unoptimized
                   />
                 </div>

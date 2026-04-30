@@ -58,8 +58,8 @@ export default async function StatusPage({
         };
       default:
         return {
-          bg: "bg-zinc-800/50",
-          text: "text-zinc-300",
+          bg: "bg-[var(--ep-bg-hover)]",
+          text: "text-[var(--ep-text-secondary)]",
           border: "border-[var(--ep-border)]",
           glow: "shadow-black/10",
           icon: <Clock className="w-5 h-5" />,

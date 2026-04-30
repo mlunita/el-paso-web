@@ -366,6 +366,15 @@ const en = {
       moderator: "Moderator",
       staffTeam: "Staff Team",
     },
+    profile: {
+      title: "Staff Profile",
+      close: "Close profile",
+      viewDiscord: "View Discord Profile",
+      userId: "User ID",
+      memberSince: "Member Since",
+      role: "Role",
+      clickToView: "Click to view profile",
+    },
   },
 
   apply: {
@@ -581,11 +590,14 @@ const en = {
       name: "Name",
       roleTitle: "Role / Title",
       avatarUrl: "Avatar Image URL (Optional)",
+      discordId: "Discord User ID (Optional)",
+      discordIdHint: "Numeric Discord user ID. Enables the Discord profile link on the public team page.",
       displayOrder: "Display Order",
       saveMember: "Save Member",
       placeholders: {
         name: "e.g. John Doe",
         role: "e.g. Server Director",
+        discordId: "e.g. 123456789012345678",
       },
       toastCreated: "Staff member created successfully",
       toastUpdated: "Staff member updated successfully",

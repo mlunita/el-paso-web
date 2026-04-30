@@ -102,7 +102,7 @@ export default async function PublicLayout({ children }: { children: React.React
                   rel="noopener noreferrer"
                   className="w-10 h-10 rounded-xl bg-[var(--ep-bg-elevated)] border border-[var(--ep-border)] flex items-center justify-center hover:border-[var(--ep-border-accent)] hover:bg-[var(--ep-bg-hover)] transition-all duration-200"
                 >
-                  <Image src="/discord.png" alt="Discord" width={18} height={18} className="invert opacity-60" unoptimized />
+                  <Image src="/discord.png" alt="Discord" width={18} height={18} className="dark:invert opacity-60" unoptimized />
                 </a>
                 <a
                   href="https://www.roblox.com/es/games/109872214376771/El-Paso-Texas-Border-Roleplay"
@@ -110,7 +110,7 @@ export default async function PublicLayout({ children }: { children: React.React
                   rel="noopener noreferrer"
                   className="w-10 h-10 rounded-xl bg-[var(--ep-bg-elevated)] border border-[var(--ep-border)] flex items-center justify-center hover:border-[var(--ep-border-accent)] hover:bg-[var(--ep-bg-hover)] transition-all duration-200"
                 >
-                  <Image src="/roblox.png" alt="Roblox" width={18} height={18} className="invert opacity-60" unoptimized />
+                  <Image src="/roblox.png" alt="Roblox" width={18} height={18} className="dark:invert opacity-60" unoptimized />
                 </a>
                 <a
                   href="https://www.tiktok.com/@elpasotexasoficial"
@@ -118,7 +118,7 @@ export default async function PublicLayout({ children }: { children: React.React
                   rel="noopener noreferrer"
                   className="w-10 h-10 rounded-xl bg-[var(--ep-bg-elevated)] border border-[var(--ep-border)] flex items-center justify-center hover:border-[var(--ep-border-accent)] hover:bg-[var(--ep-bg-hover)] transition-all duration-200"
                 >
-                  <Image src="/tiktok.png" alt="TikTok" width={18} height={18} className="invert opacity-60" unoptimized />
+                  <Image src="/tiktok.png" alt="TikTok" width={18} height={18} className="dark:invert opacity-60" unoptimized />
                 </a>
               </div>
             </div>

@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Table,
   TableBody,
@@ -8,10 +7,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { DeleteStaffAction } from "./client-actions";
 import { getTranslations } from "@/lib/i18n/server";
+import { AdminStaffRow } from "./admin-staff-row";
 
 export default async function StaffPage() {
   const t = await getTranslations();
@@ -32,36 +30,20 @@ export default async function StaffPage() {
             <TableRow className="border-white/10 hover:bg-transparent">
               <TableHead className="text-white font-bold">{t.admin.staff.member}</TableHead>
               <TableHead className="text-white font-bold">{t.common.role}</TableHead>
+              <TableHead className="text-white font-bold">Discord ID</TableHead>
               <TableHead className="text-white font-bold">{t.common.actions}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {staff.length === 0 && (
               <TableRow className="border-white/10 hover:bg-white/5">
-                <TableCell colSpan={3} className="text-center py-8 text-white/50">
+                <TableCell colSpan={4} className="text-center py-8 text-white/50">
                   {t.admin.staff.noStaff}
                 </TableCell>
               </TableRow>
             )}
             {staff.map((member) => (
-              <TableRow key={member.id} className="border-white/10 hover:bg-white/5">
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <Avatar className="border border-white/20">
-                      <AvatarImage src={member.image || ""} />
-                      <AvatarFallback className="bg-black text-white px-2 cursor-default">{member.name[0]}</AvatarFallback>
-                    </Avatar>
-                    <span className="font-bold">{member.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="text-[var(--ep-accent)] font-medium">{member.role}</TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Link href={`/hq/staff/edit/${member.id}`} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium rounded-md shadow-sm">{t.common.edit}</Link>
-                    <DeleteStaffAction id={member.id} />
-                  </div>
-                </TableCell>
-              </TableRow>
+              <AdminStaffRow key={member.id} member={member} />
             ))}
           </TableBody>
         </Table>

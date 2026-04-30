@@ -498,6 +498,74 @@
   }
 }
 
+/* ===== CONTRAST-SAFE TEXT UTILITIES ===== */
+/*
+ * Reusable contrast system.
+ * Apply these classes to ensure text is always readable.
+ * The tokens adapt automatically between dark and light themes.
+ */
+
+/* Primary contrast text — always readable on the theme background */
+.ep-text-contrast {
+  color: var(--ep-text-primary);
+}
+
+/* Secondary contrast text — softer but still readable */
+.ep-text-contrast-secondary {
+  color: var(--ep-text-secondary);
+}
+
+/* Muted contrast text — used for labels/captions */
+.ep-text-contrast-muted {
+  color: var(--ep-text-muted);
+}
+
+/* Text on accent-colored backgrounds (buttons, badges) */
+.ep-text-on-accent {
+  color: var(--ep-bg-deep);
+}
+
+.light .ep-text-on-accent {
+  color: #ffffff;
+}
+
+/* Text on dark overlays / gradient overlays (always white) */
+.ep-text-on-overlay {
+  color: #f0ece6;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Badge/label text — inherits accent but stays readable */
+.ep-text-badge {
+  color: var(--ep-accent);
+}
+
+/* Force light text (for manual override on dark surfaces) */
+.ep-text-force-light {
+  color: #f0ece6;
+}
+
+/* Force dark text (for manual override on light surfaces) */
+.ep-text-force-dark {
+  color: #1a1612;
+}
+
+/* Interactive card focus ring */
+.ep-card-interactive {
+  cursor: pointer;
+  user-select: none;
+}
+
+.ep-card-interactive:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ep-bg-deep),
+              0 0 0 4px var(--ep-accent);
+}
+
+.ep-card-interactive:active {
+  transform: scale(0.97);
+}
+
 /* ===== SCROLLBAR ===== */
 ::-webkit-scrollbar {
   width: 6px;
