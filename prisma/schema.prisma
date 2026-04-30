@@ -49,6 +49,7 @@ model StaffMember {
   name      String
   role      String
   image     String?
+  discordId String?
   order     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
