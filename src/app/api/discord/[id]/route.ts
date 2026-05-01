@@ -1,21 +1,20 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import type { DiscordApiUser } from "@/lib/discord-profile";
 
 interface CachedUser {
-  data: DiscordUserResponse;
+  data: DiscordApiUser;
   expiresAt: number;
 }
 
-interface DiscordUserResponse {
-  id: string;
-  username: string;
-  global_name: string | null;
-  avatar: string | null;
-  banner: string | null;
-  banner_color: string | null;
-  accent_color: number | null;
-}
+export const dynamic = "force-dynamic";
 
-const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const CACHE_TTL_MS = 60 * 1000;
+const PROFILE_CACHE_HEADERS = {
+  "Cache-Control": "public, max-age=30, stale-while-revalidate=60",
+};
+const PROFILE_REFRESH_HEADERS = {
+  "Cache-Control": "no-store",
+};
 const cache = new Map<string, CachedUser>();
 
 // Clean expired entries periodically
@@ -27,10 +26,11 @@ function pruneCache() {
 }
 
 export async function GET(
-  _request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const forceRefresh = request.nextUrl.searchParams.get("refresh") === "1";
 
   // Validate Discord snowflake (17-20 digits)
   if (!/^\d{17,20}$/.test(id)) {
@@ -42,9 +42,9 @@ export async function GET(
 
   // Check cache
   const cached = cache.get(id);
-  if (cached && cached.expiresAt > Date.now()) {
+  if (!forceRefresh && cached && cached.expiresAt > Date.now()) {
     return NextResponse.json({ user: cached.data }, {
-      headers: { "Cache-Control": "public, max-age=600" },
+      headers: PROFILE_CACHE_HEADERS,
     });
   }
 
@@ -53,7 +53,7 @@ export async function GET(
   if (!botToken) {
     return NextResponse.json(
       { error: "Discord bot token not configured", user: null },
-      { status: 503 }
+      { status: 503, headers: PROFILE_REFRESH_HEADERS }
     );
   }
 
@@ -61,8 +61,9 @@ export async function GET(
     const res = await fetch(`https://discord.com/api/v10/users/${id}`, {
       headers: {
         Authorization: `Bot ${botToken}`,
+        "User-Agent": "ElPasoRPWebsite (https://elpaso-rp.com, 1.0)",
       },
-      next: { revalidate: 600 },
+      cache: "no-store",
     });
 
     if (!res.ok) {
@@ -70,17 +71,17 @@ export async function GET(
         const retryAfter = res.headers.get("Retry-After") || "60";
         return NextResponse.json(
           { error: "Rate limited", user: null },
-          { status: 429, headers: { "Retry-After": retryAfter } }
+          { status: 429, headers: { ...PROFILE_REFRESH_HEADERS, "Retry-After": retryAfter } }
         );
       }
 
       return NextResponse.json(
         { error: `Discord API error: ${res.status}`, user: null },
-        { status: res.status }
+        { status: res.status, headers: PROFILE_REFRESH_HEADERS }
       );
     }
 
-    const data: DiscordUserResponse = await res.json();
+    const data: DiscordApiUser = await res.json();
 
     // Cache the result
     cache.set(id, { data, expiresAt: Date.now() + CACHE_TTL_MS });
@@ -90,13 +91,13 @@ export async function GET(
 
     return NextResponse.json(
       { user: data },
-      { headers: { "Cache-Control": "public, max-age=600" } }
+      { headers: forceRefresh ? PROFILE_REFRESH_HEADERS : PROFILE_CACHE_HEADERS }
     );
   } catch (err) {
     console.error("Discord API fetch failed:", err);
     return NextResponse.json(
       { error: "Failed to fetch Discord profile", user: null },
-      { status: 500 }
+      { status: 500, headers: PROFILE_REFRESH_HEADERS }
     );
   }
 }

@@ -114,8 +114,6 @@ export default async function HomePage() {
         />
 
         <div className="relative z-10 flex flex-col items-center text-center px-4 sm:px-6 max-w-5xl mx-auto">
-          <BadgePulse appsOpen={settings?.appsOpen ?? true} />
-
           <h1 className="font-[family-name:var(--font-heading)] text-4xl sm:text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-black mb-6 uppercase tracking-tighter text-[var(--ep-text-primary)] leading-[0.9] ep-fade-up">
             {useDynamicCopy && settings?.bannerTitle ? settings.bannerTitle : t.home.hero.defaultTitle}
           </h1>
@@ -276,22 +274,5 @@ export default async function HomePage() {
         </div>
       </section>
     </main>
-  );
-}
-
-async function BadgePulse({ appsOpen }: { appsOpen: boolean }) {
-  const t = await getTranslations();
-  return (
-    <div className="inline-flex items-center gap-2.5 px-4 py-2 mb-8 rounded-full bg-[var(--ep-bg-surface)] border border-[var(--ep-border)] text-sm font-medium text-[var(--ep-text-secondary)] ep-fade-up shadow-lg shadow-black/20">
-      <span className="relative flex h-2 w-2" aria-hidden="true">
-        <span
-          className={`animate-ping absolute inline-flex h-full w-full rounded-full ${appsOpen ? "bg-[var(--ep-success)]" : "bg-[var(--ep-danger)]"} opacity-75`}
-        />
-        <span
-          className={`relative inline-flex rounded-full h-2 w-2 ${appsOpen ? "bg-[var(--ep-success)]" : "bg-[var(--ep-danger)]"}`}
-        />
-      </span>
-      {appsOpen ? t.home.badge.open : t.home.badge.closed}
-    </div>
   );
 }

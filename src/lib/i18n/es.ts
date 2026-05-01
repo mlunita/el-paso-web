@@ -22,11 +22,11 @@ const es = {
     defaultTitle: "El Paso, Texas: Border Roleplay | Portal de la Comunidad Roblox",
     titleTemplate: "%s | El Paso RP",
     defaultDescription:
-      "Únete a la experiencia premium de roleplay fronterizo México-Estados Unidos en Roblox. Juega como policía o civil en El Paso y México con miles de jugadores.",
+      "Únete a la experiencia destacada de roleplay fronterizo México-Estados Unidos en Roblox. Juega como policía o civil en El Paso y México con miles de jugadores.",
     ogDescription:
-      "Únete a la experiencia premium de roleplay fronterizo México-Estados Unidos en Roblox: facciones policiales, de cárteles y civiles entre El Paso y México.",
+      "Únete a la experiencia destacada de roleplay fronterizo México-Estados Unidos en Roblox: facciones policiales, de bandos y civiles entre El Paso y México.",
     twitterDescription:
-      "La comunidad premium de roleplay fronterizo en Roblox. Únete hoy a miles de jugadores.",
+      "La comunidad destacada de roleplay fronterizo en Roblox. Únete hoy a miles de jugadores.",
     imageAlt: "Portal de la Comunidad El Paso RP",
     keywords: [
       "roleplay El Paso",
@@ -34,7 +34,7 @@ const es = {
       "El Paso Texas Roblox",
       "juego de roleplay fronterizo",
       "comunidad Roblox RP",
-      "roleplay de cartel",
+      "roleplay de bando",
       "juego de patrulla fronteriza",
       "roleplay policial",
       "servidor de roleplay Roblox",
@@ -44,7 +44,7 @@ const es = {
       home: {
         title: "El Paso, Texas: Border Roleplay | Portal de la Comunidad Roblox",
         description:
-          "Únete a la experiencia premium de roleplay fronterizo México-Estados Unidos en Roblox: facciones policiales, de cárteles y civiles entre El Paso y Ciudad Juárez.",
+          "Únete a la experiencia destacada de roleplay fronterizo México-Estados Unidos en Roblox: facciones policiales, de bandos y civiles entre El Paso y la región fronteriza de Juárez.",
         imageAlt: "El Paso RP: Border Roleplay en Roblox",
       },
       apply: {
@@ -260,7 +260,7 @@ const es = {
       aria: "Banner principal",
       defaultTitle: "Bienvenido a El Paso",
       defaultSubtitle:
-        "La experiencia premium de roleplay fronterizo en Roblox. Únete a miles de jugadores en un mundo inmersivo en la frontera México-Estados Unidos.",
+        "La experiencia destacada de roleplay fronterizo en Roblox. Únete a miles de jugadores en un mundo inmersivo en la frontera México-Estados Unidos.",
       bannerAlt: "Banner cinematográfico de El Paso RP",
     },
     cta: {
@@ -282,7 +282,7 @@ const es = {
       community: {
         title: "Comunidad Activa",
         description:
-          "Únete a miles de jugadores en múltiples facciones: policía, cárteles, civiles y más.",
+          "Únete a miles de jugadores en múltiples facciones: policía, bandos, civiles y más.",
       },
       moderation: {
         title: "Moderación Activa",
@@ -307,7 +307,7 @@ const es = {
       col1: {
         heading: "Bienvenido a la Frontera",
         p1:
-          "El Paso, Texas: Border Roleplay es una de las experiencias de roleplay más únicas y mejor valoradas en Roblox, con escenarios fronterizos auténticos entre El Paso y Ciudad Juárez.",
+          "El Paso, Texas: Border Roleplay es una de las experiencias de roleplay más únicas y mejor valoradas en Roblox, con escenarios fronterizos auténticos entre El Paso y la región fronteriza de Juárez.",
         p2:
           "Nuestro juego ofrece uno de los entornos RP más completos que puedes encontrar. Únete a nuestro Discord para eventos, novedades y soporte del staff.",
       },
@@ -316,7 +316,7 @@ const es = {
         p1:
           "Desde persecuciones a alta velocidad en la autopista fronteriza hasta negociaciones tensas en el punto de control, cada sesión es distinta. Las facciones, roles y eventos evolucionan constantemente.",
         p2:
-          "Ya seas un oficial novato, un teniente de cartel con experiencia o un civil intentando salir adelante, El Paso RP tiene un lugar para ti.",
+          "Ya seas un oficial novato, un teniente de bando con experiencia o un civil intentando salir adelante, El Paso RP tiene un lugar para ti.",
       },
     },
   },
@@ -375,6 +375,8 @@ const es = {
       userId: "ID de Usuario",
       memberSince: "Miembro Desde",
       role: "Rol",
+      badges: "Insignias",
+      cachedFallback: "Mostrando datos guardados del perfil",
       clickToView: "Clic para ver perfil",
     },
   },
@@ -427,6 +429,15 @@ const es = {
     levels: {
       low: "Bajo",
       high: "Alto",
+    },
+    timeline: {
+      title: "Soporte por Tickets",
+      subtitle: "Señal reciente del soporte desde operación normal hasta el estado de hoy.",
+      earlier: "Antes",
+      today: "Hoy",
+      current: "Actual",
+      reached: "Alcanzado",
+      next: "Siguiente",
     },
     statuses: {
       GREEN: {

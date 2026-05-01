@@ -1,10 +1,46 @@
 import type { Metadata } from "next";
+import type { LucideIcon } from "lucide-react";
 import { Headset, AlertTriangle, AlertOctagon, Flame, CheckCircle2 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getRequestLocale, getTranslations } from "@/lib/i18n/server";
 import { createLocalizedMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+const TICKET_STATUS_ORDER = ["GREEN", "YELLOW", "ORANGE", "RED"] as const;
+type TicketStatusKey = typeof TICKET_STATUS_ORDER[number];
+
+function buildTicketStatusTicks(currentStatus: TicketStatusKey): TicketStatusKey[] {
+  const ticks = Array<TicketStatusKey>(76).fill("GREEN");
+  const setTicks = (indexes: number[], status: TicketStatusKey) => {
+    indexes.forEach((index) => {
+      ticks[index] = status;
+    });
+  };
+
+  setTicks([6, 24, 35, 52], "YELLOW");
+  setTicks([12, 40], "ORANGE");
+
+  if (currentStatus === "YELLOW") {
+    for (let i = 60; i < ticks.length; i += 1) ticks[i] = "YELLOW";
+    setTicks([66, 72], "ORANGE");
+  }
+
+  if (currentStatus === "ORANGE") {
+    for (let i = 54; i < 63; i += 1) ticks[i] = "YELLOW";
+    for (let i = 63; i < ticks.length; i += 1) ticks[i] = "ORANGE";
+    setTicks([69, 73], "RED");
+  }
+
+  if (currentStatus === "RED") {
+    for (let i = 46; i < 57; i += 1) ticks[i] = "YELLOW";
+    for (let i = 57; i < 66; i += 1) ticks[i] = "ORANGE";
+    for (let i = 66; i < ticks.length; i += 1) ticks[i] = "RED";
+  }
+
+  ticks[ticks.length - 1] = currentStatus;
+  return ticks;
+}
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getRequestLocale();
@@ -22,18 +58,21 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function TicketStatusPage() {
   const t = await getTranslations();
   const statusCopy = t.ticketStatus.statuses;
-  const statusConfig: Record<string, {
+  const timelineCopy = t.ticketStatus.timeline;
+  const statusConfig: Record<TicketStatusKey, {
     color: string;
     bg: string;
+    fill: string;
     border: string;
     glow: string;
-    icon: any;
+    icon: LucideIcon;
     label: string;
     message: string;
   }> = {
     GREEN: {
       color: "text-emerald-400",
       bg: "bg-emerald-500/5",
+      fill: "bg-emerald-500",
       border: "border-emerald-500/20",
       glow: "shadow-emerald-500/10",
       icon: CheckCircle2,
@@ -43,6 +82,7 @@ export default async function TicketStatusPage() {
     YELLOW: {
       color: "text-yellow-400",
       bg: "bg-yellow-500/5",
+      fill: "bg-yellow-500",
       border: "border-yellow-500/20",
       glow: "shadow-yellow-500/10",
       icon: AlertTriangle,
@@ -52,6 +92,7 @@ export default async function TicketStatusPage() {
     ORANGE: {
       color: "text-orange-400",
       bg: "bg-orange-500/5",
+      fill: "bg-orange-500",
       border: "border-orange-500/20",
       glow: "shadow-orange-500/10",
       icon: AlertOctagon,
@@ -61,6 +102,7 @@ export default async function TicketStatusPage() {
     RED: {
       color: "text-red-400",
       bg: "bg-red-500/5",
+      fill: "bg-red-500",
       border: "border-red-500/20",
       glow: "shadow-red-500/10",
       icon: Flame,
@@ -75,8 +117,13 @@ export default async function TicketStatusPage() {
     if (settings?.ticketStatus) ticketStatus = settings.ticketStatus;
   } catch {}
 
-  const config = statusConfig[ticketStatus] || statusConfig.GREEN;
+  const normalizedStatus = TICKET_STATUS_ORDER.includes(ticketStatus as TicketStatusKey)
+    ? ticketStatus as TicketStatusKey
+    : "GREEN";
+  const activeStatusIndex = TICKET_STATUS_ORDER.indexOf(normalizedStatus);
+  const config = statusConfig[normalizedStatus];
   const StatusIcon = config.icon;
+  const statusTicks = buildTicketStatusTicks(normalizedStatus);
 
   return (
     <div className="ep-section py-8 sm:py-12">
@@ -115,20 +162,63 @@ export default async function TicketStatusPage() {
                 {config.message}
               </p>
 
-              <div className="w-full max-w-md mt-4">
-                <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-[var(--ep-text-muted)] mb-2">
-                  <span>{t.ticketStatus.levels.low}</span>
-                  <span>{t.ticketStatus.levels.high}</span>
+              <div className="w-full mt-4 rounded-2xl border border-[var(--ep-border)] bg-[var(--ep-bg-deep)]/35 p-4 sm:p-5">
+                <div className="flex flex-col gap-1 text-left sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="text-[var(--ep-text-muted)]" aria-hidden="true">&gt;</span>
+                    <h2 className="font-[family-name:var(--font-heading)] text-sm font-extrabold text-[var(--ep-text-primary)] sm:text-base">
+                      {timelineCopy.title}
+                    </h2>
+                  </div>
+                  <span className={`shrink-0 pl-4 text-xs font-semibold sm:pl-0 sm:text-sm ${config.color}`}>
+                    {config.label}
+                  </span>
                 </div>
-                <div className="w-full h-2 bg-[var(--ep-bg-deep)] rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-1000 ${
-                      ticketStatus === "GREEN" ? "w-1/4 bg-emerald-500" :
-                      ticketStatus === "YELLOW" ? "w-2/4 bg-yellow-500" :
-                      ticketStatus === "ORANGE" ? "w-3/4 bg-orange-500" :
-                      "w-full bg-red-500"
-                    }`}
-                  />
+
+                <div
+                  className="mt-3 grid h-9 items-center gap-1"
+                  style={{ gridTemplateColumns: `repeat(${statusTicks.length}, minmax(0, 1fr))` }}
+                  aria-label={`${timelineCopy.title}: ${config.label}`}
+                >
+                  {statusTicks.map((status, index) => {
+                    const step = statusConfig[status];
+                    return (
+                      <span
+                        key={`${status}-${index}`}
+                        className={`h-8 min-w-[2px] rounded-full ${step.fill} ${
+                          index === statusTicks.length - 1 ? "ring-2 ring-white/40 ring-offset-2 ring-offset-[var(--ep-bg-deep)]" : ""
+                        }`}
+                        title={step.label}
+                      />
+                    );
+                  })}
+                </div>
+
+                <div className="mt-2 flex justify-between text-xs font-medium text-[var(--ep-text-muted)]">
+                  <span>{timelineCopy.earlier}</span>
+                  <span>{timelineCopy.today}</span>
+                </div>
+
+                <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {TICKET_STATUS_ORDER.map((key, index) => {
+                    const step = statusConfig[key];
+                    const StepIcon = step.icon;
+                    const isCurrent = index === activeStatusIndex;
+
+                    return (
+                      <div
+                        key={key}
+                        className={`flex min-h-[48px] flex-col items-center justify-center gap-1 rounded-lg border px-2 py-2 text-center sm:min-h-0 sm:flex-row sm:justify-start sm:text-left ${
+                          isCurrent ? `${step.bg} ${step.border}` : "border-[var(--ep-border)] bg-[var(--ep-bg-surface)]/60"
+                        }`}
+                      >
+                        <StepIcon className={`h-3.5 w-3.5 shrink-0 ${isCurrent ? step.color : "text-[var(--ep-text-muted)]"}`} />
+                        <span className={`text-[10px] font-bold uppercase leading-tight tracking-widest ${isCurrent ? step.color : "text-[var(--ep-text-muted)]"}`}>
+                          {step.label}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -138,7 +228,7 @@ export default async function TicketStatusPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6 ep-fade-up" style={{ animationDelay: "300ms" }}>
           {Object.entries(statusConfig).map(([key, cfg]) => {
             const Icon = cfg.icon;
-            const isActive = key === ticketStatus;
+            const isActive = key === normalizedStatus;
             return (
               <div
                 key={key}

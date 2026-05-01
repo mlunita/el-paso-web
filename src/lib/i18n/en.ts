@@ -11,7 +11,7 @@ const en = {
     tagline: "Border Roleplay",
     fullName: "El Paso, Texas: Border Roleplay",
     description:
-      "The premier Mexico-USA border roleplay experience on Roblox. Join thousands of players across law enforcement, civilian, and cartel factions.",
+      "The signature Mexico-USA border roleplay experience on Roblox. Join thousands of players across law enforcement, civilian, and outlaw factions.",
     logoAlt: "El Paso RP logo",
     alamoLogoAlt: "El Paso Texas Border",
   },
@@ -20,11 +20,11 @@ const en = {
     defaultTitle: "El Paso, Texas: Border Roleplay | Roblox Community Portal",
     titleTemplate: "%s | El Paso RP",
     defaultDescription:
-      "Join the premier Mexico-USA border roleplay experience on Roblox. Play as law enforcement, cartel, or civilian in El Paso and Ciudad Juarez with thousands of players.",
+      "Join the signature Mexico-USA border roleplay experience on Roblox. Play as law enforcement, outlaw, or civilian in El Paso and the Juarez border region with thousands of players.",
     ogDescription:
-      "Join the premier Mexico-USA border roleplay experience on Roblox: law enforcement, cartel, and civilian factions across El Paso and Ciudad Juarez.",
+      "Join the signature Mexico-USA border roleplay experience on Roblox: law enforcement, outlaw, and civilian factions across El Paso and the Juarez border region.",
     twitterDescription:
-      "The premier Roblox border roleplay community. Join thousands of players today.",
+      "The signature Roblox border roleplay community. Join thousands of players today.",
     imageAlt: "El Paso RP Community Portal",
     keywords: [
       "El Paso roleplay",
@@ -32,7 +32,7 @@ const en = {
       "El Paso Texas Roblox",
       "border roleplay game",
       "Roblox RP community",
-      "cartel roleplay",
+      "outlaw roleplay",
       "border patrol game",
       "law enforcement RP",
       "Roblox roleplay server",
@@ -42,7 +42,7 @@ const en = {
       home: {
         title: "El Paso, Texas: Border Roleplay | Roblox Community Portal",
         description:
-          "Join the premier Mexico-USA border roleplay experience on Roblox: law enforcement, cartel, and civilian factions across El Paso and Ciudad Juarez.",
+          "Join the signature Mexico-USA border roleplay experience on Roblox: law enforcement, outlaw, and civilian factions across El Paso and the Juarez border region.",
         imageAlt: "El Paso RP: Border Roleplay on Roblox",
       },
       apply: {
@@ -258,7 +258,7 @@ const en = {
       aria: "Hero banner",
       defaultTitle: "Welcome to El Paso",
       defaultSubtitle:
-        "The premier border roleplay experience on Roblox. Join thousands of players in an immersive world on the Mexico-USA frontier.",
+        "The signature border roleplay experience on Roblox. Join thousands of players in an immersive world on the Mexico-USA frontier.",
       bannerAlt: "El Paso RP cinematic banner",
     },
     cta: {
@@ -280,7 +280,7 @@ const en = {
       community: {
         title: "Vibrant Community",
         description:
-          "Join thousands of players across multiple factions: law enforcement, cartels, civilians, and more.",
+          "Join thousands of players across multiple factions: law enforcement, outlaw crews, civilians, and more.",
       },
       moderation: {
         title: "Active Moderation",
@@ -305,7 +305,7 @@ const en = {
       col1: {
         heading: "Welcome to the Border",
         p1:
-          "El Paso, Texas: Border Roleplay is one of the most unique and highly rated roleplay experiences on Roblox, featuring authentic border scenarios across El Paso and Ciudad Juarez.",
+          "El Paso, Texas: Border Roleplay is one of the most unique and highly rated roleplay experiences on Roblox, featuring authentic border scenarios across El Paso and the Juarez border region.",
         p2:
           "Our game offers one of the richest RP environments you can find. Join our Discord server for community events, updates, and staff support.",
       },
@@ -314,7 +314,7 @@ const en = {
         p1:
           "From high-speed pursuits on the border highway to tense negotiations at the checkpoint, every session is different. Factions, roles, and events evolve constantly.",
         p2:
-          "Whether you are a rookie officer, a seasoned cartel lieutenant, or a civilian just trying to get by, El Paso RP has a place for you.",
+          "Whether you are a rookie officer, a seasoned outlaw lieutenant, or a civilian just trying to get by, El Paso RP has a place for you.",
       },
     },
   },
@@ -373,6 +373,8 @@ const en = {
       userId: "User ID",
       memberSince: "Member Since",
       role: "Role",
+      badges: "Badges",
+      cachedFallback: "Showing cached profile data",
       clickToView: "Click to view profile",
     },
   },
@@ -425,6 +427,15 @@ const en = {
     levels: {
       low: "Low",
       high: "High",
+    },
+    timeline: {
+      title: "Ticket Support",
+      subtitle: "Recent support signal from normal operations toward today's state.",
+      earlier: "Earlier",
+      today: "Today",
+      current: "Current",
+      reached: "Reached",
+      next: "Next",
     },
     statuses: {
       GREEN: {

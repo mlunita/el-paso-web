@@ -1,12 +1,31 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { ChevronDown, ShieldAlert, Star, Shield, ShieldCheck, UserCheck, Users } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type { LucideIcon } from "lucide-react";
+import { ShieldAlert, Star, Shield, ShieldCheck, UserCheck, Users } from "lucide-react";
 import { useI18n } from "@/components/i18n-provider";
 import { DiscordProfileCard } from "@/components/discord-profile-card";
 
-const ROLE_MAP: Record<number, { labelKey: keyof ReturnType<typeof getRoleLabels>; icon: any; color: string; bg: string }> = {
+type RoleLabelKey = "owner" | "staffManager" | "headAdmin" | "admin" | "seniorModerator" | "moderator" | "staffTeam";
+
+interface StaffMember {
+  id: string;
+  name: string;
+  role: string;
+  image?: string | null;
+  discordId?: string | null;
+  order: number;
+  createdAt?: string;
+}
+
+interface RoleConfig {
+  labelKey: RoleLabelKey;
+  icon: LucideIcon;
+  color: string;
+  bg: string;
+}
+
+const ROLE_MAP: Record<number, RoleConfig> = {
   0: { labelKey: "owner", icon: Star, color: "text-amber-400", bg: "bg-amber-500/10" },
   1: { labelKey: "staffManager", icon: ShieldAlert, color: "text-red-400", bg: "bg-red-500/10" },
   2: { labelKey: "headAdmin", icon: ShieldCheck, color: "text-orange-400", bg: "bg-orange-500/10" },
@@ -15,26 +34,14 @@ const ROLE_MAP: Record<number, { labelKey: keyof ReturnType<typeof getRoleLabels
   5: { labelKey: "moderator", icon: Users, color: "text-teal-400", bg: "bg-teal-500/10" },
 };
 
-function getRoleLabels() {
-  return {
-    owner: "",
-    staffManager: "",
-    headAdmin: "",
-    admin: "",
-    seniorModerator: "",
-    moderator: "",
-    staffTeam: "",
-  };
-}
+const DEFAULT_ROLE: RoleConfig = { labelKey: "staffTeam", icon: Users, color: "text-[var(--ep-text-secondary)]", bg: "bg-white/5" };
 
-const DEFAULT_ROLE = { labelKey: "staffTeam" as const, icon: Users, color: "text-[var(--ep-text-secondary)]", bg: "bg-white/5" };
-
-export function TeamSections({ staff }: { staff: any[] }) {
+export function TeamSections({ staff }: { staff: StaffMember[] }) {
   const { t } = useI18n();
-  const [selectedMember, setSelectedMember] = useState<any | null>(null);
+  const [selectedMember, setSelectedMember] = useState<StaffMember | null>(null);
   const [selectedRoleConfig, setSelectedRoleConfig] = useState<{ color: string; label: string } | null>(null);
 
-  const groups: Record<number, any[]> = {};
+  const groups: Record<number, StaffMember[]> = {};
   staff.forEach((member) => {
     const groupId = member.order;
     if (!groups[groupId]) groups[groupId] = [];
@@ -45,20 +52,8 @@ export function TeamSections({ staff }: { staff: any[] }) {
     .map((k) => parseInt(k, 10))
     .sort((a, b) => a - b);
 
-  const [collapsedSections, setCollapsedSections] = useState<Record<number, boolean>>(() => {
-    const initial: Record<number, boolean> = {};
-    sortedGroupIds.forEach((id, index) => {
-      initial[id] = index !== 0;
-    });
-    return initial;
-  });
-
-  const toggleCollapse = (id: number) => {
-    setCollapsedSections((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
   const openProfile = useCallback(
-    (member: any, config: { labelKey: keyof ReturnType<typeof getRoleLabels>; icon: any; color: string; bg: string }) => {
+    (member: StaffMember, config: RoleConfig) => {
       setSelectedMember({
         ...member,
         createdAt: member.createdAt?.toString?.() ?? member.createdAt,
@@ -91,50 +86,37 @@ export function TeamSections({ staff }: { staff: any[] }) {
 
   return (
     <>
-      <div className="flex flex-col gap-6 w-full ep-fade-up" style={{ animationDelay: "100ms" }}>
+      <div className="flex w-full flex-col gap-7 ep-fade-up" style={{ animationDelay: "100ms" }}>
         {sortedGroupIds.map((groupId, sIndex) => {
           const members = groups[groupId];
           const config = ROLE_MAP[groupId] || DEFAULT_ROLE;
           const Icon = config.icon;
-          const isCollapsed = collapsedSections[groupId] ?? false;
 
           return (
-            <section key={groupId} className="ep-fade-up flex flex-col w-full" style={{ animationDelay: `${sIndex * 80}ms` }}>
-              {/* Section Header */}
-              <button
-                onClick={() => toggleCollapse(groupId)}
-                className="w-full flex items-center gap-3 mb-6 group cursor-pointer"
-              >
-                <div className={`p-2 rounded-xl border border-[var(--ep-border)] transition-colors duration-200 group-hover:border-[var(--ep-border-accent)] ${config.bg}`}>
-                  <Icon className={`w-5 h-5 ${config.color}`} />
+            <section key={groupId} className="ep-fade-up flex w-full flex-col" style={{ animationDelay: `${sIndex * 80}ms` }}>
+              <div className="mb-3 grid w-full grid-cols-[1fr_auto_1fr] items-center gap-3 text-center">
+                <div className="h-px bg-gradient-to-r from-transparent to-[var(--ep-border)]" aria-hidden="true" />
+                <div className="flex items-center justify-center gap-2 px-2">
+                  <Icon className={`h-3.5 w-3.5 ${config.color}`} aria-hidden="true" />
+                  <h2 className={`font-[family-name:var(--font-heading)] text-xs sm:text-sm font-extrabold uppercase tracking-[0.22em] ${config.color}`}>
+                    {t.team.roles[config.labelKey]}
+                  </h2>
+                  <span className="rounded-full border border-[var(--ep-border)] bg-[var(--ep-bg-surface)] px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-[var(--ep-text-muted)]">
+                    {members.length}
+                  </span>
                 </div>
-                <h2 className="font-[family-name:var(--font-heading)] text-xl sm:text-2xl font-extrabold uppercase tracking-wider text-[var(--ep-text-primary)]">
-                  {t.team.roles[config.labelKey]}
-                </h2>
-                <span className="text-xs font-bold text-[var(--ep-text-muted)] tabular-nums">
-                  ({members.length})
-                </span>
-                <div className="h-px flex-1 bg-gradient-to-r from-[var(--ep-border)] to-transparent" />
-                <ChevronDown
-                  className={`w-5 h-5 text-[var(--ep-text-muted)] group-hover:text-[var(--ep-text-secondary)] transition-all duration-300 ${
-                    isCollapsed ? "" : "rotate-180"
-                  }`}
-                />
-              </button>
+                <div className="h-px bg-gradient-to-l from-transparent to-[var(--ep-border)]" aria-hidden="true" />
+              </div>
 
-              {/* Content */}
-              <div
-                className={`overflow-hidden transition-all duration-500 ease-in-out w-full flex flex-col items-center ${
-                  isCollapsed ? "max-h-0 opacity-0" : "max-h-[5000px] opacity-100"
-                }`}
-              >
-                <div className="flex flex-wrap justify-center gap-4 lg:gap-6 w-full mb-4">
+              <div className="flex w-full flex-col items-center">
+                <div className="mb-1 flex w-full flex-wrap justify-center gap-2 sm:gap-2.5 lg:gap-3">
                   {members.map((member, index) => (
-                    <div key={member.id} className="ep-fade-up w-full sm:w-[280px] lg:w-[320px]" style={{ animationDelay: `${(index + 1) * 50}ms` }}>
+                    <div key={member.id} className="ep-fade-up w-full max-w-[174px] sm:w-[158px] md:w-[160px] lg:w-[174px]" style={{ animationDelay: `${(index + 1) * 50}ms` }}>
                       <DiscordProfileCard
                         member={member}
                         roleColor={config.color}
                         roleLabel={t.team.roles[config.labelKey] || member.role}
+                        compact
                         onClick={() => openProfile(member, config)}
                       />
                     </div>
