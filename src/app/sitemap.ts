@@ -3,36 +3,48 @@ import { MetadataRoute } from 'next';
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://elpaso-rp.com';
 
-  return [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/applys`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/news`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/support`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/login`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-  ];
+  // All public page paths (without locale prefix)
+  const publicPages: {
+    path: string;
+    changeFrequency: MetadataRoute.Sitemap[number]['changeFrequency'];
+    priority: number;
+  }[] = [
+      { path: '/', changeFrequency: 'daily', priority: 1.0 },
+      { path: '/applys', changeFrequency: 'weekly', priority: 0.8 },
+      { path: '/news', changeFrequency: 'daily', priority: 0.9 },
+      { path: '/team', changeFrequency: 'weekly', priority: 0.7 },
+      { path: '/wiki', changeFrequency: 'weekly', priority: 0.7 },
+      { path: '/status', changeFrequency: 'daily', priority: 0.6 },
+      { path: '/support', changeFrequency: 'weekly', priority: 0.7 },
+      { path: '/ticket-status', changeFrequency: 'weekly', priority: 0.5 },
+    ];
+
+  const locales = ['', '/es'] as const;
+  const now = new Date();
+
+  const entries: MetadataRoute.Sitemap = [];
+
+  for (const page of publicPages) {
+    for (const localePrefix of locales) {
+      const url =
+        page.path === '/'
+          ? `${baseUrl}${localePrefix || '/'}`
+          : `${baseUrl}${localePrefix}${page.path}`;
+
+      entries.push({
+        url: url.endsWith('/') ? url : url,
+        lastModified: now,
+        changeFrequency: page.changeFrequency,
+        priority: page.priority,
+        alternates: {
+          languages: {
+            en: `${baseUrl}${page.path}`,
+            es: `${baseUrl}/es${page.path === '/' ? '' : page.path}`,
+          },
+        },
+      });
+    }
+  }
+
+  return entries;
 }
