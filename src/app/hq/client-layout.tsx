@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileText, Users, Settings, LogOut, FileBadge, BookOpen, Shield, Key, KeyRound, AlertTriangle, LifeBuoy } from "lucide-react";
+import { LayoutDashboard, FileText, Users, Settings, LogOut, FileBadge, BookOpen, Shield, Key, KeyRound, AlertTriangle, LifeBuoy, BarChart3 } from "lucide-react";
 import { AdminLoader } from "@/components/admin-loader";
 import { adminLogout } from "@/app/hq/actions";
 import { useI18n } from "@/components/i18n-provider";
@@ -14,6 +14,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const contentLinks = [
     { href: "/hq", label: t.admin.nav.dashboard, icon: LayoutDashboard, exact: true },
+    { href: "/hq/analytics", label: t.admin.nav.analytics, icon: BarChart3 },
     { href: "/hq/posts", label: t.admin.nav.posts, icon: FileText },
     { href: "/hq/support", label: t.admin.nav.support, icon: LifeBuoy },
     { href: "/hq/applications", label: t.admin.nav.applications, icon: FileBadge },

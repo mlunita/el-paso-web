@@ -8,6 +8,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "@/components/theme-provider";
 import { I18nProvider } from "@/components/i18n-provider";
 import { CookieBanner } from "@/components/cookie-banner";
+import { AnalyticsTracker } from "@/components/analytics-tracker";
 import { getRequestLocale } from "@/lib/i18n/server";
 import { createRootMetadata } from "@/lib/seo";
 
@@ -50,6 +51,7 @@ export default async function RootLayout({
             </div>
             <CookieBanner />
             <Toaster />
+            <AnalyticsTracker />
             <Analytics />
             <SpeedInsights />
           </ThemeProvider>

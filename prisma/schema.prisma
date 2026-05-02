@@ -19,16 +19,16 @@ model User {
 }
 
 model Post {
-  id          String   @id @default(cuid())
-  title       String
-  content     String
-  coverImage  String?
-  published   Boolean  @default(false)
-  authorName  String?
-  authorId    String
-  author      User     @relation(fields: [authorId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  title      String
+  content    String
+  coverImage String?
+  published  Boolean  @default(false)
+  authorName String?
+  authorId   String
+  author     User     @relation(fields: [authorId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model Application {
@@ -56,28 +56,28 @@ model StaffMember {
 }
 
 model SiteSettings {
-  id               String   @id @default(cuid())
-  bannerImage      String?
-  bannerTitle      String   @default("Welcome to Our Community")
-  bannerSubtitle   String   @default("Your adventure starts here")
-  description      String   @default("Join us to explore new worlds, make friends, and have fun.")
-  socialDiscord    String?
-  socialTwitter    String?
-  socialYoutube    String?
-  appsOpen         Boolean  @default(true)
-  ticketStatus     String   @default("GREEN") // GREEN, YELLOW, ORANGE, RED
-  updatedAt        DateTime @updatedAt
+  id             String   @id @default(cuid())
+  bannerImage    String?
+  bannerTitle    String   @default("Welcome to Our Community")
+  bannerSubtitle String   @default("Your adventure starts here")
+  description    String   @default("Join us to explore new worlds, make friends, and have fun.")
+  socialDiscord  String?
+  socialTwitter  String?
+  socialYoutube  String?
+  appsOpen       Boolean  @default(true)
+  ticketStatus   String   @default("GREEN") // GREEN, YELLOW, ORANGE, RED
+  updatedAt      DateTime @updatedAt
 }
 
 model WikiItem {
   id           String   @id @default(cuid())
   title        String
   description  String
-  section      String   // GAMEPASS, WEAPONS, EQUIPMENT, CARS, TEAMS
+  section      String // GAMEPASS, WEAPONS, EQUIPMENT, CARS, TEAMS
   image        String?
   order        Int      @default(0)
-  tags         String?  // JSON array of tag strings, e.g. '["Rare","VIP"]'
-  customFields String?  // JSON object for section-specific fields, e.g. '{"mileage":"50k"}'
+  tags         String? // JSON array of tag strings, e.g. '["Rare","VIP"]'
+  customFields String? // JSON object for section-specific fields, e.g. '{"mileage":"50k"}'
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
@@ -135,22 +135,22 @@ model Role {
 model Permission {
   id    String @id @default(cuid())
   key   String @unique // machine key: "view_mod_panel", "create_ban_requests", etc.
-  label String         // human label: "View Mod Panel"
+  label String // human label: "View Mod Panel"
   roles Role[]
 }
 
 model ModeratorToken {
-  id            String   @id @default(cuid())
-  tokenHash     String   @unique
-  tokenPreview  String   // last 6 chars for display, e.g. "…a3f2b1"
+  id            String              @id @default(cuid())
+  tokenHash     String              @unique
+  tokenPreview  String // last 6 chars for display, e.g. "…a3f2b1"
   moderatorName String
-  moderatorId   String   // admin-assigned external identifier
+  moderatorId   String // admin-assigned external identifier
   roleId        String
-  role          Role     @relation(fields: [roleId], references: [id])
-  status        String   @default("ACTIVE") // ACTIVE, REVOKED, EXPIRED
-  permSnapshot  String?  // JSON snapshot of permissions at creation time
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  role          Role                @relation(fields: [roleId], references: [id])
+  status        String              @default("ACTIVE") // ACTIVE, REVOKED, EXPIRED
+  permSnapshot  String? // JSON snapshot of permissions at creation time
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
   expiresAt     DateTime?
   loginLogs     ModeratorLoginLog[]
   banRequests   BanRequest[]
@@ -176,7 +176,7 @@ model BanRequest {
   modRole        String
   modPermissions String?
   targetUserId   String
-  targetUsername  String
+  targetUsername String
   reason         String
   notes          String?
   status         String               @default("PENDING")
@@ -193,7 +193,7 @@ model BanRequestEvidence {
   id           String     @id @default(cuid())
   banRequestId String
   banRequest   BanRequest @relation(fields: [banRequestId], references: [id], onDelete: Cascade)
-  type         String     // "IMAGE" or "VIDEO"
+  type         String // "IMAGE" or "VIDEO"
   url          String
   caption      String?
   createdAt    DateTime   @default(now())
@@ -203,10 +203,10 @@ model BanRequestAuditLog {
   id           String     @id @default(cuid())
   banRequestId String
   banRequest   BanRequest @relation(fields: [banRequestId], references: [id], onDelete: Cascade)
-  action       String     // "CREATED", "STATUS_CHANGED", "NOTE_ADDED", "REVIEWED"
+  action       String // "CREATED", "STATUS_CHANGED", "NOTE_ADDED", "REVIEWED"
   fromStatus   String?
   toStatus     String?
-  performedBy  String     // "mod:<modId>" or "admin"
+  performedBy  String // "mod:<modId>" or "admin"
   details      String?
   createdAt    DateTime   @default(now())
 }
@@ -216,26 +216,157 @@ model BanRequestAuditLog {
 // =====================================================
 
 model AdminToken {
-  id          String          @id @default(cuid())
-  publicId    String          @unique // first half of token for O(1) lookup
-  name        String          // human-readable label, e.g. "Main Admin"
-  tokenHash   String          // bcrypt hash of the secret half
-  notes       String?
-  createdBy   String?         // who ran the script, e.g. "cli:root"
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  lastUsedAt  DateTime?
-  revokedAt   DateTime?
-  expiresAt   DateTime?
-  auditLogs   AdminAuditLog[]
+  id         String          @id @default(cuid())
+  publicId   String          @unique // first half of token for O(1) lookup
+  name       String // human-readable label, e.g. "Main Admin"
+  tokenHash  String // bcrypt hash of the secret half
+  notes      String?
+  createdBy  String? // who ran the script, e.g. "cli:root"
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  expiresAt  DateTime?
+  auditLogs  AdminAuditLog[]
 }
 
 model AdminAuditLog {
   id        String     @id @default(cuid())
   tokenId   String
   token     AdminToken @relation(fields: [tokenId], references: [id], onDelete: Cascade)
-  action    String     // "LOGIN", "LOGIN_FAILED", "TOKEN_REVOKED", "TOKEN_REACTIVATED"
+  action    String // "LOGIN", "LOGIN_FAILED", "TOKEN_REVOKED", "TOKEN_REACTIVATED"
   ipAddress String?
   userAgent String?
   createdAt DateTime   @default(now())
+}
+
+// =====================================================
+// First-Party Analytics
+// =====================================================
+
+model AnalyticsVisitor {
+  id          String              @id @default(cuid())
+  clientId    String              @unique
+  country     String?
+  region      String?
+  city        String?
+  timezone    String?
+  language    String?
+  deviceType  String?
+  browser     String?
+  os          String?
+  firstSeenAt DateTime            @default(now())
+  lastSeenAt  DateTime            @default(now())
+  sessions    AnalyticsSession[]
+  pageViews   AnalyticsPageView[]
+  events      AnalyticsEvent[]
+  webVitals   AnalyticsWebVital[]
+
+  @@index([firstSeenAt])
+  @@index([lastSeenAt])
+  @@index([country])
+  @@index([deviceType])
+}
+
+model AnalyticsSession {
+  id              String              @id @default(cuid())
+  sessionId       String              @unique
+  visitorId       String
+  visitor         AnalyticsVisitor    @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  startedAt       DateTime            @default(now())
+  lastSeenAt      DateTime            @default(now())
+  durationSeconds Int                 @default(0)
+  entryPath       String?
+  exitPath        String?
+  referrer        String?
+  source          String              @default("direct")
+  medium          String              @default("none")
+  campaign        String?
+  country         String?
+  region          String?
+  city            String?
+  deviceType      String?
+  browser         String?
+  os              String?
+  language        String?
+  timezone        String?
+  pageViews       AnalyticsPageView[]
+  events          AnalyticsEvent[]
+  webVitals       AnalyticsWebVital[]
+
+  @@index([startedAt])
+  @@index([lastSeenAt])
+  @@index([source, medium])
+  @@index([country])
+  @@index([deviceType])
+}
+
+model AnalyticsPageView {
+  id             String           @id @default(cuid())
+  visitorId      String
+  visitor        AnalyticsVisitor @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  sessionId      String
+  session        AnalyticsSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  path           String
+  title          String?
+  referrer       String?
+  country        String?
+  region         String?
+  city           String?
+  deviceType     String?
+  browser        String?
+  os             String?
+  language       String?
+  timezone       String?
+  viewportWidth  Int?
+  viewportHeight Int?
+  createdAt      DateTime         @default(now())
+
+  @@index([createdAt])
+  @@index([path, createdAt])
+  @@index([country, createdAt])
+  @@index([deviceType, createdAt])
+  @@index([visitorId, createdAt])
+  @@index([sessionId, createdAt])
+}
+
+model AnalyticsEvent {
+  id        String            @id @default(cuid())
+  visitorId String?
+  visitor   AnalyticsVisitor? @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  sessionId String?
+  session   AnalyticsSession? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  name      String
+  category  String?
+  path      String?
+  label     String?
+  value     Float?
+  metadata  Json?
+  createdAt DateTime          @default(now())
+
+  @@index([createdAt])
+  @@index([name, createdAt])
+  @@index([category, createdAt])
+  @@index([path, createdAt])
+}
+
+model AnalyticsWebVital {
+  id             String            @id @default(cuid())
+  visitorId      String?
+  visitor        AnalyticsVisitor? @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  sessionId      String?
+  session        AnalyticsSession? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  metricId       String?
+  name           String
+  value          Float
+  delta          Float?
+  rating         String?
+  navigationType String?
+  path           String?
+  createdAt      DateTime          @default(now())
+
+  @@index([createdAt])
+  @@index([name, createdAt])
+  @@index([rating, createdAt])
+  @@index([path, createdAt])
 }

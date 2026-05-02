@@ -526,6 +526,7 @@ const es = {
     },
     nav: {
       dashboard: "Panel",
+      analytics: "Analítica",
       posts: "Noticias",
       support: "Soporte",
       applications: "Postulaciones",

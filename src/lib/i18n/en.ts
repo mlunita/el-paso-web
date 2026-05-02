@@ -524,6 +524,7 @@ const en = {
     },
     nav: {
       dashboard: "Dashboard",
+      analytics: "Analytics",
       posts: "News Posts",
       support: "Support",
       applications: "Applications",
