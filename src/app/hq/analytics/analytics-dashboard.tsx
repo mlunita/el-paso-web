@@ -10,13 +10,10 @@ import {
 import {
   Activity,
   AlertCircle,
-  ArrowDownRight,
-  ArrowUpRight,
   BarChart3,
   Calendar,
   Clock,
   Eye,
-  Gauge,
   Globe,
   Laptop,
   Loader2,
@@ -29,6 +26,21 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart as RechartsPieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  Legend
+} from "recharts";
 
 interface AnalyticsKPI {
   visitors: number;
@@ -124,27 +136,81 @@ type DateRange = 7 | 30 | 90 | 365;
 type TrendMetric = "visitors" | "sessions" | "pageViews" | "events";
 
 const COLORS = {
-  amber: "#e8a44a",
-  teal: "#4ecdc4",
-  violet: "#8b5cf6",
-  green: "#22c55e",
-  rose: "#f43f5e",
-  sky: "#38bdf8",
-  orange: "#f97316",
+  blurple: "#5865F2",
+  green: "#23a559",
+  red: "#da373c",
+  yellow: "#fee75c",
+  pink: "#eb459e",
+  teal: "#00b0f4",
+  orange: "#f47b67"
 };
 
-const DEVICE_ICONS: Record<string, ElementType> = {
-  desktop: Monitor,
-  mobile: Smartphone,
-  tablet: Tablet,
+const DEVICE_COLORS = [COLORS.blurple, COLORS.green, COLORS.yellow, COLORS.teal, COLORS.pink];
+
+const COUNTRY_ISO: Record<string, string> = {
+  "United States": "us", "Spain": "es", "Mexico": "mx", "Argentina": "ar",
+  "Colombia": "co", "Chile": "cl", "Peru": "pe", "Venezuela": "ve",
+  "Ecuador": "ec", "Guatemala": "gt", "Cuba": "cu", "Bolivia": "bo",
+  "Dominican Republic": "do", "Honduras": "hn", "Paraguay": "py",
+  "El Salvador": "sv", "Nicaragua": "ni", "Costa Rica": "cr",
+  "Puerto Rico": "pr", "Panama": "pa", "Uruguay": "uy", "Brazil": "br",
+  "United Kingdom": "gb", "Canada": "ca", "Germany": "de", "France": "fr",
+  "Italy": "it", "Japan": "jp", "China": "cn", "India": "in",
+  "Australia": "au", "Russia": "ru", "South Korea": "kr", "Portugal": "pt",
+  "Netherlands": "nl", "Sweden": "se", "Norway": "no", "Denmark": "dk",
+  "Finland": "fi", "Poland": "pl", "Turkey": "tr", "Indonesia": "id",
+  "Philippines": "ph", "Thailand": "th", "Vietnam": "vn", "Malaysia": "my",
+  "Singapore": "sg", "New Zealand": "nz", "Ireland": "ie", "Switzerland": "ch",
+  "Austria": "at", "Belgium": "be", "Czech Republic": "cz", "Romania": "ro",
+  "Ukraine": "ua", "Israel": "il", "South Africa": "za", "Egypt": "eg",
+  "Nigeria": "ng", "Kenya": "ke", "Morocco": "ma", "Saudi Arabia": "sa",
+  "United Arab Emirates": "ae",
 };
 
-const DEVICE_COLORS: Record<string, string> = {
-  desktop: COLORS.amber,
-  mobile: COLORS.teal,
-  tablet: COLORS.violet,
-  unknown: "rgba(255,255,255,0.35)",
+function getCountryCode(countryName: string) {
+  return COUNTRY_ISO[countryName] || "";
+}
+
+function getFlagUrl(countryName: string) {
+  const code = getCountryCode(countryName);
+  return code ? `https://flagcdn.com/w40/${code}.png` : "";
+}
+
+const BROWSER_COLORS: Record<string, string> = {
+  "Chrome": "#4285F4",
+  "Firefox": "#FF7139",
+  "Safari": "#006CFF",
+  "Edge": "#0078D7",
+  "Opera": "#FF1B2D",
+  "Samsung Internet": "#1428A0",
+  "Other": "#949ba4",
 };
+
+function getBrowserColor(browser: string) {
+  return BROWSER_COLORS[browser] || COLORS.teal;
+}
+
+function getVitalRating(name: string, value: number): "good" | "needs-improvement" | "poor" {
+  const thresholds: Record<string, [number, number]> = {
+    LCP: [2500, 4000],
+    FID: [100, 300],
+    CLS: [0.1, 0.25],
+    TTFB: [800, 1800],
+    INP: [200, 500],
+    FCP: [1800, 3000],
+  };
+  const t = thresholds[name];
+  if (!t) return "good";
+  if (value <= t[0]) return "good";
+  if (value <= t[1]) return "needs-improvement";
+  return "poor";
+}
+
+function fmtVitalValue(name: string, value: number) {
+  if (name === "CLS") return value.toFixed(3);
+  if (value >= 1000) return `${(value / 1000).toFixed(2)}s`;
+  return `${Math.round(value)}ms`;
+}
 
 function fmt(value: number) {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
@@ -158,15 +224,19 @@ function fmtDuration(seconds: number) {
   return minutes > 0 ? `${minutes}m ${rest}s` : `${rest}s`;
 }
 
-function fmtDate(value: string) {
+function fmtDateLong(value: string) {
   if (value.length !== 8) return value;
-  return `${value.slice(4, 6)}/${value.slice(6, 8)}`;
+  const year = value.slice(0, 4);
+  const month = value.slice(4, 6);
+  const day = value.slice(6, 8);
+  const date = new Date(`${year}-${month}-${day}T00:00:00`);
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 function fmtDateRange(value: string) {
   const date = new Date(`${value}T00:00:00`);
   return date.toLocaleDateString("en-US", {
-    month: "short",
+    month: "numeric",
     day: "numeric",
     year: "numeric",
   });
@@ -180,335 +250,82 @@ function titleCase(value: string) {
     .join(" ");
 }
 
-function Panel({
-  title,
-  icon: Icon,
-  children,
-  aside,
-}: {
-  title: string;
-  icon: ElementType;
-  children: ReactNode;
-  aside?: ReactNode;
-}) {
-  return (
-    <section
-      className="rounded-2xl border p-5 sm:p-6"
-      style={{
-        background: "rgba(255,255,255,0.025)",
-        borderColor: "rgba(255,255,255,0.07)",
-        boxShadow: "0 12px 32px rgba(0,0,0,0.18)",
-      }}
-    >
-      <div className="mb-5 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-9 w-9 items-center justify-center rounded-xl border"
-            style={{
-              background: "rgba(232,164,74,0.1)",
-              borderColor: "rgba(232,164,74,0.16)",
-            }}
-          >
-            <Icon className="h-4 w-4 text-[#e8a44a]" />
-          </div>
-          <h2 className="text-sm font-bold text-white/80">{title}</h2>
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="rounded-lg border border-[#3f4147] bg-[#1e1f22] p-3 text-sm shadow-xl">
+        <div className="mb-2 font-bold text-[#dbdee1]">{fmtDateLong(label)}</div>
+        <div className="space-y-1.5">
+          {payload.map((p: any, idx: number) => (
+            <div key={idx} className="flex items-center justify-between gap-6">
+              <div className="flex items-center gap-2">
+                <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: p.color }} />
+                <span className="text-[#949ba4] font-medium">{titleCase(p.name)}</span>
+              </div>
+              <span className="font-bold text-[#dbdee1]">{fmt(p.value)}</span>
+            </div>
+          ))}
         </div>
-        {aside}
       </div>
-      {children}
-    </section>
-  );
-}
+    );
+  }
+  return null;
+};
 
 function MetricCard({
   label,
   value,
-  icon: Icon,
-  color,
-  caption,
+  trend,
+  trendPositive
 }: {
   label: string;
   value: string;
-  icon: ElementType;
-  color: string;
-  caption?: string;
+  trend?: string;
+  trendPositive?: boolean;
 }) {
   return (
-    <div
-      className="rounded-2xl border p-4 transition duration-200 hover:-translate-y-0.5"
-      style={{
-        background: "linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.02))",
-        borderColor: "rgba(255,255,255,0.075)",
-        boxShadow: "0 10px 28px rgba(0,0,0,0.15)",
-      }}
-    >
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <div
-          className="flex h-9 w-9 items-center justify-center rounded-xl border"
-          style={{ background: `${color}18`, borderColor: `${color}26` }}
-        >
-          <Icon className="h-4 w-4" style={{ color }} />
+    <div className="flex flex-col justify-between rounded-xl bg-[#2b2d31] p-5 shadow-sm transition-colors hover:bg-[#313338]">
+      <div className="text-[11px] font-bold uppercase tracking-wider text-[#949ba4]">{label}</div>
+      <div className="mt-3 text-3xl font-bold text-[#dbdee1]">{value}</div>
+      {trend && (
+        <div className={`mt-2 flex items-center text-xs font-semibold ${trendPositive ? 'text-[#23a559]' : 'text-[#da373c]'}`}>
+          <span className="mr-1">{trendPositive ? '▲' : '▼'}</span>
+          <span>{trend}</span>
+          <span className="ml-1 text-[#949ba4]">compared to last period</span>
         </div>
-        {caption ? <span className="text-xs text-white/35">{caption}</span> : null}
-      </div>
-      <div className="text-2xl font-extrabold text-white/90 sm:text-3xl">{value}</div>
-      <div className="mt-1 text-xs font-semibold text-white/42">{label}</div>
+      )}
     </div>
   );
 }
 
-function HorizontalBar({
-  value,
-  max,
-  color,
+function Panel({
+  title,
+  children,
+  aside,
 }: {
-  value: number;
-  max: number;
-  color: string;
-}) {
-  const percentage = max > 0 ? Math.max((value / max) * 100, 2) : 0;
-  return (
-    <div className="h-2 overflow-hidden rounded-full bg-white/[0.055]">
-      <div
-        className="h-full rounded-full transition-all duration-700"
-        style={{ width: `${percentage}%`, background: color }}
-      />
-    </div>
-  );
-}
-
-function RowBar({
-  label,
-  detail,
-  value,
-  max,
-  color,
-}: {
-  label: string;
-  detail: string;
-  value: number;
-  max: number;
-  color: string;
+  title: string;
+  children: ReactNode;
+  aside?: ReactNode;
 }) {
   return (
-    <div className="space-y-2">
-      <div className="flex items-baseline justify-between gap-3">
-        <div className="min-w-0">
-          <div className="truncate text-sm font-semibold text-white/72" title={label}>
-            {label}
-          </div>
-          <div className="truncate text-xs text-white/32">{detail}</div>
-        </div>
-        <div className="shrink-0 text-sm font-bold text-white/82">{fmt(value)}</div>
+    <section className="flex flex-col rounded-xl bg-[#2b2d31] p-6 shadow-sm overflow-hidden">
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-base font-bold text-[#dbdee1]">{title}</h2>
+        {aside}
       </div>
-      <HorizontalBar value={value} max={max} color={color} />
-    </div>
-  );
-}
-
-function TrendChart({
-  data,
-  metric,
-  color,
-}: {
-  data: TrendPoint[];
-  metric: TrendMetric;
-  color: string;
-}) {
-  if (!data.length) {
-    return <div className="py-16 text-center text-sm text-white/35">No trend data yet.</div>;
-  }
-
-  const width = 100;
-  const height = 220;
-  const paddingX = 4;
-  const paddingY = 14;
-  const values = data.map((point) => point[metric]);
-  const max = Math.max(...values, 1);
-  const min = Math.min(...values);
-  const range = max - min || 1;
-  const innerWidth = width - paddingX * 2;
-  const innerHeight = height - paddingY * 2;
-
-  const points = values.map((value, index) => {
-    const x = paddingX + (index / Math.max(values.length - 1, 1)) * innerWidth;
-    const y = paddingY + innerHeight - ((value - min) / range) * innerHeight;
-    return { x, y, value, date: data[index].date };
-  });
-
-  const path = `M ${points.map((point) => `${point.x},${point.y}`).join(" L ")}`;
-  const areaPath = `${path} L ${paddingX + innerWidth},${paddingY + innerHeight} L ${paddingX},${paddingY + innerHeight} Z`;
-  const gradientId = `analytics-${metric}`;
-
-  return (
-    <div>
-      <div className="mb-3 flex items-center justify-between text-xs text-white/36">
-        <span>{fmt(max)}</span>
-        <span>{fmt(Math.round((max + min) / 2))}</span>
-        <span>{fmt(min)}</span>
-      </div>
-      <svg
-        viewBox={`0 0 ${width} ${height}`}
-        preserveAspectRatio="none"
-        className="h-[220px] w-full overflow-visible"
-        role="img"
-        aria-label={`${metric} trend`}
-      >
-        <defs>
-          <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity="0.24" />
-            <stop offset="100%" stopColor={color} stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        {[0, 0.25, 0.5, 0.75, 1].map((line) => (
-          <line
-            key={line}
-            x1={paddingX}
-            x2={paddingX + innerWidth}
-            y1={paddingY + line * innerHeight}
-            y2={paddingY + line * innerHeight}
-            stroke="rgba(255,255,255,0.055)"
-            strokeWidth="0.35"
-          />
-        ))}
-        <path d={areaPath} fill={`url(#${gradientId})`} />
-        <path
-          d={path}
-          fill="none"
-          stroke={color}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="0.9"
-        />
-        {points.map((point, index) => (
-          <circle key={`${point.date}-${index}`} cx={point.x} cy={point.y} r="0.75" fill={color} opacity="0.78">
-            <title>{`${fmtDate(point.date)}: ${fmt(point.value)}`}</title>
-          </circle>
-        ))}
-      </svg>
-      <div className="mt-2 flex justify-between text-xs text-white/32">
-        <span>{fmtDate(data[0].date)}</span>
-        <span>{fmtDate(data[Math.floor(data.length / 2)]?.date || data[0].date)}</span>
-        <span>{fmtDate(data[data.length - 1].date)}</span>
-      </div>
-    </div>
-  );
-}
-
-function DeviceDonut({ devices }: { devices: DeviceCategory[] }) {
-  const total = devices.reduce((sum, device) => sum + device.users, 0);
-  if (!total) return <div className="py-10 text-center text-sm text-white/35">No device data yet.</div>;
-
-  const radius = 39;
-  const circumference = 2 * Math.PI * radius;
-  const segments = devices.map((device, index) => {
-    const previousShare = devices
-      .slice(0, index)
-      .reduce((sum, item) => sum + item.users / total, 0);
-    const share = device.users / total;
-    const color = DEVICE_COLORS[device.category.toLowerCase()] || DEVICE_COLORS.unknown;
-
-    return {
-      category: device.category,
-      color,
-      dash: share * circumference,
-      dashOffset: -previousShare * circumference,
-    };
-  });
-
-  return (
-    <div className="flex flex-col items-center gap-5 sm:flex-row sm:justify-center">
-      <svg width="124" height="124" viewBox="0 0 100 100" aria-label="Device distribution">
-        <circle cx="50" cy="50" r={radius} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="9" />
-        {segments.map((segment) => (
-          <circle
-            key={segment.category}
-            cx="50"
-            cy="50"
-            r={radius}
-            fill="none"
-            stroke={segment.color}
-            strokeDasharray={`${segment.dash} ${circumference - segment.dash}`}
-            strokeDashoffset={segment.dashOffset}
-            strokeLinecap="round"
-            strokeWidth="9"
-          />
-        ))}
-        <text x="50" y="48" fill="rgba(255,255,255,0.88)" textAnchor="middle" fontSize="12" fontWeight="800">
-          {fmt(total)}
-        </text>
-        <text x="50" y="61" fill="rgba(255,255,255,0.38)" textAnchor="middle" fontSize="7">
-          users
-        </text>
-      </svg>
-
-      <div className="w-full max-w-xs space-y-3">
-        {devices.map((device) => {
-          const Icon = DEVICE_ICONS[device.category.toLowerCase()] || Laptop;
-          const color = DEVICE_COLORS[device.category.toLowerCase()] || DEVICE_COLORS.unknown;
-
-          return (
-            <div key={device.category} className="flex items-center gap-3">
-              <span className="h-2.5 w-2.5 rounded-full" style={{ background: color }} />
-              <Icon className="h-4 w-4 text-white/42" />
-              <span className="flex-1 text-sm font-semibold text-white/68">{titleCase(device.category)}</span>
-              <span className="text-sm font-bold text-white/84">{device.percentage}%</span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function VitalRow({ vital }: { vital: WebVitalMetric }) {
-  const total = Math.max(vital.good + vital.needsImprovement + vital.poor, 1);
-  const good = (vital.good / total) * 100;
-  const needsImprovement = (vital.needsImprovement / total) * 100;
-  const poor = (vital.poor / total) * 100;
-
-  return (
-    <div className="rounded-xl border border-white/[0.06] bg-white/[0.025] p-4">
-      <div className="mb-3 flex items-start justify-between gap-4">
-        <div>
-          <div className="text-sm font-bold text-white/82">{vital.name}</div>
-          <div className="text-xs text-white/36">
-            Avg {Math.round(vital.average)} ms - P75 {Math.round(vital.p75)} ms
-          </div>
-        </div>
-        <div className="text-right text-xs text-white/42">
-          <span className="block text-sm font-bold text-white/78">{fmt(vital.count)}</span>
-          samples
-        </div>
-      </div>
-      <div className="flex h-2 overflow-hidden rounded-full bg-white/[0.06]">
-        <div style={{ width: `${good}%`, background: COLORS.green }} />
-        <div style={{ width: `${needsImprovement}%`, background: COLORS.orange }} />
-        <div style={{ width: `${poor}%`, background: COLORS.rose }} />
-      </div>
-      <div className="mt-2 flex justify-between text-xs text-white/35">
-        <span>{vital.good} good</span>
-        <span>{vital.needsImprovement} needs work</span>
-        <span>{vital.poor} poor</span>
-      </div>
-    </div>
+      <div className="flex-1 w-full min-h-0">{children}</div>
+    </section>
   );
 }
 
 function EmptyState() {
   return (
-    <div
-      className="rounded-2xl border p-8 text-center"
-      style={{
-        background: "linear-gradient(135deg, rgba(232,164,74,0.08), rgba(78,205,196,0.045))",
-        borderColor: "rgba(232,164,74,0.14)",
-      }}
-    >
-      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-[#e8a44a]/20 bg-[#e8a44a]/10">
-        <BarChart3 className="h-5 w-5 text-[#e8a44a]" />
+    <div className="rounded-xl bg-[#2b2d31] p-12 text-center shadow-sm">
+      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#1e1f22]">
+        <BarChart3 className="h-6 w-6 text-[#949ba4]" />
       </div>
-      <h2 className="text-lg font-bold text-white/86">Waiting for real traffic</h2>
-      <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-white/48">
+      <h2 className="text-lg font-bold text-[#dbdee1]">Waiting for real traffic</h2>
+      <p className="mx-auto mt-2 max-w-sm text-sm text-[#949ba4]">
         Prisma analytics is active. This view will populate as visitors browse public pages.
       </p>
     </div>
@@ -546,25 +363,25 @@ export default function AnalyticsDashboard() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 py-32">
-        <Loader2 className="h-8 w-8 animate-spin text-[#e8a44a]" />
-        <p className="text-sm text-white/35">Loading Prisma analytics...</p>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 bg-[#313338] rounded-xl">
+        <Loader2 className="h-8 w-8 animate-spin text-[#5865F2]" />
+        <p className="text-sm font-medium text-[#949ba4]">Loading insights...</p>
       </div>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 py-32">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-red-400/15 bg-red-500/10">
-          <AlertCircle className="h-7 w-7 text-red-400" />
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 bg-[#313338] rounded-xl p-8 text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#da373c]/10">
+          <AlertCircle className="h-8 w-8 text-[#da373c]" />
         </div>
-        <h1 className="text-lg font-bold text-white/84">Analytics unavailable</h1>
-        <p className="max-w-md text-center text-sm text-white/42">{error || "Unable to load analytics data."}</p>
+        <h1 className="text-xl font-bold text-[#dbdee1]">Analytics Unavailable</h1>
+        <p className="max-w-md text-sm text-[#949ba4]">{error || "Unable to load analytics data."}</p>
         <button
           type="button"
           onClick={() => fetchData(days)}
-          className="mt-2 inline-flex items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.05] px-4 py-2 text-sm font-semibold text-white/70 transition hover:bg-white/[0.08] hover:text-white"
+          className="mt-4 inline-flex items-center gap-2 rounded bg-[#5865F2] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#4752c4]"
         >
           <RefreshCcw className="h-4 w-4" />
           Retry
@@ -575,76 +392,71 @@ export default function AnalyticsDashboard() {
 
   const kpi = data.kpis;
   const hasTraffic = kpi.pageViews > 0 || kpi.visitors > 0;
-  const topPageMax = data.topPages[0]?.views || 1;
-  const sourceMax = data.trafficSources[0]?.sessions || 1;
-  const countryMax = data.countries[0]?.users || 1;
-  const browserMax = data.browsers[0]?.users || 1;
-  const eventMax = data.topEvents[0]?.count || 1;
+  
+  // Format trend data for Recharts
+  const chartData = data.trend.map(p => ({
+    ...p,
+    name: p.date, // Use 'name' for XAxis
+  }));
+
   const trendColors: Record<TrendMetric, string> = {
-    visitors: COLORS.amber,
-    sessions: COLORS.teal,
-    pageViews: COLORS.violet,
-    events: COLORS.green,
+    visitors: COLORS.blurple,
+    sessions: COLORS.green,
+    pageViews: COLORS.pink,
+    events: COLORS.yellow,
   };
 
-  const metrics = [
-    { label: "Visitors", value: fmt(kpi.visitors), icon: Users, color: COLORS.amber },
-    { label: "Active now", value: fmt(kpi.activeVisitors), icon: Activity, color: COLORS.green, caption: "15 min" },
-    { label: "Sessions", value: fmt(kpi.sessions), icon: TrendingUp, color: COLORS.teal },
-    { label: "Page views", value: fmt(kpi.pageViews), icon: Eye, color: COLORS.violet },
-    { label: "Events", value: fmt(kpi.eventCount), icon: MousePointerClick, color: COLORS.sky },
-    { label: "Avg session", value: fmtDuration(kpi.avgSessionDuration), icon: Clock, color: COLORS.rose },
-    { label: "Bounce rate", value: `${kpi.bounceRate}%`, icon: ArrowDownRight, color: COLORS.orange },
-    { label: "Pages/session", value: kpi.pagesPerSession.toFixed(2), icon: Gauge, color: COLORS.green },
-    { label: "New visitors", value: fmt(kpi.newVisitors), icon: ArrowUpRight, color: COLORS.teal },
-    { label: "Returning", value: fmt(kpi.returningVisitors), icon: Users, color: COLORS.violet },
-  ];
+  const topPagesData = data.topPages.slice(0, 5);
+  const trafficSourcesData = data.trafficSources.slice(0, 5).map(s => ({
+    name: `${s.source}`,
+    sessions: s.sessions,
+    users: s.users
+  }));
 
-  const summaryItems = [
-    { label: "Top page", value: data.summary.topPage, icon: Eye, color: COLORS.amber },
-    { label: "Top country", value: data.summary.topCountry, icon: Globe, color: COLORS.teal },
-    { label: "Top device", value: titleCase(data.summary.topDevice), icon: Monitor, color: COLORS.violet },
-    { label: "Top source", value: data.summary.topSource, icon: PieChart, color: COLORS.green },
-  ];
+  const countriesData = data.countries.slice(0, 5);
 
   return (
-    <div className="space-y-7">
-      <div className="flex flex-col gap-4 border-b border-white/[0.07] pb-6 lg:flex-row lg:items-end lg:justify-between">
+    <div className="min-h-screen bg-[#313338] rounded-2xl p-6 md:p-8 space-y-8 font-sans">
+      {/* Header Area styled like Discord's Server Insights */}
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between border-b border-[#3f4147] pb-6">
         <div>
-          <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-[#e8a44a]/15 bg-[#e8a44a]/10 px-3 py-1 text-xs font-semibold text-[#e8a44a]">
-            <BarChart3 className="h-3.5 w-3.5" />
-            First-party Prisma analytics
-          </div>
-          <h1 className="font-[family-name:var(--font-heading)] text-3xl font-extrabold text-white/92">
-            Analytics <span className="font-semibold text-white/28">Overview</span>
+          <h1 className="text-2xl font-bold text-[#dbdee1]">
+            Growth & Activation
           </h1>
-          <p className="mt-1 text-sm text-white/38">
-            {fmtDateRange(data.dateRange.start)} to {fmtDateRange(data.dateRange.end)}
+          <p className="mt-1 text-sm text-[#949ba4]">
+            Data from the last {days} days. Users who opted out of analytics tracking will not show up in the data.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => fetchData(days)}
-            className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 text-sm font-semibold text-white/58 transition hover:bg-white/[0.07] hover:text-white/82"
-          >
-            <RefreshCcw className="h-4 w-4" />
-            Refresh
-          </button>
-          <div className="flex overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.035]">
+        <div className="flex flex-wrap items-end gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-[#949ba4] uppercase">Interval</label>
+            <div className="flex h-10 items-center justify-between rounded bg-[#1e1f22] px-3 border border-[#1e1f22] text-sm text-[#dbdee1] min-w-[140px] shadow-sm">
+              <span>Daily</span>
+              <ChevronDownIcon />
+            </div>
+          </div>
+          
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-[#949ba4] uppercase">Date Range</label>
+            <div className="flex h-10 items-center justify-between gap-3 rounded bg-[#1e1f22] px-3 border border-[#1e1f22] text-sm text-[#dbdee1] min-w-[200px] shadow-sm">
+              <span>{fmtDateRange(data.dateRange.start)} - {fmtDateRange(data.dateRange.end)}</span>
+              <Calendar className="h-4 w-4 text-[#949ba4]" />
+            </div>
+          </div>
+
+          <div className="flex overflow-hidden rounded bg-[#1e1f22] border border-[#1e1f22] mt-1 lg:mt-0 h-10 shadow-sm">
             {([7, 30, 90, 365] as DateRange[]).map((range) => (
               <button
                 key={range}
                 type="button"
                 onClick={() => setDays(range)}
-                className={`inline-flex h-10 min-w-16 items-center justify-center gap-1.5 px-3 text-sm font-bold transition ${
+                className={`px-3 text-sm font-medium transition ${
                   days === range
-                    ? "bg-[#e8a44a]/12 text-[#e8a44a]"
-                    : "text-white/38 hover:bg-white/[0.04] hover:text-white/68"
+                    ? "bg-[#3f4147] text-[#dbdee1]"
+                    : "text-[#949ba4] hover:bg-[#2b2d31] hover:text-[#dbdee1]"
                 }`}
               >
-                <Calendar className="h-3.5 w-3.5" />
                 {range === 365 ? "1Y" : `${range}D`}
               </button>
             ))}
@@ -654,182 +466,372 @@ export default function AnalyticsDashboard() {
 
       {!hasTraffic ? <EmptyState /> : null}
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        {metrics.map((metric) => (
-          <MetricCard key={metric.label} {...metric} />
-        ))}
+      {/* Key Metrics Row */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <MetricCard label="Total Visitors" value={fmt(kpi.visitors)} />
+        <MetricCard label="Active Sessions" value={fmt(kpi.sessions)} />
+        <MetricCard label="Page Views" value={fmt(kpi.pageViews)} />
+        <MetricCard label="Bounce Rate" value={`${kpi.bounceRate}%`} />
       </div>
 
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {summaryItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <div
-              key={item.label}
-              className="flex min-h-24 items-center gap-3 rounded-2xl border p-4"
-              style={{
-                background: "rgba(255,255,255,0.025)",
-                borderColor: "rgba(255,255,255,0.07)",
-              }}
-            >
-              <div
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border"
-                style={{ background: `${item.color}14`, borderColor: `${item.color}22` }}
-              >
-                <Icon className="h-4 w-4" style={{ color: item.color }} />
-              </div>
-              <div className="min-w-0">
-                <div className="text-xs font-semibold text-white/35">{item.label}</div>
-                <div className="truncate text-sm font-bold text-white/78" title={item.value}>
-                  {item.value}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
+      {/* Interactive Trend Chart */}
       <Panel
-        title="Traffic trend"
-        icon={TrendingUp}
+        title="Traffic over time"
         aside={
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-2">
             {(["visitors", "sessions", "pageViews", "events"] as TrendMetric[]).map((metric) => (
               <button
                 key={metric}
                 type="button"
                 onClick={() => setTrendMetric(metric)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+                className={`rounded px-2.5 py-1 text-xs font-bold transition ${
                   trendMetric === metric
-                    ? "bg-white/[0.08] text-white/86"
-                    : "text-white/35 hover:bg-white/[0.045] hover:text-white/62"
+                    ? "bg-[#3f4147] text-[#dbdee1]"
+                    : "text-[#949ba4] hover:bg-[#3f4147]/50 hover:text-[#dbdee1]"
                 }`}
               >
-                {metric === "pageViews" ? "Page views" : titleCase(metric)}
+                {metric === "pageViews" ? "Page Views" : titleCase(metric)}
               </button>
             ))}
           </div>
         }
       >
-        <TrendChart data={data.trend} metric={trendMetric} color={trendColors[trendMetric]} />
+        <div className="h-[300px] w-full mt-4">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id={`color-${trendMetric}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={trendColors[trendMetric]} stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor={trendColors[trendMetric]} stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#3f4147" />
+              <XAxis 
+                dataKey="name" 
+                axisLine={false} 
+                tickLine={false} 
+                tickFormatter={fmtDateLong}
+                tick={{ fill: '#949ba4', fontSize: 12 }}
+                dy={10}
+              />
+              <YAxis 
+                axisLine={false} 
+                tickLine={false} 
+                tickFormatter={fmt}
+                tick={{ fill: '#949ba4', fontSize: 12 }}
+              />
+              <Tooltip 
+                content={<CustomTooltip />} 
+                cursor={{ stroke: '#ffffff', strokeWidth: 1.5, strokeDasharray: '4 4' }} 
+              />
+              <Area 
+                type="monotone" 
+                dataKey={trendMetric} 
+                stroke={trendColors[trendMetric]} 
+                strokeWidth={3}
+                fillOpacity={1} 
+                fill={`url(#color-${trendMetric})`} 
+                activeDot={{ r: 6, fill: trendColors[trendMetric], stroke: '#1e1f22', strokeWidth: 2 }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </Panel>
 
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-        <Panel title="Top pages" icon={Eye}>
-          <div className="space-y-4">
-            {data.topPages.length ? (
-              data.topPages.map((page) => (
-                <RowBar
-                  key={page.path}
-                  label={page.path}
-                  detail={`${fmt(page.users)} visitors`}
-                  value={page.views}
-                  max={topPageMax}
-                  color={COLORS.amber}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Top Pages */}
+        <Panel title="Top Pages">
+          <div className="h-[250px] w-full mt-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={topPagesData} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#3f4147" />
+                <XAxis type="number" hide />
+                <YAxis 
+                  dataKey="path" 
+                  type="category" 
+                  axisLine={false} 
+                  tickLine={false}
+                  tick={{ fill: '#dbdee1', fontSize: 12 }}
+                  width={150}
                 />
-              ))
-            ) : (
-              <p className="py-8 text-center text-sm text-white/35">No page views yet.</p>
+                <Tooltip 
+                  cursor={{ fill: '#3f4147', opacity: 0.4 }} 
+                  contentStyle={{ backgroundColor: '#1e1f22', borderColor: '#3f4147', color: '#dbdee1', borderRadius: '8px' }}
+                  itemStyle={{ color: '#dbdee1', fontWeight: 'bold' }}
+                />
+                <Bar dataKey="views" fill={COLORS.blurple} radius={[0, 4, 4, 0]} barSize={24} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Panel>
+
+        {/* Traffic Sources */}
+        <Panel title="Traffic Sources">
+          <div className="h-[250px] w-full mt-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={trafficSourcesData} margin={{ top: 20, right: 0, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#3f4147" />
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false}
+                  tick={{ fill: '#949ba4', fontSize: 12 }}
+                  dy={10}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tickFormatter={fmt}
+                  tick={{ fill: '#949ba4', fontSize: 12 }}
+                />
+                <Tooltip 
+                  cursor={{ fill: '#3f4147', opacity: 0.4 }}
+                  contentStyle={{ backgroundColor: '#1e1f22', borderColor: '#3f4147', color: '#dbdee1', borderRadius: '8px' }}
+                />
+                <Bar dataKey="sessions" fill={COLORS.green} radius={[4, 4, 0, 0]} barSize={32} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Panel>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Countries with Real Flags */}
+        <Panel title="Top Countries">
+          <div className="mt-4 space-y-3">
+            {countriesData.length > 0 ? countriesData.map((c, i) => {
+              const maxUsers = countriesData[0]?.users || 1;
+              const pct = Math.round((c.users / maxUsers) * 100);
+              const flagSrc = getFlagUrl(c.country);
+              return (
+                <div key={c.country} className="group">
+                  <div className="flex items-center gap-3 mb-1.5">
+                    <span className="text-sm font-bold text-[#949ba4] w-5 text-right">{i + 1}</span>
+                    {flagSrc ? (
+                      <img
+                        src={flagSrc}
+                        alt={`${c.country} flag`}
+                        width={24}
+                        height={16}
+                        className="rounded-[3px] object-cover shadow-sm"
+                        style={{ minWidth: 24 }}
+                      />
+                    ) : (
+                      <Globe className="h-4 w-4 text-[#949ba4]" style={{ minWidth: 24 }} />
+                    )}
+                    <span className="text-sm font-semibold text-[#dbdee1] flex-1 truncate">{c.country}</span>
+                    <span className="text-sm font-bold text-[#dbdee1] tabular-nums">{fmt(c.users)}</span>
+                    <span className="text-[10px] font-medium text-[#949ba4] w-10 text-right">{fmt(c.sessions)} ses</span>
+                  </div>
+                  <div className="ml-8 h-1.5 rounded-full bg-[#1e1f22] overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-700 ease-out"
+                      style={{
+                        width: `${pct}%`,
+                        background: `linear-gradient(90deg, ${COLORS.pink}, ${COLORS.blurple})`,
+                      }}
+                    />
+                  </div>
+                </div>
+              );
+            }) : (
+              <p className="text-sm text-[#949ba4] text-center py-8">No country data yet.</p>
             )}
           </div>
         </Panel>
 
-        <Panel title="Traffic sources" icon={PieChart}>
-          <div className="space-y-4">
-            {data.trafficSources.length ? (
-              data.trafficSources.map((source) => (
-                <RowBar
-                  key={`${source.source}-${source.medium}`}
-                  label={`${source.source} / ${source.medium}`}
-                  detail={`${fmt(source.users)} visitors`}
-                  value={source.sessions}
-                  max={sourceMax}
-                  color={COLORS.teal}
-                />
-              ))
+        {/* Devices Donut */}
+        <Panel title="Devices">
+           <div className="flex h-[250px] w-full mt-4 items-center justify-center">
+             {data.devices.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsPieChart>
+                    <Pie
+                      data={data.devices}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="users"
+                      nameKey="category"
+                      stroke="none"
+                    >
+                      {data.devices.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={DEVICE_COLORS[index % DEVICE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1e1f22', borderColor: '#3f4147', color: '#dbdee1', borderRadius: '8px' }}
+                      itemStyle={{ color: '#dbdee1', fontWeight: 'bold' }}
+                      formatter={(value: any, name: any) => [fmt(Number(value) || 0), titleCase(String(name))]}
+                    />
+                    <Legend 
+                      verticalAlign="bottom" 
+                      height={36} 
+                      iconType="circle"
+                      formatter={(value) => <span className="text-[#dbdee1]">{titleCase(value)}</span>}
+                    />
+                  </RechartsPieChart>
+                </ResponsiveContainer>
+             ) : (
+                <p className="text-sm text-[#949ba4]">No device data yet.</p>
+             )}
+           </div>
+        </Panel>
+
+        {/* Other Metrics Summary */}
+        <Panel title="Additional Metrics">
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="rounded-xl bg-[#1e1f22] p-4 flex flex-col justify-center shadow-sm">
+              <div className="text-xs font-bold uppercase tracking-wider text-[#949ba4] mb-1">Avg Session Duration</div>
+              <div className="text-xl font-bold text-[#dbdee1] flex items-center gap-2">
+                <Clock className="h-5 w-5 text-[#5865F2]" />
+                {fmtDuration(kpi.avgSessionDuration)}
+              </div>
+            </div>
+            <div className="rounded-xl bg-[#1e1f22] p-4 flex flex-col justify-center shadow-sm">
+              <div className="text-xs font-bold uppercase tracking-wider text-[#949ba4] mb-1">Pages Per Session</div>
+              <div className="text-xl font-bold text-[#dbdee1] flex items-center gap-2">
+                <Globe className="h-5 w-5 text-[#23a559]" />
+                {kpi.pagesPerSession.toFixed(2)}
+              </div>
+            </div>
+            <div className="rounded-xl bg-[#1e1f22] p-4 flex flex-col justify-center shadow-sm">
+              <div className="text-xs font-bold uppercase tracking-wider text-[#949ba4] mb-1">New Visitors</div>
+              <div className="text-xl font-bold text-[#dbdee1] flex items-center gap-2">
+                <Users className="h-5 w-5" style={{ color: COLORS.pink }}/>
+                {fmt(kpi.newVisitors)}
+              </div>
+            </div>
+            <div className="rounded-xl bg-[#1e1f22] p-4 flex flex-col justify-center shadow-sm">
+              <div className="text-xs font-bold uppercase tracking-wider text-[#949ba4] mb-1">Total Events</div>
+              <div className="text-xl font-bold text-[#dbdee1] flex items-center gap-2">
+                <Activity className="h-5 w-5" style={{ color: COLORS.yellow }}/>
+                {fmt(kpi.eventCount)}
+              </div>
+            </div>
+          </div>
+        </Panel>
+      </div>
+
+      {/* Browsers & Top Events Row */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Browsers */}
+        <Panel title="Browsers">
+          <div className="mt-4 space-y-3">
+            {data.browsers.length > 0 ? data.browsers.slice(0, 6).map((b, i) => {
+              const maxUsers = data.browsers[0]?.users || 1;
+              const pct = Math.round((b.users / maxUsers) * 100);
+              const color = getBrowserColor(b.browser);
+              return (
+                <div key={b.browser}>
+                  <div className="flex items-center gap-3 mb-1.5">
+                    <span className="text-sm font-bold text-[#949ba4] w-5 text-right">{i + 1}</span>
+                    <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                    <span className="text-sm font-semibold text-[#dbdee1] flex-1 truncate">{b.browser}</span>
+                    <span className="text-sm font-bold text-[#dbdee1] tabular-nums">{fmt(b.users)} users</span>
+                    <span className="text-[10px] font-medium text-[#949ba4] w-12 text-right">{fmt(b.sessions)} ses</span>
+                  </div>
+                  <div className="ml-8 h-1.5 rounded-full bg-[#1e1f22] overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-700 ease-out"
+                      style={{ width: `${pct}%`, backgroundColor: color }}
+                    />
+                  </div>
+                </div>
+              );
+            }) : (
+              <p className="text-sm text-[#949ba4] text-center py-8">No browser data yet.</p>
+            )}
+          </div>
+        </Panel>
+
+        {/* Top Events */}
+        <Panel title="Top Events">
+          <div className="mt-4">
+            {data.topEvents.length > 0 ? (
+              <div className="space-y-1">
+                <div className="grid grid-cols-[1fr_100px_80px] gap-2 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#949ba4]">
+                  <span>Event</span>
+                  <span>Category</span>
+                  <span className="text-right">Count</span>
+                </div>
+                {data.topEvents.slice(0, 8).map((ev, i) => (
+                  <div
+                    key={`${ev.name}-${ev.category}`}
+                    className="grid grid-cols-[1fr_100px_80px] gap-2 items-center rounded-lg px-3 py-2.5 transition-colors hover:bg-[#1e1f22]"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <MousePointerClick className="h-3.5 w-3.5 text-[#5865F2] flex-shrink-0" />
+                      <span className="text-sm font-semibold text-[#dbdee1] truncate">{titleCase(ev.name)}</span>
+                    </div>
+                    <span className="inline-flex items-center rounded-full bg-[#1e1f22] px-2 py-0.5 text-[10px] font-bold text-[#949ba4] uppercase truncate">
+                      {ev.category}
+                    </span>
+                    <span className="text-sm font-bold text-[#dbdee1] text-right tabular-nums">{fmt(ev.count)}</span>
+                  </div>
+                ))}
+              </div>
             ) : (
-              <p className="py-8 text-center text-sm text-white/35">No source data yet.</p>
+              <p className="text-sm text-[#949ba4] text-center py-8">No events tracked yet.</p>
             )}
           </div>
         </Panel>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-        <Panel title="Countries" icon={Globe}>
-          <div className="space-y-4">
-            {data.countries.length ? (
-              data.countries.map((country) => (
-                <RowBar
-                  key={country.country}
-                  label={country.country}
-                  detail={`${fmt(country.sessions)} sessions - ${fmt(country.pageViews)} views`}
-                  value={country.users}
-                  max={countryMax}
-                  color={COLORS.violet}
-                />
-              ))
-            ) : (
-              <p className="py-8 text-center text-sm text-white/35">No country data yet.</p>
-            )}
+      {/* Web Vitals */}
+      {data.webVitals.length > 0 && (
+        <Panel title="Core Web Vitals">
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {data.webVitals.map((vital) => {
+              const rating = getVitalRating(vital.name, vital.p75);
+              const ratingColor = rating === "good" ? COLORS.green : rating === "needs-improvement" ? "#f0b232" : COLORS.red;
+              const total = vital.good + vital.needsImprovement + vital.poor;
+              const goodPct = total > 0 ? Math.round((vital.good / total) * 100) : 0;
+              const needsPct = total > 0 ? Math.round((vital.needsImprovement / total) * 100) : 0;
+              const poorPct = total > 0 ? 100 - goodPct - needsPct : 0;
+              return (
+                <div key={vital.name} className="rounded-xl bg-[#1e1f22] p-4 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#949ba4]">{vital.name}</span>
+                    <span
+                      className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase"
+                      style={{ backgroundColor: `${ratingColor}20`, color: ratingColor }}
+                    >
+                      {rating === "needs-improvement" ? "Needs Work" : titleCase(rating)}
+                    </span>
+                  </div>
+                  <div className="text-2xl font-bold text-[#dbdee1] mb-1" style={{ color: ratingColor }}>
+                    {fmtVitalValue(vital.name, vital.p75)}
+                  </div>
+                  <div className="text-[10px] text-[#949ba4] mb-3">
+                    P75 · avg {fmtVitalValue(vital.name, vital.average)} · {fmt(vital.count)} samples
+                  </div>
+                  <div className="flex h-1.5 w-full rounded-full overflow-hidden gap-0.5">
+                    <div className="rounded-full" style={{ width: `${goodPct}%`, backgroundColor: COLORS.green }} />
+                    <div className="rounded-full" style={{ width: `${needsPct}%`, backgroundColor: "#f0b232" }} />
+                    <div className="rounded-full" style={{ width: `${poorPct}%`, backgroundColor: COLORS.red }} />
+                  </div>
+                  <div className="flex justify-between mt-1.5 text-[9px] font-bold text-[#949ba4]">
+                    <span style={{ color: COLORS.green }}>{goodPct}% good</span>
+                    <span style={{ color: "#f0b232" }}>{needsPct}% meh</span>
+                    <span style={{ color: COLORS.red }}>{poorPct}% poor</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </Panel>
-
-        <Panel title="Devices" icon={Monitor}>
-          <DeviceDonut devices={data.devices} />
-        </Panel>
-      </div>
-
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-        <Panel title="Browsers" icon={Laptop}>
-          <div className="space-y-4">
-            {data.browsers.length ? (
-              data.browsers.map((browser) => (
-                <RowBar
-                  key={browser.browser}
-                  label={browser.browser}
-                  detail={`${fmt(browser.sessions)} sessions`}
-                  value={browser.users}
-                  max={browserMax}
-                  color={COLORS.sky}
-                />
-              ))
-            ) : (
-              <p className="py-8 text-center text-sm text-white/35">No browser data yet.</p>
-            )}
-          </div>
-        </Panel>
-
-        <Panel title="Top events" icon={MousePointerClick}>
-          <div className="space-y-4">
-            {data.topEvents.length ? (
-              data.topEvents.map((event) => (
-                <RowBar
-                  key={`${event.category}-${event.name}`}
-                  label={titleCase(event.name)}
-                  detail={titleCase(event.category)}
-                  value={event.count}
-                  max={eventMax}
-                  color={COLORS.green}
-                />
-              ))
-            ) : (
-              <p className="py-8 text-center text-sm text-white/35">No custom events yet.</p>
-            )}
-          </div>
-        </Panel>
-      </div>
-
-      <Panel title="Web Vitals" icon={Gauge}>
-        {data.webVitals.length ? (
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-            {data.webVitals.map((vital) => (
-              <VitalRow key={vital.name} vital={vital} />
-            ))}
-          </div>
-        ) : (
-          <p className="py-10 text-center text-sm text-white/35">No Web Vitals samples yet.</p>
-        )}
-      </Panel>
+      )}
     </div>
+  );
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 9L12 15L18 9" stroke="#949ba4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
   );
 }
