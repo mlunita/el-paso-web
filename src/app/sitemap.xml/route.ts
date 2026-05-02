@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://elpaso-rp.com';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://elpaso.vercel.app';
 
   const publicPages = [
     { path: '/', changeFrequency: 'daily', priority: 1.0 },

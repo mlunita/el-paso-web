@@ -37,7 +37,7 @@ export default async function HomePage() {
     "@type": "VideoGame",
     name: t.site.fullName,
     description: useDynamicCopy && settings?.description ? settings.description : t.seo.pages.home.description,
-    url: process.env.NEXT_PUBLIC_BASE_URL || "https://elpaso-rp.com",
+    url: process.env.NEXT_PUBLIC_BASE_URL || "https://elpaso.vercel.app",
     playMode: "MultiPlayer",
     applicationCategory: "Game",
     inLanguage: t.locale.htmlLang,

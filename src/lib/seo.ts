@@ -71,7 +71,7 @@ export function createRootMetadata(locale: Locale): Metadata {
   const t = getDictionary(locale);
 
   return {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://elpaso-rp.com"),
+    metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://elpaso.vercel.app"),
     title: {
       default: t.seo.defaultTitle,
       template: t.seo.titleTemplate,
