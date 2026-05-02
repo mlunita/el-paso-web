@@ -10,11 +10,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: number;
   }[] = [
       { path: '/', changeFrequency: 'daily', priority: 1.0 },
-      { path: '/applys', changeFrequency: 'weekly', priority: 0.8 },
       { path: '/news', changeFrequency: 'daily', priority: 0.9 },
       { path: '/team', changeFrequency: 'weekly', priority: 0.7 },
       { path: '/wiki', changeFrequency: 'weekly', priority: 0.7 },
-      { path: '/status', changeFrequency: 'daily', priority: 0.6 },
       { path: '/support', changeFrequency: 'weekly', priority: 0.7 },
       { path: '/ticket-status', changeFrequency: 'weekly', priority: 0.5 },
     ];
@@ -32,12 +30,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
           : `${baseUrl}${localePrefix}${page.path}`;
 
       entries.push({
-        url: url.endsWith('/') ? url : url,
+        url,
         lastModified: now,
         changeFrequency: page.changeFrequency,
         priority: page.priority,
         alternates: {
           languages: {
+            'x-default': `${baseUrl}${page.path}`,
             en: `${baseUrl}${page.path}`,
             es: `${baseUrl}/es${page.path === '/' ? '' : page.path}`,
           },
