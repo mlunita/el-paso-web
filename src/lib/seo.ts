@@ -104,6 +104,9 @@ export function createRootMetadata(locale: Locale): Metadata {
       description: t.seo.twitterDescription,
       images: ["/logo.png"],
     },
+    verification: {
+      google: "0SV78R7CjIyoIBVVT0NgswOrnSR_gFgdFoudAUIj92Y",
+    },
   };
 }
 
