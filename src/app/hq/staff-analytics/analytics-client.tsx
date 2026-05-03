@@ -1,0 +1,312 @@
+"use client";
+
+import {
+  BarChart3, Users, Clock, ClipboardList, TrendingUp, TrendingDown,
+  AlertTriangle, Shield, Trophy, Zap, Activity, Search,
+  ArrowUpRight, ArrowDownRight, Minus,
+} from "lucide-react";
+import { Card } from "@/components/ui/card";
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, LineChart, Line, Area, AreaChart,
+} from "recharts";
+
+const CHART_COLORS = ["#e8a44a", "#4ecdc4", "#ef4444", "#22c55e", "#8b5cf6", "#f59e0b", "#ec4899", "#06b6d4"];
+
+type AnalyticsData = {
+  overview: {
+    totalShifts: number; completedShifts: number; activeShifts: number;
+    totalActions: number; unreviewedActions: number;
+    totalLookups: number; totalBanRequests: number;
+  };
+  moderators: {
+    modId: string; modName: string; modRole: string;
+    shiftCount: number; totalSeconds: number; breakSeconds: number; actionCount: number;
+  }[];
+  actionTypeBreakdown: { type: string; count: number }[];
+  shiftTypeBreakdown: { type: string; count: number; totalHours: number }[];
+  dailyData: { date: string; shifts: number; actions: number; hours: number }[];
+  anomalies: string[];
+  inactiveMods: { modId: string; modName: string }[];
+  predictions: {
+    shiftTrend: number; actionTrend: number;
+    estimatedNextWeekShifts: number; estimatedNextWeekActions: number;
+  };
+};
+
+const ACTION_TYPE_LABELS: Record<string, string> = {
+  BAN_REQUEST: "Ban Request", MODLOG: "Mod Log", TICKET: "Ticket",
+  CHEATER_BAN: "Cheater Ban", WARNING: "Warning", KICK: "Kick",
+  APPEAL_REVIEW: "Appeal", STAFF_NOTE: "Staff Note",
+  CASE_REVIEW: "Case Review", INTERNAL_ESCALATION: "Escalation",
+  CUSTOM: "Custom",
+};
+
+function formatHours(seconds: number) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  return `${h}h ${m}m`;
+}
+
+function TrendIcon({ value }: { value: number }) {
+  if (value > 0) return <ArrowUpRight className="w-4 h-4 text-green-400" />;
+  if (value < 0) return <ArrowDownRight className="w-4 h-4 text-red-400" />;
+  return <Minus className="w-4 h-4 text-white/30" />;
+}
+
+export default function StaffAnalyticsClient({ analytics }: { analytics: AnalyticsData }) {
+  const { overview, moderators, actionTypeBreakdown, shiftTypeBreakdown, dailyData, anomalies, inactiveMods, predictions } = analytics;
+
+  // Sort leaderboards
+  const byTime = [...moderators].sort((a, b) => (b.totalSeconds - b.breakSeconds) - (a.totalSeconds - a.breakSeconds));
+  const byActions = [...moderators].sort((a, b) => b.actionCount - a.actionCount);
+  const byShifts = [...moderators].sort((a, b) => b.shiftCount - a.shiftCount);
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="mb-8 pb-6 border-b border-[var(--ep-border)]">
+        <h1 className="font-[family-name:var(--font-heading)] text-3xl font-extrabold tracking-tight">
+          Staff Analytics{" "}
+          <span className="text-white/20 font-medium text-lg ml-2">Performance & Insights</span>
+        </h1>
+        <p className="text-white/30 text-sm mt-1.5">
+          Comprehensive analytics, leaderboards, and predictions based on real data.
+        </p>
+      </div>
+
+      {/* Overview Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        {[
+          { label: "Total Shifts", value: overview.totalShifts, icon: Clock, gradient: "linear-gradient(135deg, #4ecdc4 0%, #36b3aa 100%)", shadow: "rgba(78,205,196,0.3)" },
+          { label: "Total Actions", value: overview.totalActions, icon: ClipboardList, gradient: "linear-gradient(135deg, #e8a44a 0%, #c4882e 100%)", shadow: "rgba(232,164,74,0.3)" },
+          { label: "Active Staff", value: overview.activeShifts, icon: Users, gradient: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)", shadow: "rgba(34,197,94,0.3)" },
+          { label: "Unreviewed", value: overview.unreviewedActions, icon: AlertTriangle, gradient: overview.unreviewedActions > 10 ? "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)" : "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)", shadow: overview.unreviewedActions > 10 ? "rgba(239,68,68,0.3)" : "rgba(245,158,11,0.3)" },
+        ].map((stat, i) => {
+          const Icon = stat.icon;
+          return (
+            <Card
+              key={stat.label}
+              className="ep-card-enter group relative border-0 text-white p-0 rounded-2xl overflow-hidden"
+              style={{ animationDelay: `${i * 80}ms`, background: stat.gradient, boxShadow: `0 8px 32px ${stat.shadow}`, border: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative z-10 p-5 flex flex-col items-center justify-center gap-2">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-1 transition-transform group-hover:scale-110" style={{ background: "rgba(255,255,255,0.15)" }}>
+                  <Icon className="w-5 h-5 text-white/90" />
+                </div>
+                <div className="text-3xl font-extrabold tabular-nums">{stat.value}</div>
+                <div className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-60">{stat.label}</div>
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Predictions Row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+        {[
+          { label: "Shift Trend", value: predictions.shiftTrend, suffix: "%" },
+          { label: "Action Trend", value: predictions.actionTrend, suffix: "%" },
+          { label: "Est. Next Week Shifts", value: predictions.estimatedNextWeekShifts, suffix: "" },
+          { label: "Est. Next Week Actions", value: predictions.estimatedNextWeekActions, suffix: "" },
+        ].map((pred) => (
+          <div key={pred.label} className="p-4 rounded-xl bg-white/[0.03] border border-[var(--ep-border)]">
+            <div className="flex items-center gap-2 mb-1">
+              <TrendIcon value={pred.value} />
+              <span className="text-lg font-bold tabular-nums text-white">
+                {pred.value > 0 ? "+" : ""}{pred.value}{pred.suffix}
+              </span>
+            </div>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-white/30">{pred.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* Activity Timeline */}
+        <div className="p-5 rounded-xl bg-white/[0.03] border border-[var(--ep-border)]">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-4 flex items-center gap-2">
+            <Activity className="w-4 h-4" /> 7-Day Activity
+          </h3>
+          <div className="h-[220px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={dailyData}>
+                <defs>
+                  <linearGradient id="shiftGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#4ecdc4" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#4ecdc4" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="actionGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#e8a44a" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#e8a44a" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="date" tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 10 }} tickFormatter={(v) => v.slice(5)} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: "rgba(255,255,255,0.2)", fontSize: 10 }} axisLine={false} tickLine={false} />
+                <Tooltip
+                  contentStyle={{ background: "#12151a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, fontSize: 12, color: "#fff" }}
+                  labelStyle={{ color: "rgba(255,255,255,0.4)" }}
+                />
+                <Area type="monotone" dataKey="shifts" stroke="#4ecdc4" fill="url(#shiftGrad)" strokeWidth={2} name="Shifts" />
+                <Area type="monotone" dataKey="actions" stroke="#e8a44a" fill="url(#actionGrad)" strokeWidth={2} name="Actions" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Action Type Breakdown */}
+        <div className="p-5 rounded-xl bg-white/[0.03] border border-[var(--ep-border)]">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-4 flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" /> Action Types
+          </h3>
+          {actionTypeBreakdown.length === 0 ? (
+            <p className="text-white/20 text-sm text-center py-8">No data yet.</p>
+          ) : (
+            <div className="h-[220px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={actionTypeBreakdown.map((a) => ({ ...a, type: ACTION_TYPE_LABELS[a.type] || a.type }))}>
+                  <XAxis dataKey="type" tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 9 }} axisLine={false} tickLine={false} angle={-45} textAnchor="end" height={60} />
+                  <YAxis tick={{ fill: "rgba(255,255,255,0.2)", fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ background: "#12151a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, fontSize: 12, color: "#fff" }} />
+                  <Bar dataKey="count" radius={[6, 6, 0, 0]} name="Count">
+                    {actionTypeBreakdown.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Leaderboards */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* Top by Time */}
+        <div className="p-5 rounded-xl bg-white/[0.03] border border-[var(--ep-border)]">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-4 flex items-center gap-2">
+            <Trophy className="w-4 h-4 text-[var(--ep-accent)]" /> Top by Time
+          </h3>
+          {byTime.length === 0 ? (
+            <p className="text-white/20 text-sm">No data.</p>
+          ) : (
+            <div className="space-y-2">
+              {byTime.slice(0, 10).map((mod, i) => (
+                <div key={mod.modId} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/[0.03] transition-colors">
+                  <span className={`w-6 text-center text-sm font-bold ${i < 3 ? "text-[var(--ep-accent)]" : "text-white/20"}`}>
+                    {i + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-white truncate">{mod.modName}</div>
+                    <div className="text-[10px] text-white/30">{mod.modRole}</div>
+                  </div>
+                  <span className="text-sm font-mono text-[var(--ep-accent)] tabular-nums">
+                    {formatHours(mod.totalSeconds - mod.breakSeconds)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Top by Actions */}
+        <div className="p-5 rounded-xl bg-white/[0.03] border border-[var(--ep-border)]">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-4 flex items-center gap-2">
+            <Zap className="w-4 h-4 text-[var(--ep-secondary)]" /> Top by Actions
+          </h3>
+          {byActions.length === 0 ? (
+            <p className="text-white/20 text-sm">No data.</p>
+          ) : (
+            <div className="space-y-2">
+              {byActions.slice(0, 10).map((mod, i) => (
+                <div key={mod.modId} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/[0.03] transition-colors">
+                  <span className={`w-6 text-center text-sm font-bold ${i < 3 ? "text-[var(--ep-secondary)]" : "text-white/20"}`}>
+                    {i + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-white truncate">{mod.modName}</div>
+                    <div className="text-[10px] text-white/30">{mod.modRole}</div>
+                  </div>
+                  <span className="text-sm font-mono text-[var(--ep-secondary)] tabular-nums">
+                    {mod.actionCount}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Top by Shifts */}
+        <div className="p-5 rounded-xl bg-white/[0.03] border border-[var(--ep-border)]">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-4 flex items-center gap-2">
+            <Clock className="w-4 h-4 text-green-400" /> Top by Shifts
+          </h3>
+          {byShifts.length === 0 ? (
+            <p className="text-white/20 text-sm">No data.</p>
+          ) : (
+            <div className="space-y-2">
+              {byShifts.slice(0, 10).map((mod, i) => (
+                <div key={mod.modId} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/[0.03] transition-colors">
+                  <span className={`w-6 text-center text-sm font-bold ${i < 3 ? "text-green-400" : "text-white/20"}`}>
+                    {i + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-white truncate">{mod.modName}</div>
+                    <div className="text-[10px] text-white/30">{mod.modRole}</div>
+                  </div>
+                  <span className="text-sm font-mono text-green-400 tabular-nums">
+                    {mod.shiftCount}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Alerts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Anomalies */}
+        <div className="p-5 rounded-xl bg-white/[0.03] border border-[var(--ep-border)]">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-4 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-yellow-400" /> Anomalies & Alerts
+          </h3>
+          {anomalies.length === 0 ? (
+            <p className="text-white/20 text-sm">No anomalies detected. ✓</p>
+          ) : (
+            <div className="space-y-2">
+              {anomalies.map((a, i) => (
+                <div key={i} className="flex items-start gap-2 p-3 rounded-lg bg-yellow-500/[0.06] border border-yellow-500/10">
+                  <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-xs text-white/60">{a}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Inactive Mods */}
+        <div className="p-5 rounded-xl bg-white/[0.03] border border-[var(--ep-border)]">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-4 flex items-center gap-2">
+            <Shield className="w-4 h-4 text-red-400" /> Inactive Moderators (14d)
+          </h3>
+          {inactiveMods.length === 0 ? (
+            <p className="text-white/20 text-sm">All active moderators have recent shifts. ✓</p>
+          ) : (
+            <div className="space-y-2">
+              {inactiveMods.map((m) => (
+                <div key={m.modId} className="flex items-center gap-2 p-3 rounded-lg bg-red-500/[0.06] border border-red-500/10">
+                  <div className="w-2 h-2 rounded-full bg-red-400" />
+                  <span className="text-sm text-white/60">{m.modName}</span>
+                  <span className="text-[10px] text-white/20 ml-auto">No shifts in 14 days</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

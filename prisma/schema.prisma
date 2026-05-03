@@ -154,6 +154,8 @@ model ModeratorToken {
   expiresAt     DateTime?
   loginLogs     ModeratorLoginLog[]
   banRequests   BanRequest[]
+  shifts        ModShift[]           @relation("ShiftToken")
+  modActions    ModAction[]          @relation("ActionToken")
 }
 
 model ModeratorLoginLog {
@@ -369,4 +371,134 @@ model AnalyticsWebVital {
   @@index([name, createdAt])
   @@index([rating, createdAt])
   @@index([path, createdAt])
+}
+
+// =====================================================
+// Shift Management System
+// =====================================================
+
+model ModShift {
+  id            String          @id @default(cuid())
+  tokenId       String
+  token         ModeratorToken  @relation("ShiftToken", fields: [tokenId], references: [id])
+  modName       String
+  modId         String
+  modRole       String
+  shiftType     String          @default("REGULAR") // REGULAR, TRAINING, EVENT, EMERGENCY, OVERTIME
+  status        String          @default("ACTIVE")   // ACTIVE, PAUSED, COMPLETED, CANCELLED, EDITED
+  clockIn       DateTime        @default(now())
+  clockOut      DateTime?
+  totalSeconds  Int             @default(0)
+  breakSeconds  Int             @default(0)
+  notes         String?
+  adminNotes    String?
+  editedBy      String?         // "admin" or null
+  editedAt      DateTime?
+  breaks        ModShiftBreak[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([tokenId, status])
+  @@index([modId, clockIn])
+  @@index([status, clockIn])
+  @@index([clockIn])
+}
+
+model ModShiftBreak {
+  id         String   @id @default(cuid())
+  shiftId    String
+  shift      ModShift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  startedAt  DateTime @default(now())
+  endedAt    DateTime?
+  duration   Int      @default(0) // seconds
+  reason     String?
+  createdAt  DateTime @default(now())
+
+  @@index([shiftId])
+}
+
+// =====================================================
+// Manual Moderation Action Registry
+// =====================================================
+
+model ModAction {
+  id               String              @id @default(cuid())
+  tokenId          String
+  token            ModeratorToken      @relation("ActionToken", fields: [tokenId], references: [id])
+  modName          String
+  modId            String
+  modRole          String
+  actionType       String              // BAN_REQUEST, MODLOG, TICKET, CHEATER_BAN, WARNING, KICK, APPEAL_REVIEW, STAFF_NOTE, CASE_REVIEW, INTERNAL_ESCALATION, CUSTOM
+  preset           String?             // matches actionType or custom label
+  targetUser       String?             // Roblox username or ID
+  reason           String
+  evidenceLink     String              // link to message, log, ticket, etc.
+  internalNotes    String?
+  reviewStatus     String              @default("UNREVIEWED") // UNREVIEWED, REVIEWED, FLAGGED, REJECTED
+  reviewedBy       String?
+  reviewedAt       DateTime?
+  reviewNotes      String?
+  deletedAt        DateTime?           // soft delete
+  deletedBy        String?
+  auditLogs        ModActionAuditLog[]
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  @@index([tokenId, createdAt])
+  @@index([modId, createdAt])
+  @@index([actionType, createdAt])
+  @@index([reviewStatus, createdAt])
+  @@index([targetUser, createdAt])
+  @@index([createdAt])
+}
+
+model ModActionAuditLog {
+  id          String    @id @default(cuid())
+  actionId    String
+  action      ModAction @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  event       String    // CREATED, EDITED, DELETED, REVIEW_CHANGED, RESTORED
+  performedBy String    // "mod:<modId>" or "admin"
+  fromValue   String?
+  toValue     String?
+  details     String?
+  createdAt   DateTime  @default(now())
+
+  @@index([actionId, createdAt])
+}
+
+// =====================================================
+// Roblox User Lookup System
+// =====================================================
+
+model RobloxLookupLog {
+  id           String   @id @default(cuid())
+  performedBy  String   // "mod:<modId>" or "admin"
+  performerName String
+  query        String   // username or userId searched
+  resultUserId String?  // resolved userId
+  resultName   String?  // resolved username
+  success      Boolean
+  createdAt    DateTime @default(now())
+
+  @@index([performedBy, createdAt])
+  @@index([resultUserId, createdAt])
+  @@index([createdAt])
+}
+
+model RobloxUserCache {
+  id              String   @id @default(cuid())
+  robloxUserId    String   @unique
+  username        String
+  displayName     String?
+  description     String?
+  avatarUrl       String?
+  accountCreated  DateTime?
+  isBanned        Boolean  @default(false)
+  lastFetched     DateTime @default(now())
+  rawData         String?  // JSON blob for extra data
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([username])
+  @@index([lastFetched])
 }

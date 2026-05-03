@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileText, Users, Settings, LogOut, FileBadge, BookOpen, Shield, Key, KeyRound, AlertTriangle, LifeBuoy, BarChart3 } from "lucide-react";
+import { LayoutDashboard, FileText, Users, Settings, LogOut, FileBadge, BookOpen, Shield, Key, KeyRound, AlertTriangle, LifeBuoy, BarChart3, Clock, ClipboardList, Search, TrendingUp } from "lucide-react";
 import { AdminLoader } from "@/components/admin-loader";
 import { adminLogout } from "@/app/hq/actions";
 import { useI18n } from "@/components/i18n-provider";
@@ -27,6 +27,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/hq/roles", label: t.admin.nav.roles, icon: Shield },
     { href: "/hq/tokens", label: t.admin.nav.tokens, icon: Key },
     { href: "/hq/ban-requests", label: t.admin.nav.banRequests, icon: AlertTriangle },
+    { href: "/hq/shifts", label: "Shifts", icon: Clock },
+    { href: "/hq/mod-actions", label: "Mod Actions", icon: ClipboardList },
+    { href: "/hq/roblox-lookup", label: "Roblox Lookup", icon: Search },
+    { href: "/hq/staff-analytics", label: "Staff Analytics", icon: TrendingUp },
   ];
 
   const securityLinks = [
