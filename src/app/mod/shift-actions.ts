@@ -263,20 +263,16 @@ export async function createModAction(prevState: unknown, formData: FormData) {
       internalNotes: formData.get("internalNotes") || undefined,
     });
 
-    // Duplicate check: same mod + same targetUser + same evidenceLink within 5 min
-    const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
+    // Duplicate check: ensure the exact same evidence link isn't reused
     const duplicate = await prisma.modAction.findFirst({
       where: {
-        tokenId: session.tokenId,
-        targetUser: validated.targetUser,
         evidenceLink: validated.evidenceLink,
-        createdAt: { gte: fiveMinAgo },
         deletedAt: null,
       },
     });
 
     if (duplicate) {
-      return { success: false, error: "A similar action was already registered in the last 5 minutes." };
+      return { success: false, error: "This evidence link has already been used." };
     }
 
     const modAction = await prisma.modAction.create({
