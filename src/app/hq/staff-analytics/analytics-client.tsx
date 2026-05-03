@@ -1,11 +1,14 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   BarChart3, Users, Clock, ClipboardList, TrendingUp, TrendingDown,
   AlertTriangle, Shield, Trophy, Zap, Activity, Search,
-  ArrowUpRight, ArrowDownRight, Minus,
+  ArrowUpRight, ArrowDownRight, Minus, Calendar, Download, X, Loader2
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, LineChart, Line, Area, AreaChart,
@@ -54,8 +57,64 @@ function TrendIcon({ value }: { value: number }) {
   return <Minus className="w-4 h-4 text-white/30" />;
 }
 
-export default function StaffAnalyticsClient({ analytics }: { analytics: AnalyticsData }) {
+export default function StaffAnalyticsClient({
+  analytics,
+  initialDateRange,
+}: {
+  analytics: AnalyticsData;
+  initialDateRange?: { from?: string; to?: string };
+}) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const [dateFrom, setDateFrom] = useState(initialDateRange?.from || "");
+  const [dateTo, setDateTo] = useState(initialDateRange?.to || "");
+  const [exporting, setExporting] = useState(false);
+
   const { overview, moderators, actionTypeBreakdown, shiftTypeBreakdown, dailyData, anomalies, inactiveMods, predictions } = analytics;
+
+  const applyFilters = () => {
+    const params = new URLSearchParams(searchParams);
+    if (dateFrom) params.set("from", dateFrom);
+    else params.delete("from");
+    
+    if (dateTo) params.set("to", dateTo);
+    else params.delete("to");
+
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const clearFilters = () => {
+    setDateFrom("");
+    setDateTo("");
+    router.push(pathname);
+  };
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      const params = new URLSearchParams(searchParams);
+      const url = `/api/hq/export-analytics?${params.toString()}`;
+      
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to export analytics");
+
+      const blob = await res.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = `Staff_Analytics_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(downloadUrl);
+      document.body.removeChild(a);
+    } catch (err) {
+      alert("Error exporting Excel file. Please try again.");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   // Sort leaderboards
   const byTime = [...moderators].sort((a, b) => (b.totalSeconds - b.breakSeconds) - (a.totalSeconds - a.breakSeconds));
@@ -64,15 +123,74 @@ export default function StaffAnalyticsClient({ analytics }: { analytics: Analyti
 
   return (
     <div>
-      {/* Header */}
-      <div className="mb-8 pb-6 border-b border-[var(--ep-border)]">
-        <h1 className="font-[family-name:var(--font-heading)] text-3xl font-extrabold tracking-tight">
-          Staff Analytics{" "}
-          <span className="text-white/20 font-medium text-lg ml-2">Performance & Insights</span>
-        </h1>
-        <p className="text-white/30 text-sm mt-1.5">
-          Comprehensive analytics, leaderboards, and predictions based on real data.
-        </p>
+      {/* Header and Controls */}
+      <div className="mb-8 pb-6 border-b border-[var(--ep-border)] flex flex-col md:flex-row md:items-start justify-between gap-4">
+        <div>
+          <h1 className="font-[family-name:var(--font-heading)] text-3xl font-extrabold tracking-tight">
+            Staff Analytics{" "}
+            <span className="text-white/20 font-medium text-lg ml-2">Performance & Insights</span>
+          </h1>
+          <p className="text-white/30 text-sm mt-1.5">
+            Comprehensive analytics, leaderboards, and predictions based on real data.
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          {/* Date Filters */}
+          <div className="flex items-center gap-2 bg-white/[0.03] p-1.5 rounded-xl border border-[var(--ep-border)]">
+            <div className="flex items-center gap-2 px-2">
+              <Calendar className="w-4 h-4 text-white/40" />
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="bg-transparent border-none text-sm text-white focus:outline-none w-32 [&::-webkit-calendar-picker-indicator]:invert-[0.6]"
+              />
+              <span className="text-white/30 text-xs">to</span>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="bg-transparent border-none text-sm text-white focus:outline-none w-32 [&::-webkit-calendar-picker-indicator]:invert-[0.6]"
+              />
+            </div>
+            <div className="flex items-center gap-1 border-l border-[var(--ep-border)] pl-1.5">
+              <button
+                onClick={applyFilters}
+                className="px-3 py-1.5 rounded-lg bg-[var(--ep-secondary)] text-black text-xs font-bold hover:opacity-90 transition-opacity"
+              >
+                Apply
+              </button>
+              {(dateFrom || dateTo) && (
+                <button
+                  onClick={clearFilters}
+                  className="p-1.5 rounded-lg hover:bg-white/10 text-white/50 transition-colors"
+                  title="Clear Filters"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Export Button */}
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all hover:scale-105 disabled:opacity-50"
+            style={{
+              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+              color: "#fff",
+              boxShadow: "0 4px 16px rgba(16,185,129,0.2)",
+            }}
+          >
+            {exporting ? (
+              <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Exporting...</span>
+            ) : (
+              <span className="flex items-center gap-2"><Download className="w-4 h-4" /> Export Excel</span>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Overview Stats */}

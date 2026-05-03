@@ -3,14 +3,25 @@ import { redirect } from "next/navigation";
 import { getStaffAnalytics } from "@/app/hq/moderation-actions";
 import StaffAnalyticsClient from "./analytics-client";
 
-export default async function StaffAnalyticsPage() {
+export default async function StaffAnalyticsPage(
+  props: { searchParams?: Promise<{ from?: string; to?: string }> }
+) {
   try {
     await requireAdminSession();
   } catch {
     redirect("/hq-login");
   }
 
-  const analytics = await getStaffAnalytics();
+  const searchParams = await props.searchParams;
+  const from = searchParams?.from;
+  const to = searchParams?.to;
 
-  return <StaffAnalyticsClient analytics={JSON.parse(JSON.stringify(analytics))} />;
+  const analytics = await getStaffAnalytics({ from, to });
+
+  return (
+    <StaffAnalyticsClient 
+      analytics={JSON.parse(JSON.stringify(analytics))} 
+      initialDateRange={{ from, to }}
+    />
+  );
 }
