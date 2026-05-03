@@ -17,6 +17,14 @@ const DEFAULT_PERMISSIONS = [
   { key: "review_ban_logs", label: "Review Ban Logs" },
   { key: "manage_roles_tokens", label: "Manage Roles & Tokens" },
   { key: "manage_moderator_access", label: "Manage Moderator Access" },
+  // Shift Management
+  { key: "manage_shifts", label: "Manage Shifts (Clock In/Out)" },
+  { key: "view_shifts", label: "View Own Shifts" },
+  // Moderation Action Registry
+  { key: "create_mod_actions", label: "Create Mod Actions" },
+  { key: "view_mod_actions", label: "View Own Mod Actions" },
+  // Roblox Lookup
+  { key: "roblox_lookup", label: "Roblox User Lookup" },
 ];
 
 async function main() {
@@ -98,6 +106,9 @@ async function main() {
             "view_mod_panel", "create_ban_requests", "view_own_ban_requests",
             "view_request_status", "create_wiki_items", "create_posts",
             "review_ban_logs",
+            "manage_shifts", "view_shifts",
+            "create_mod_actions", "view_mod_actions",
+            "roblox_lookup",
           ],
         },
       },

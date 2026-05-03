@@ -6,5 +6,13 @@ export async function GET() {
   if (!session) {
     return NextResponse.json({ session: null });
   }
-  return NextResponse.json({ session });
+  
+  // Do not leak internal token IDs to the client
+  return NextResponse.json({
+    session: {
+      modName: session.modName,
+      roleName: session.roleName,
+      permissions: session.permissions,
+    }
+  });
 }

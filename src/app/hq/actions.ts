@@ -98,6 +98,7 @@ function getActionErrorMessage(error: unknown, fallbackMessage: string) {
 // Settings
 export async function updateSettings(prevState: any, formData: FormData) {
   try {
+    await requireAdminSession();
     const data = {
       bannerImage: formData.get("bannerImage") as string || null,
       bannerTitle: formData.get("bannerTitle") as string,
@@ -129,6 +130,7 @@ export async function updateSettings(prevState: any, formData: FormData) {
 
 // Applications
 export async function updateApplicationStatus(id: string, status: string, notes?: string) {
+  await requireAdminSession();
   await prisma.application.update({
     where: { id },
     data: { status, notes },
@@ -141,6 +143,7 @@ export async function updateApplicationStatus(id: string, status: string, notes?
 // Staff
 export async function createStaff(prevState: any, formData: FormData) {
   try {
+    await requireAdminSession();
     await prisma.staffMember.create({
       data: {
         name: formData.get("name") as string,
@@ -161,6 +164,7 @@ export async function createStaff(prevState: any, formData: FormData) {
 
 export async function updateStaff(id: string, prevState: any, formData: FormData) {
   try {
+    await requireAdminSession();
     await prisma.staffMember.update({
       where: { id },
       data: {
@@ -181,6 +185,7 @@ export async function updateStaff(id: string, prevState: any, formData: FormData
 }
 
 export async function deleteStaff(id: string) {
+  await requireAdminSession();
   await prisma.staffMember.delete({ where: { id } });
   revalidatePath("/hq/staff");
   revalidatePath("/applys");
@@ -189,6 +194,7 @@ export async function deleteStaff(id: string) {
 
 // Posts
 export async function deletePost(id: string) {
+  await requireAdminSession();
   await prisma.post.delete({ where: { id } });
   revalidatePath("/hq/posts");
   revalidatePath("/news");
@@ -196,6 +202,7 @@ export async function deletePost(id: string) {
 }
 
 export async function togglePublishPost(id: string, published: boolean) {
+  await requireAdminSession();
   await prisma.post.update({ where: { id }, data: { published } });
   revalidatePath("/hq/posts");
   revalidatePath("/news");
@@ -204,6 +211,7 @@ export async function togglePublishPost(id: string, published: boolean) {
 
 export async function createPost(prevState: any, formData: FormData) {
   try {
+    await requireAdminSession();
     let user = await prisma.user.findFirst();
     if (!user) {
       user = await prisma.user.create({ data: { email: "admin@temp.gg", password: "none", name: "System Admin" } });
@@ -231,6 +239,7 @@ export async function createPost(prevState: any, formData: FormData) {
 
 export async function updatePost(id: string, prevState: any, formData: FormData) {
   try {
+    await requireAdminSession();
     await prisma.post.update({
       where: { id },
       data: {
@@ -254,6 +263,7 @@ export async function updatePost(id: string, prevState: any, formData: FormData)
 // Wiki Items
 export async function createWikiItem(prevState: any, formData: FormData) {
   try {
+    await requireAdminSession();
     const imageInspection = inspectWikiImageUrl(formData.get("image") as string | null);
     if (imageInspection.issue) {
       return { success: false, error: imageInspection.issue };
@@ -281,6 +291,7 @@ export async function createWikiItem(prevState: any, formData: FormData) {
 
 export async function updateWikiItem(id: string, prevState: any, formData: FormData) {
   try {
+    await requireAdminSession();
     const imageInspection = inspectWikiImageUrl(formData.get("image") as string | null);
     if (imageInspection.issue) {
       return { success: false, error: imageInspection.issue };
@@ -308,6 +319,7 @@ export async function updateWikiItem(id: string, prevState: any, formData: FormD
 }
 
 export async function deleteWikiItem(id: string) {
+  await requireAdminSession();
   await prisma.wikiItem.delete({ where: { id } });
   revalidatePath("/hq/wiki");
   revalidatePath("/wiki");
@@ -320,6 +332,7 @@ export async function deleteWikiItem(id: string) {
 
 export async function createRole(prevState: any, formData: FormData) {
   try {
+    await requireAdminSession();
     const name = formData.get("name") as string;
     const description = formData.get("description") as string || null;
     const permissionIds = formData.getAll("permissions") as string[];
@@ -344,6 +357,7 @@ export async function createRole(prevState: any, formData: FormData) {
 
 export async function updateRole(id: string, prevState: any, formData: FormData) {
   try {
+    await requireAdminSession();
     const name = formData.get("name") as string;
     const description = formData.get("description") as string || null;
     const permissionIds = formData.getAll("permissions") as string[];
@@ -368,6 +382,7 @@ export async function updateRole(id: string, prevState: any, formData: FormData)
 }
 
 export async function deleteRole(id: string) {
+  await requireAdminSession();
   // Check if any tokens use this role
   const tokenCount = await prisma.moderatorToken.count({ where: { roleId: id } });
   if (tokenCount > 0) {
@@ -384,14 +399,27 @@ export async function deleteRole(id: string) {
 
 export async function generateModeratorToken(prevState: any, formData: FormData) {
   try {
+    await requireAdminSession();
     const moderatorName = formData.get("moderatorName") as string;
     const moderatorId = formData.get("moderatorId") as string;
     const roleId = formData.get("roleId") as string;
+    const notes = formData.get("notes") as string | null;
+    const expiresInDays = formData.get("expiresInDays") as string;
 
     // Generate a secure random token
     const plainToken = crypto.randomBytes(24).toString("hex");
     const tokenHash = await bcrypt.hash(plainToken, 10);
     const tokenPreview = "…" + plainToken.slice(-6);
+
+    // Calculate expiration
+    let expiresAt: Date | null = null;
+    if (expiresInDays && expiresInDays !== "never") {
+      const days = parseInt(expiresInDays, 10);
+      if (!isNaN(days) && days > 0) {
+        expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + days);
+      }
+    }
 
     // Get role permissions for snapshot
     const role = await prisma.role.findUnique({
@@ -413,6 +441,7 @@ export async function generateModeratorToken(prevState: any, formData: FormData)
         moderatorId,
         roleId,
         permSnapshot,
+        expiresAt,
       },
     });
 
@@ -425,6 +454,7 @@ export async function generateModeratorToken(prevState: any, formData: FormData)
 }
 
 export async function revokeModeratorToken(id: string) {
+  await requireAdminSession();
   await prisma.moderatorToken.update({
     where: { id },
     data: { status: "REVOKED" },
@@ -434,6 +464,7 @@ export async function revokeModeratorToken(id: string) {
 }
 
 export async function reactivateModeratorToken(id: string) {
+  await requireAdminSession();
   await prisma.moderatorToken.update({
     where: { id },
     data: { status: "ACTIVE" },

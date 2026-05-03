@@ -111,9 +111,14 @@ export async function getModSession() {
   const payload = verifySession(sessionCookie.value);
   if (!payload) return null;
 
-  // Verify the token is still active in DB
+  // Verify the token is still active in DB AND re-read live permissions
   const token = await prisma.moderatorToken.findUnique({
     where: { id: payload.tokenId },
+    include: {
+      role: {
+        include: { permissions: true },
+      },
+    },
   });
 
   if (!token || token.status !== "ACTIVE") {
@@ -134,14 +139,15 @@ export async function getModSession() {
     return null;
   }
 
-  return payload as {
-    tokenId: string;
-    modName: string;
-    modId: string;
-    roleName: string;
-    roleId: string;
-    permissions: string[];
-    iat: number;
+  // Return live data from DB — not stale cookie data
+  return {
+    tokenId: token.id,
+    modName: token.moderatorName,
+    modId: token.moderatorId,
+    roleName: token.role.name,
+    roleId: token.roleId,
+    permissions: token.role.permissions.map((p: { key: string }) => p.key),
+    iat: payload.iat as number,
   };
 }
 

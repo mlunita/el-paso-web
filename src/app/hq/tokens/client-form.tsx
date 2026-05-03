@@ -127,6 +127,34 @@ export function TokenForm({ roles }: { roles: RoleItem[] }) {
         )}
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        <div className="space-y-2">
+          <Label htmlFor="expiresInDays" className="text-zinc-400 font-bold">Expiration</Label>
+          <select
+            id="expiresInDays"
+            name="expiresInDays"
+            defaultValue="never"
+            className="w-full h-10 px-3 rounded-md bg-black/50 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[var(--ep-accent)]/50"
+          >
+            <option value="never">Never (Not Recommended)</option>
+            <option value="1">1 Day</option>
+            <option value="7">7 Days</option>
+            <option value="30">30 Days</option>
+            <option value="90">90 Days</option>
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="notes" className="text-zinc-400 font-bold">Internal Notes (Optional)</Label>
+          <Input
+            id="notes"
+            name="notes"
+            placeholder="Reason for token generation..."
+            className="bg-black/50 border-white/10 focus-visible:ring-[var(--ep-accent)]/50"
+          />
+        </div>
+      </div>
+
       <div className="pt-4 flex gap-4 border-t border-white/10">
         <Button
           onClick={() => router.push("/hq/tokens")}
