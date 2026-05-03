@@ -638,3 +638,53 @@ export async function getStaffAnalytics(dateRange?: { from?: string; to?: string
     },
   };
 }
+
+// =====================================================
+// Leaderboard Data
+// =====================================================
+
+export async function getLeaderboardData(dateRange?: { from?: string; to?: string }) {
+  await requireAdminSession();
+
+  const dateFilter: Record<string, unknown> = { deletedAt: null };
+  if (dateRange?.from || dateRange?.to) {
+    dateFilter.createdAt = {
+      ...(dateRange.from ? { gte: new Date(dateRange.from) } : {}),
+      ...(dateRange.to ? { lte: new Date(dateRange.to) } : {}),
+    };
+  }
+
+  const allActions = await prisma.modAction.findMany({
+    where: dateFilter,
+    select: { modId: true, modName: true, modRole: true, actionType: true },
+  });
+
+  const modMap = new Map<string, {
+    modId: string;
+    modName: string;
+    modRole: string;
+    actionCount: number;
+    points: number;
+    breakdown: Record<string, number>;
+  }>();
+
+  for (const action of allActions) {
+    if (!modMap.has(action.modId)) {
+      modMap.set(action.modId, {
+        modId: action.modId,
+        modName: action.modName,
+        modRole: action.modRole,
+        actionCount: 0,
+        points: 0,
+        breakdown: {},
+      });
+    }
+    const mod = modMap.get(action.modId)!;
+    mod.actionCount++;
+    mod.points++;
+    mod.breakdown[action.actionType] = (mod.breakdown[action.actionType] || 0) + 1;
+  }
+
+  const leaderboard = Array.from(modMap.values()).sort((a, b) => b.points - a.points);
+  return leaderboard;
+}
