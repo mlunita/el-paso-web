@@ -158,18 +158,8 @@ export default function ShiftsPage() {
 
       {/* Active Shift Panel */}
       <Card
-        className="ep-card-enter relative overflow-hidden rounded-2xl p-0 border-0 mb-8"
-        style={{
-          background: activeShift
-            ? "linear-gradient(135deg, rgba(78,205,196,0.12) 0%, rgba(34,197,94,0.06) 100%)"
-            : "rgba(255,255,255,0.03)",
-          border: activeShift
-            ? "1px solid rgba(78,205,196,0.2)"
-            : "1px solid rgba(255,255,255,0.06)",
-          boxShadow: activeShift
-            ? "0 8px 32px rgba(78,205,196,0.1)"
-            : "none",
-        }}
+        className=" relative overflow-hidden rounded-2xl p-0 border-0 mb-8"
+        
       >
         <div className="p-8">
           {activeShift ? (
@@ -181,7 +171,7 @@ export default function ShiftsPage() {
                     className="w-3 h-3 rounded-full"
                     style={{
                       background: activeShift.status === "PAUSED" ? "#f59e0b" : "#22c55e",
-                      boxShadow: `0 0 12px ${activeShift.status === "PAUSED" ? "rgba(245,158,11,0.5)" : "rgba(34,197,94,0.5)"}`,
+                      
                     }}
                   />
                   {activeShift.status === "ACTIVE" && (
@@ -226,7 +216,7 @@ export default function ShiftsPage() {
                         className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-105"
                         style={{
                           background: "rgba(245,158,11,0.15)",
-                          border: "1px solid rgba(245,158,11,0.3)",
+                          
                           color: "#f59e0b",
                         }}
                       >
@@ -240,7 +230,7 @@ export default function ShiftsPage() {
                         className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-105"
                         style={{
                           background: "rgba(239,68,68,0.15)",
-                          border: "1px solid rgba(239,68,68,0.3)",
+                          
                           color: "#ef4444",
                         }}
                       >
@@ -256,7 +246,7 @@ export default function ShiftsPage() {
                       className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-105"
                       style={{
                         background: "rgba(34,197,94,0.15)",
-                        border: "1px solid rgba(34,197,94,0.3)",
+                        
                         color: "#22c55e",
                       }}
                     >
@@ -269,7 +259,7 @@ export default function ShiftsPage() {
                         className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-105"
                         style={{
                           background: "rgba(239,68,68,0.15)",
-                          border: "1px solid rgba(239,68,68,0.3)",
+                          
                           color: "#ef4444",
                         }}
                       >
@@ -350,9 +340,9 @@ export default function ShiftsPage() {
                   disabled={isPending}
                   className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200 hover:scale-[1.02]"
                   style={{
-                    background: "linear-gradient(135deg, #4ecdc4 0%, #22c55e 100%)",
+                    
                     color: "#06080a",
-                    boxShadow: "0 4px 16px rgba(78,205,196,0.3)",
+                    
                   }}
                 >
                   <Play className="w-4 h-4" />
@@ -391,8 +381,8 @@ export default function ShiftsPage() {
             {history.map((shift, i) => (
               <div
                 key={shift.id}
-                className="ep-card-enter flex items-center gap-4 p-4 rounded-xl bg-white/[0.03] border border-[var(--ep-border)] hover:border-[var(--ep-border-accent)] transition-all duration-200"
-                style={{ animationDelay: `${i * 50}ms` }}
+                className=" flex items-center gap-4 p-4 rounded-xl bg-white/[0.03] border border-[var(--ep-border)] hover:border-[var(--ep-border-accent)] transition-all duration-200"
+                
               >
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"

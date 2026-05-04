@@ -108,12 +108,8 @@ export default function ShiftsClient({
               return (
                 <Card
                   key={shift.id}
-                  className="ep-card-enter relative overflow-hidden rounded-2xl p-0 border-0"
-                  style={{
-                    animationDelay: `${i * 60}ms`,
-                    background: `linear-gradient(135deg, ${color}12 0%, ${color}05 100%)`,
-                    border: `1px solid ${color}25`,
-                  }}
+                  className=" relative overflow-hidden rounded-2xl p-0 border-0"
+                  
                 >
                   <div className="p-5">
                     <div className="flex items-center gap-3 mb-3">
@@ -122,7 +118,7 @@ export default function ShiftsClient({
                           className="w-2.5 h-2.5 rounded-full"
                           style={{
                             background: shift.status === "PAUSED" ? "#f59e0b" : "#22c55e",
-                            boxShadow: `0 0 8px ${shift.status === "PAUSED" ? "rgba(245,158,11,0.4)" : "rgba(34,197,94,0.4)"}`,
+                            
                           }}
                         />
                       </div>
@@ -205,8 +201,8 @@ export default function ShiftsClient({
               {filteredHistory.map((shift, i) => (
                 <tr
                   key={shift.id}
-                  className="ep-card-enter border-b border-[var(--ep-border)] last:border-0 hover:bg-white/[0.02] transition-colors"
-                  style={{ animationDelay: `${i * 30}ms` }}
+                  className=" border-b border-[var(--ep-border)] last:border-0 hover:bg-white/[0.02] transition-colors"
+                  
                 >
                   <td className="py-3 pr-4">
                     <div className="font-semibold text-white">{shift.modName}</div>

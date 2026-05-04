@@ -76,7 +76,7 @@ export default function AdminRobloxLookupPage() {
           <button
             type="submit" disabled={searching}
             className="flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm transition-all hover:scale-105 disabled:opacity-50"
-            style={{ background: "linear-gradient(135deg, #e8a44a 0%, #c4882e 100%)", color: "#06080a" }}
+            style={{  color: "#06080a" }}
           >
             {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
             Search
@@ -89,7 +89,7 @@ export default function AdminRobloxLookupPage() {
 
       {/* Results */}
       {user && (
-        <div className="space-y-6 ep-fade-up">
+        <div className="space-y-6 ">
           {/* Profile */}
           <Card
             className="relative overflow-hidden rounded-2xl p-0 border-0"

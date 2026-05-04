@@ -711,3 +711,46 @@ textarea:focus-visible {
     border-radius: 12px;
   }
 }
+
+/* ===== ROBLOX THEME OVERRIDES (Admin/Mod Panels) ===== */
+.roblox-theme .ep-card,
+.roblox-theme .ep-card-glass,
+.roblox-theme .ep-card-elevated,
+.roblox-theme .ep-card-interactive {
+  background: #18181b !important; /* zinc-900 */
+  border: 1px solid rgba(255,255,255,0.05) !important;
+  box-shadow: none !important;
+  border-radius: 0.75rem !important; /* rounded-xl */
+  transform: none !important;
+}
+
+.roblox-theme .ep-card:hover,
+.roblox-theme .ep-card-glass:hover,
+.roblox-theme .ep-card-elevated:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+
+/* Kill all cinematic animations in Roblox Theme */
+.roblox-theme .ep-fade-up,
+.roblox-theme .ep-fade-in,
+.roblox-theme .ep-scale-in,
+.roblox-theme .ep-slide-right,
+.roblox-theme .ep-slide-down,
+.roblox-theme .ep-float,
+.roblox-theme .ep-shimmer,
+.roblox-theme .ep-glow-pulse,
+.roblox-theme .ep-gradient-shift,
+.roblox-theme .ep-card-enter,
+.roblox-theme .ep-loader-breathe,
+.roblox-theme .ep-loader-entrance,
+.roblox-theme .ep-loader-fadeout,
+.roblox-theme .ep-loader-ring,
+.roblox-theme .ep-loader-bar,
+.roblox-theme .ep-nav-slide {
+  animation: none !important;
+  transform: none !important;
+  opacity: 1 !important;
+  filter: none !important;
+}

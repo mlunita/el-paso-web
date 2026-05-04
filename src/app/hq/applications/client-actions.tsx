@@ -1,6 +1,6 @@
 "use client";
 
-import { updateApplicationStatus } from "@/app/hq/actions";
+import { updateApplicationStatus, adminDeleteApplication } from "@/app/hq/actions";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,16 +10,31 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Eye } from "lucide-react";
+import { Eye, Trash2 } from "lucide-react";
 import { useI18n } from "@/components/i18n-provider";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export function ApplicationActions({ app }: { app: any }) {
   const [isUpdating, setIsUpdating] = useState(false);
   const { t } = useI18n();
+  const router = useRouter();
 
   const handleStatus = async (status: string) => {
     setIsUpdating(true);
     await updateApplicationStatus(app.id, status);
+    setIsUpdating(false);
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to completely delete this application? This action cannot be undone.")) return;
+    setIsUpdating(true);
+    try {
+      await adminDeleteApplication(app.id);
+      toast.success("Application deleted");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete application");
+    }
     setIsUpdating(false);
   };
 
@@ -32,8 +47,16 @@ export function ApplicationActions({ app }: { app: any }) {
         </DialogTrigger>
         <DialogContent className="sm:max-w-[600px] bg-zinc-950 border-white/10 text-white">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-black uppercase tracking-wider text-[var(--ep-accent)]">
-              {t.admin.applications.details}
+            <DialogTitle className="text-2xl font-black uppercase tracking-wider text-[var(--ep-accent)] flex justify-between items-center mr-6">
+              <span>{t.admin.applications.details}</span>
+              <button 
+                onClick={handleDelete} 
+                disabled={isUpdating}
+                className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
+                title="Delete Application"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
             </DialogTitle>
           </DialogHeader>
           <div className="grid gap-6 py-4">
@@ -108,6 +131,14 @@ export function ApplicationActions({ app }: { app: any }) {
       >
         {t.common.reject}
       </Button>
+      <button 
+        onClick={handleDelete} 
+        disabled={isUpdating}
+        className="p-2 ml-1 bg-white/5 hover:bg-red-500/20 text-zinc-400 hover:text-red-400 rounded-md transition-colors"
+        title="Delete Application"
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
     </div>
   );
 }

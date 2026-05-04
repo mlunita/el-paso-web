@@ -80,7 +80,7 @@ export default function RobloxLookupPage() {
             disabled={searching}
             className="flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm transition-all duration-200 hover:scale-105 disabled:opacity-50"
             style={{
-              background: "linear-gradient(135deg, #4ecdc4 0%, #22c55e 100%)",
+              
               color: "#06080a",
             }}
           >
@@ -95,7 +95,7 @@ export default function RobloxLookupPage() {
 
       {/* Results */}
       {user && (
-        <div className="space-y-6 ep-fade-up">
+        <div className="space-y-6 ">
           {/* Profile Card */}
           <Card
             className="relative overflow-hidden rounded-2xl p-0 border-0"

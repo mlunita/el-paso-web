@@ -179,9 +179,9 @@ export default function StaffAnalyticsClient({
             disabled={exporting}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all hover:scale-105 disabled:opacity-50"
             style={{
-              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+              
               color: "#fff",
-              boxShadow: "0 4px 16px rgba(16,185,129,0.2)",
+              
             }}
           >
             {exporting ? (
@@ -205,8 +205,8 @@ export default function StaffAnalyticsClient({
           return (
             <Card
               key={stat.label}
-              className="ep-card-enter group relative border-0 text-white p-0 rounded-2xl overflow-hidden"
-              style={{ animationDelay: `${i * 80}ms`, background: stat.gradient, boxShadow: `0 8px 32px ${stat.shadow}`, border: "1px solid rgba(255,255,255,0.08)" }}
+              className=" group relative border-0 text-white p-0 rounded-2xl overflow-hidden"
+              
             >
               <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="relative z-10 p-5 flex flex-col items-center justify-center gap-2">

@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useTransition, useActionState } from "react";
+import { useState, useTransition, useActionState, useEffect } from "react";
 import {
   ClipboardList, Eye, CheckCircle, AlertTriangle,
-  XCircle, ChevronDown, Trash2, ExternalLink, Shield,
+  XCircle, ChevronDown, Trash2, ExternalLink, Shield, CheckSquare, Square
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { adminReviewModAction, adminDeleteModAction } from "@/app/hq/moderation-actions";
+import { adminReviewModAction, adminDeleteModAction, adminBulkUpdateModActions } from "@/app/hq/moderation-actions";
 import { ACTION_TYPE_LABELS } from "@/lib/validation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 
 const REVIEW_COLORS: Record<string, { bg: string; text: string; label: string }> = {
   UNREVIEWED: { bg: "rgba(245,158,11,0.15)", text: "#f59e0b", label: "Unreviewed" },
@@ -34,32 +36,85 @@ type ActionData = {
 };
 
 export default function ModActionsClient({
-  actions: initialActions,
+  actions,
   uniqueMods,
   counts,
+  currentPage,
+  totalPages,
+  totalActions,
 }: {
   actions: ActionData[];
   uniqueMods: { modId: string; modName: string }[];
   counts: Record<string, number>;
+  currentPage: number;
+  totalPages: number;
+  totalActions: number;
 }) {
-  const [filterMod, setFilterMod] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  const [filterMod, setFilterMod] = useState(searchParams.get("mod") || "");
+  const [filterStatus, setFilterStatus] = useState(searchParams.get("status") || "");
+  
+  const [selectedActionIds, setSelectedActionIds] = useState<Set<string>>(new Set());
   const [selectedAction, setSelectedAction] = useState<ActionData | null>(null);
   const [isPending, startTransition] = useTransition();
   const [reviewState, reviewAction] = useActionState(adminReviewModAction, null);
 
-  const filtered = initialActions.filter((a) => {
-    if (filterMod && a.modId !== filterMod) return false;
-    if (filterStatus && a.reviewStatus !== filterStatus) return false;
-    return true;
-  });
+  useEffect(() => {
+    // update URL when filters change
+    const params = new URLSearchParams(searchParams.toString());
+    if (filterMod) params.set("mod", filterMod);
+    else params.delete("mod");
+    
+    if (filterStatus) params.set("status", filterStatus);
+    else params.delete("status");
+
+    params.set("page", "1"); // reset to page 1 on filter change
+    
+    // Only push if changed to avoid infinite loop
+    const currentQuery = searchParams.toString();
+    if (params.toString() !== currentQuery && (filterMod !== (searchParams.get("mod")||"") || filterStatus !== (searchParams.get("status")||""))) {
+      router.push(`?${params.toString()}`);
+    }
+  }, [filterMod, filterStatus, router, searchParams]);
 
   const handleDelete = (id: string) => {
     if (!confirm("Delete this mod action record?")) return;
     startTransition(async () => {
       await adminDeleteModAction(id);
-      window.location.reload();
+      router.refresh();
     });
+  };
+
+  const handleBulkStatusChange = async (newStatus: string) => {
+    if (!confirm(`Are you sure you want to change ${selectedActionIds.size} actions to ${newStatus}?`)) return;
+    
+    startTransition(async () => {
+      const res = await adminBulkUpdateModActions(Array.from(selectedActionIds), newStatus);
+      if (res.success) {
+        toast.success(`Updated ${selectedActionIds.size} actions`);
+        setSelectedActionIds(new Set());
+        router.refresh();
+      } else {
+        toast.error(res.error || "Failed to update actions");
+      }
+    });
+  };
+
+  const toggleSelection = (id: string) => {
+    const next = new Set(selectedActionIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelectedActionIds(next);
+  };
+
+  const selectAll = () => {
+    if (selectedActionIds.size === actions.length) {
+      setSelectedActionIds(new Set());
+    } else {
+      setSelectedActionIds(new Set(actions.map(a => a.id)));
+    }
   };
 
   return (
@@ -82,8 +137,8 @@ export default function ModActionsClient({
           return (
             <div
               key={status}
-              className="ep-card-enter p-4 rounded-xl text-center cursor-pointer transition-all hover:scale-105"
-              style={{ background: style.bg, border: `1px solid ${style.text}20` }}
+              className="p-4 rounded-xl text-center cursor-pointer transition-all hover:scale-105"
+              style={{ background: style.bg, border: filterStatus === status ? `1px solid ${style.text}` : '1px solid transparent' }}
               onClick={() => setFilterStatus(filterStatus === status ? "" : status)}
             >
               <div className="text-2xl font-extrabold tabular-nums" style={{ color: style.text }}>
@@ -97,57 +152,93 @@ export default function ModActionsClient({
         })}
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-3 mb-6">
-        <div className="relative">
-          <select
-            value={filterMod}
-            onChange={(e) => setFilterMod(e.target.value)}
-            className="appearance-none px-4 py-2 pr-8 rounded-lg bg-white/[0.05] border border-[var(--ep-border)] text-white text-xs focus:outline-none"
-          >
-            <option value="" className="bg-[#12151a]">All Moderators</option>
-            {uniqueMods.map((m) => (
-              <option key={m.modId} value={m.modId} className="bg-[#12151a]">
-                {m.modName}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
+      {/* Filters and Bulk Actions */}
+      <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
+        <div className="flex gap-3">
+          <div className="relative">
+            <select
+              value={filterMod}
+              onChange={(e) => setFilterMod(e.target.value)}
+              className="appearance-none px-4 py-2 pr-8 rounded-lg bg-white/[0.05] border border-[var(--ep-border)] text-white text-xs focus:outline-none"
+            >
+              <option value="" className="bg-[#12151a]">All Moderators</option>
+              {uniqueMods.map((m) => (
+                <option key={m.modId} value={m.modId} className="bg-[#12151a]">
+                  {m.modName}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
+          </div>
+
+          <div className="relative">
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="appearance-none px-4 py-2 pr-8 rounded-lg bg-white/[0.05] border border-[var(--ep-border)] text-white text-xs focus:outline-none"
+            >
+              <option value="" className="bg-[#12151a]">All Statuses</option>
+              {Object.entries(REVIEW_COLORS).map(([key, val]) => (
+                <option key={key} value={key} className="bg-[#12151a]">{val.label}</option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
+          </div>
         </div>
 
-        <div className="relative">
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="appearance-none px-4 py-2 pr-8 rounded-lg bg-white/[0.05] border border-[var(--ep-border)] text-white text-xs focus:outline-none"
-          >
-            <option value="" className="bg-[#12151a]">All Statuses</option>
-            {Object.entries(REVIEW_COLORS).map(([key, val]) => (
-              <option key={key} value={key} className="bg-[#12151a]">{val.label}</option>
-            ))}
-          </select>
-          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
-        </div>
+        {selectedActionIds.size > 0 && (
+          <div className="flex items-center gap-3 bg-zinc-800/80 px-4 py-2 rounded-lg border border-white/10 ep-scale-in">
+            <span className="text-xs font-bold text-white mr-2">{selectedActionIds.size} Selected</span>
+            <button
+              onClick={() => handleBulkStatusChange("REVIEWED")}
+              disabled={isPending}
+              className="px-3 py-1.5 rounded-md bg-green-500/20 text-green-400 hover:bg-green-500/30 text-xs font-bold transition-colors"
+            >
+              Mark Reviewed
+            </button>
+            <button
+              onClick={() => handleBulkStatusChange("FLAGGED")}
+              disabled={isPending}
+              className="px-3 py-1.5 rounded-md bg-red-500/20 text-red-400 hover:bg-red-500/30 text-xs font-bold transition-colors"
+            >
+              Flag
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Actions Table */}
       <div className="space-y-2">
-        {filtered.length === 0 ? (
+        {actions.length > 0 && (
+          <div className="flex items-center px-4 py-2 text-xs font-bold text-white/40 uppercase tracking-wider">
+            <button onClick={selectAll} className="flex items-center hover:text-white mr-4">
+              {selectedActionIds.size === actions.length ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
+              <span className="ml-2">Select All</span>
+            </button>
+            <span>({totalActions} Total)</span>
+          </div>
+        )}
+
+        {actions.length === 0 ? (
           <div className="text-center py-16">
             <ClipboardList className="w-12 h-12 text-white/10 mx-auto mb-3" />
             <p className="text-white/20 text-sm">No actions match the current filters.</p>
           </div>
         ) : (
-          filtered.map((action, i) => {
+          actions.map((action, i) => {
             const color = ACTION_COLORS[action.actionType] || "#8a8d95";
             const review = REVIEW_COLORS[action.reviewStatus] || REVIEW_COLORS.UNREVIEWED;
+            const isSelected = selectedActionIds.has(action.id);
 
             return (
               <div
                 key={action.id}
-                className="ep-card-enter flex items-center gap-4 p-4 rounded-xl bg-white/[0.03] border border-[var(--ep-border)] hover:border-[var(--ep-border-accent)] transition-all duration-200"
-                style={{ animationDelay: `${i * 30}ms` }}
+                className={`flex items-center gap-4 p-4 rounded-xl bg-white/[0.03] border transition-all duration-200 ${isSelected ? 'border-[var(--ep-accent)]' : 'border-[var(--ep-border)] hover:border-[var(--ep-border-accent)]'}`}
               >
+                <button onClick={() => toggleSelection(action.id)} className="text-white/30 hover:text-white transition-colors">
+                  {isSelected ? <CheckSquare className="w-5 h-5 text-[var(--ep-accent)]" /> : <Square className="w-5 h-5" />}
+                </button>
+              
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{ background: `${color}15` }}
@@ -212,22 +303,46 @@ export default function ModActionsClient({
         )}
       </div>
 
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-4 mt-8">
+          <button
+            onClick={() => {
+              const params = new URLSearchParams(searchParams.toString());
+              params.set("page", String(Math.max(1, currentPage - 1)));
+              router.push(`?${params.toString()}`);
+            }}
+            disabled={currentPage === 1}
+            className="px-4 py-2 rounded-lg bg-white/5 text-white/70 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-white/40">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() => {
+              const params = new URLSearchParams(searchParams.toString());
+              params.set("page", String(Math.min(totalPages, currentPage + 1)));
+              router.push(`?${params.toString()}`);
+            }}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 rounded-lg bg-white/5 text-white/70 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold"
+          >
+            Next
+          </button>
+        </div>
+      )}
+
       {/* Review Modal */}
       {selectedAction && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <Card
-            className="w-full max-w-lg mx-4 rounded-2xl p-0 border-0 ep-scale-in"
-            style={{
-              background: "linear-gradient(145deg, #0c0e12 0%, #12151a 100%)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
-            }}
-          >
+          <Card className="w-full max-w-lg mx-4 rounded-2xl p-0 border-0 ep-scale-in">
             <div className="p-6">
               <h3 className="text-lg font-bold text-white mb-4">Review Action</h3>
 
               <div className="space-y-3 mb-6 text-sm">
-                <div><span className="text-white/40">Type:</span> <span className="text-white">{ACTION_TYPE_LABELS[selectedAction.actionType]}</span></div>
+                <div><span className="text-white/40">Type:</span> <span className="text-white">{ACTION_TYPE_LABELS[selectedAction.actionType] || selectedAction.actionType}</span></div>
                 <div><span className="text-white/40">Target:</span> <span className="text-white">@{selectedAction.targetUser}</span></div>
                 <div><span className="text-white/40">Mod:</span> <span className="text-white">{selectedAction.modName} ({selectedAction.modRole})</span></div>
                 <div><span className="text-white/40">Reason:</span> <span className="text-white">{selectedAction.reason}</span></div>
@@ -239,7 +354,10 @@ export default function ModActionsClient({
                 </a>
               </div>
 
-              <form action={reviewAction} className="space-y-4">
+              <form action={async (formData) => {
+                await reviewAction(formData);
+                setSelectedAction(null);
+              }} className="space-y-4">
                 <input type="hidden" name="actionId" value={selectedAction.id} />
 
                 <div>
@@ -274,8 +392,8 @@ export default function ModActionsClient({
                 <div className="flex gap-3">
                   <button
                     type="submit"
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm"
-                    style={{ background: "linear-gradient(135deg, #e8a44a 0%, #c4882e 100%)", color: "#06080a" }}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-white hover:bg-zinc-200 transition-colors"
+                    style={{  color: "#06080a" }}
                   >
                     <CheckCircle className="w-4 h-4" /> Save Review
                   </button>

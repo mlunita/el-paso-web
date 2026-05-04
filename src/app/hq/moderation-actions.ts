@@ -285,6 +285,62 @@ export async function adminReviewModAction(prevState: unknown, formData: FormDat
   }
 }
 
+/** Bulk review mod actions */
+export async function adminBulkUpdateModActions(actionIds: string[], status: string) {
+  try {
+    await requireAdminSession();
+    
+    if (!actionIds || actionIds.length === 0) {
+      return { success: false, error: "No actions selected" };
+    }
+
+    const validStatuses = ["UNREVIEWED", "REVIEWED", "FLAGGED", "REJECTED"];
+    if (!validStatuses.includes(status)) {
+      return { success: false, error: "Invalid status" };
+    }
+
+    const actions = await prisma.modAction.findMany({
+      where: { id: { in: actionIds } }
+    });
+
+    if (actions.length === 0) {
+      return { success: false, error: "No valid actions found" };
+    }
+
+    await prisma.$transaction(async (tx) => {
+      for (const action of actions) {
+        if (action.reviewStatus === status) continue;
+
+        await tx.modAction.update({
+          where: { id: action.id },
+          data: {
+            reviewStatus: status,
+            reviewedBy: "admin",
+            reviewedAt: new Date(),
+            reviewNotes: `Bulk updated to ${status} by admin`,
+          },
+        });
+
+        await tx.modActionAuditLog.create({
+          data: {
+            actionId: action.id,
+            event: "REVIEW_CHANGED",
+            performedBy: "admin",
+            fromValue: action.reviewStatus,
+            toValue: status,
+            details: "Bulk updated",
+          },
+        });
+      }
+    });
+
+    revalidatePath("/hq/mod-actions");
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : "Failed to bulk update actions" };
+  }
+}
+
 /** Soft delete a mod action */
 export async function adminDeleteModAction(actionId: string) {
   await requireAdminSession();

@@ -105,9 +105,9 @@ export default function ActionsPage() {
           onClick={() => setShowForm(!showForm)}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-105"
           style={{
-            background: "linear-gradient(135deg, #4ecdc4 0%, #22c55e 100%)",
+            
             color: "#06080a",
-            boxShadow: "0 4px 16px rgba(78,205,196,0.3)",
+            
           }}
         >
           <Plus className="w-4 h-4" />
@@ -118,10 +118,10 @@ export default function ActionsPage() {
       {/* Create Form */}
       {showForm && (
         <Card
-          className="ep-card-enter relative overflow-hidden rounded-2xl p-0 border-0 mb-8"
+          className=" relative overflow-hidden rounded-2xl p-0 border-0 mb-8"
           style={{
             background: "rgba(78,205,196,0.06)",
-            border: "1px solid rgba(78,205,196,0.15)",
+            
           }}
         >
           <div className="p-6">
@@ -146,7 +146,7 @@ export default function ActionsPage() {
                         className="group relative flex flex-col items-center gap-1.5 p-3 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105"
                         style={{
                           background: `${color}08`,
-                          border: `1px solid ${color}20`,
+                          
                         }}
                       >
                         <input
@@ -164,7 +164,7 @@ export default function ActionsPage() {
                         </span>
                         <div
                           className="absolute inset-0 rounded-xl opacity-0 peer-checked:opacity-100 transition-opacity"
-                          style={{ border: `2px solid ${color}`, background: `${color}10` }}
+                          style={{  background: `${color}10` }}
                         />
                       </label>
                     );
@@ -242,7 +242,7 @@ export default function ActionsPage() {
                   type="submit"
                   className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm"
                   style={{
-                    background: "linear-gradient(135deg, #4ecdc4 0%, #22c55e 100%)",
+                    
                     color: "#06080a",
                   }}
                 >
@@ -279,8 +279,8 @@ export default function ActionsPage() {
             return (
               <div
                 key={action.id}
-                className="ep-card-enter flex items-center gap-4 p-4 rounded-xl bg-white/[0.03] border border-[var(--ep-border)] hover:border-[var(--ep-border-accent)] transition-all duration-200"
-                style={{ animationDelay: `${i * 40}ms` }}
+                className=" flex items-center gap-4 p-4 rounded-xl bg-white/[0.03] border border-[var(--ep-border)] hover:border-[var(--ep-border-accent)] transition-all duration-200"
+                
               >
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"

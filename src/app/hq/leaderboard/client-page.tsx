@@ -128,9 +128,9 @@ export default function LeaderboardClient({
             disabled={exporting}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all hover:scale-105 disabled:opacity-50"
             style={{
-              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+              
               color: "#fff",
-              boxShadow: "0 4px 16px rgba(16,185,129,0.2)",
+              
             }}
           >
             {exporting ? (
@@ -143,7 +143,7 @@ export default function LeaderboardClient({
       </div>
 
       {/* Leaderboard Table */}
-      <Card className="ep-card-enter overflow-hidden rounded-2xl border-[var(--ep-border)] bg-white/[0.02]">
+      <Card className=" overflow-hidden rounded-2xl border-[var(--ep-border)] bg-white/[0.02]">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-white">
             <thead className="bg-black/40 text-xs uppercase text-white/50">

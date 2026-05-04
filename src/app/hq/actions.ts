@@ -140,6 +140,16 @@ export async function updateApplicationStatus(id: string, status: string, notes?
   revalidatePath("/hq");
 }
 
+export async function adminDeleteApplication(id: string) {
+  await requireAdminSession();
+  await prisma.application.delete({
+    where: { id },
+  });
+  revalidatePath("/hq/applications");
+  revalidatePath("/status");
+  revalidatePath("/hq");
+}
+
 // Staff
 export async function createStaff(prevState: any, formData: FormData) {
   try {
@@ -468,6 +478,16 @@ export async function reactivateModeratorToken(id: string) {
   await prisma.moderatorToken.update({
     where: { id },
     data: { status: "ACTIVE" },
+  });
+  revalidatePath("/hq/tokens");
+  revalidatePath("/hq");
+}
+
+export async function adminDeleteModeratorToken(id: string) {
+  await requireAdminSession();
+  await prisma.moderatorToken.update({
+    where: { id },
+    data: { status: "DELETED" },
   });
   revalidatePath("/hq/tokens");
   revalidatePath("/hq");
