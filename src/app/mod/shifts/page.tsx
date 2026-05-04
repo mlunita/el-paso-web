@@ -338,12 +338,7 @@ export default function ShiftsPage() {
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200 hover:scale-[1.02]"
-                  style={{
-                    
-                    color: "#06080a",
-                    
-                  }}
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200 hover:scale-[1.02] bg-[var(--ep-secondary)] text-[#06080a]"
                 >
                   <Play className="w-4 h-4" />
                   {isPending ? "Clocking In..." : "Clock In"}
