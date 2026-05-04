@@ -103,11 +103,10 @@ export default function ActionsPage() {
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-105"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 hover:scale-105 shadow-lg shadow-emerald-500/10"
           style={{
-            
+            background: "var(--ep-secondary)",
             color: "#06080a",
-            
           }}
         >
           <Plus className="w-4 h-4" />
@@ -121,7 +120,7 @@ export default function ActionsPage() {
           className=" relative overflow-hidden rounded-2xl p-0 border-0 mb-8"
           style={{
             background: "rgba(78,205,196,0.06)",
-            
+
           }}
         >
           <div className="p-6">
@@ -146,7 +145,7 @@ export default function ActionsPage() {
                         className="group relative flex flex-col items-center gap-1.5 p-3 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105"
                         style={{
                           background: `${color}08`,
-                          
+
                         }}
                       >
                         <input
@@ -164,7 +163,7 @@ export default function ActionsPage() {
                         </span>
                         <div
                           className="absolute inset-0 rounded-xl opacity-0 peer-checked:opacity-100 transition-opacity"
-                          style={{  background: `${color}10` }}
+                          style={{ background: `${color}10` }}
                         />
                       </label>
                     );
@@ -240,9 +239,9 @@ export default function ActionsPage() {
               <div className="flex gap-3 pt-2">
                 <button
                   type="submit"
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105 active:scale-95 shadow-lg shadow-emerald-500/10"
                   style={{
-                    
+                    background: "var(--ep-secondary)",
                     color: "#06080a",
                   }}
                 >
@@ -280,7 +279,7 @@ export default function ActionsPage() {
               <div
                 key={action.id}
                 className=" flex items-center gap-4 p-4 rounded-xl bg-white/[0.03] border border-[var(--ep-border)] hover:border-[var(--ep-border-accent)] transition-all duration-200"
-                
+
               >
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"

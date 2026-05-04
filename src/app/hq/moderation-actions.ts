@@ -299,44 +299,59 @@ export async function adminBulkUpdateModActions(actionIds: string[], status: str
       return { success: false, error: "Invalid status" };
     }
 
-    const actions = await prisma.modAction.findMany({
-      where: { id: { in: actionIds } }
-    });
-
-    if (actions.length === 0) {
-      return { success: false, error: "No valid actions found" };
-    }
-
-    await prisma.$transaction(async (tx) => {
-      for (const action of actions) {
-        if (action.reviewStatus === status) continue;
-
-        await tx.modAction.update({
-          where: { id: action.id },
-          data: {
-            reviewStatus: status,
-            reviewedBy: "admin",
-            reviewedAt: new Date(),
-            reviewNotes: `Bulk updated to ${status} by admin`,
-          },
-        });
-
-        await tx.modActionAuditLog.create({
-          data: {
-            actionId: action.id,
-            event: "REVIEW_CHANGED",
-            performedBy: "admin",
-            fromValue: action.reviewStatus,
-            toValue: status,
-            details: "Bulk updated",
-          },
-        });
+    // 1. Fetch only actions that actually need updating (outside transaction)
+    const actionsToUpdate = await prisma.modAction.findMany({
+      where: { 
+        id: { in: actionIds },
+        reviewStatus: { not: status }
       }
     });
 
+    if (actionsToUpdate.length === 0) {
+      return { success: true, updatedCount: 0 };
+    }
+
+    const idsToUpdate = actionsToUpdate.map((a) => a.id);
+    const now = new Date();
+
+    // 2. Short transaction only for the critical bulk update
+    await prisma.$transaction(async (tx) => {
+      await tx.modAction.updateMany({
+        where: { id: { in: idsToUpdate } },
+        data: {
+          reviewStatus: status,
+          reviewedBy: "admin",
+          reviewedAt: now,
+          reviewNotes: `Bulk updated to ${status} by admin`,
+        },
+      });
+    });
+
+    // 3. Prepare audit logs outside the transaction
+    const auditLogsData = actionsToUpdate.map((action) => ({
+      actionId: action.id,
+      event: "REVIEW_CHANGED",
+      performedBy: "admin",
+      fromValue: action.reviewStatus,
+      toValue: status,
+      details: "Bulk updated",
+    }));
+
+    // 4. Batch insert logs if dataset is large to avoid blocking the event loop
+    const BATCH_SIZE = 500;
+    for (let i = 0; i < auditLogsData.length; i += BATCH_SIZE) {
+      const batch = auditLogsData.slice(i, i + BATCH_SIZE);
+      await prisma.modActionAuditLog.createMany({
+        data: batch,
+      });
+      // Yield to event loop to avoid blocking for huge datasets
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+
     revalidatePath("/hq/mod-actions");
-    return { success: true };
+    return { success: true, updatedCount: idsToUpdate.length };
   } catch (err) {
+    console.error("Bulk update error:", err);
     return { success: false, error: err instanceof Error ? err.message : "Failed to bulk update actions" };
   }
 }
