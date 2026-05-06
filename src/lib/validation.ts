@@ -126,3 +126,20 @@ export const adminReviewActionSchema = z.object({
 export const robloxLookupSchema = z.object({
   query: z.string().trim().min(1, "Search query required").max(50, "Query too long"),
 });
+
+// =====================================================
+// URL Utilities
+// =====================================================
+
+export function normalizeUrl(urlStr: string): string {
+  try {
+    const u = new URL(urlStr);
+    let path = u.pathname;
+    if (path.length > 1 && path.endsWith('/')) {
+      path = path.slice(0, -1);
+    }
+    return `${u.origin.toLowerCase()}${path}${u.search}${u.hash}`;
+  } catch {
+    return urlStr;
+  }
+}

@@ -9,6 +9,7 @@ import {
   pauseShiftSchema,
   createModActionSchema,
   robloxLookupSchema,
+  normalizeUrl,
 } from "@/lib/validation";
 import { lookupRobloxUser, getInternalUserData, checkLookupRateLimit } from "@/lib/roblox";
 import { z } from "zod";
@@ -263,16 +264,19 @@ export async function createModAction(prevState: unknown, formData: FormData) {
       internalNotes: formData.get("internalNotes") || undefined,
     });
 
-    // Duplicate check: ensure the exact same evidence link isn't reused
+    const normalizedLink = normalizeUrl(validated.evidenceLink);
+
+    // Duplicate check: ensure the exact same evidence link isn't reused for the SAME target user
     const duplicate = await prisma.modAction.findFirst({
       where: {
-        evidenceLink: validated.evidenceLink,
+        evidenceLink: normalizedLink,
+        targetUser: validated.targetUser,
         deletedAt: null,
       },
     });
 
     if (duplicate) {
-      return { success: false, error: "This evidence link has already been used." };
+      return { success: false, error: "This evidence link has already been used for this specific user." };
     }
 
     const modAction = await prisma.modAction.create({
@@ -285,7 +289,7 @@ export async function createModAction(prevState: unknown, formData: FormData) {
         preset: validated.preset || validated.actionType,
         targetUser: validated.targetUser,
         reason: validated.reason,
-        evidenceLink: validated.evidenceLink,
+        evidenceLink: normalizedLink,
         internalNotes: validated.internalNotes || null,
       },
     });
@@ -407,4 +411,54 @@ export async function performRobloxLookup(prevState: unknown, formData: FormData
     }
     return { success: false, error: err instanceof Error ? err.message : "Lookup failed" };
   }
+}
+
+// =====================================================
+// Leaderboard (Mod side)
+// =====================================================
+
+export async function getModLeaderboardData(dateRange?: { from?: string; to?: string }) {
+  await requireModPermission("view_mod_panel"); // Ensure they have basic mod access
+
+  const dateFilter: Record<string, unknown> = { deletedAt: null };
+  if (dateRange?.from || dateRange?.to) {
+    dateFilter.createdAt = {
+      ...(dateRange.from ? { gte: new Date(dateRange.from) } : {}),
+      ...(dateRange.to ? { lte: new Date(dateRange.to) } : {}),
+    };
+  }
+
+  const allActions = await prisma.modAction.findMany({
+    where: dateFilter,
+    select: { modId: true, modName: true, modRole: true, actionType: true },
+  });
+
+  const modMap = new Map<string, {
+    modId: string;
+    modName: string;
+    modRole: string;
+    actionCount: number;
+    points: number;
+    breakdown: Record<string, number>;
+  }>();
+
+  for (const action of allActions) {
+    if (!modMap.has(action.modId)) {
+      modMap.set(action.modId, {
+        modId: action.modId,
+        modName: action.modName,
+        modRole: action.modRole,
+        actionCount: 0,
+        points: 0,
+        breakdown: {},
+      });
+    }
+    const mod = modMap.get(action.modId)!;
+    mod.actionCount++;
+    mod.points++;
+    mod.breakdown[action.actionType] = (mod.breakdown[action.actionType] || 0) + 1;
+  }
+
+  const leaderboard = Array.from(modMap.values()).sort((a, b) => b.points - a.points);
+  return leaderboard;
 }

@@ -413,30 +413,63 @@ async function ensureVisitorAndSession(
     return { visitor, session, geoInfo, clientInfo, language, timezone, referrer };
   }
 
-  const session = await prisma.analyticsSession.create({
-    data: {
-      sessionId: sessionPublicId,
-      visitorId: visitor.id,
-      startedAt: now,
-      lastSeenAt: now,
-      entryPath: path,
-      exitPath: path,
-      referrer,
-      source: traffic.source,
-      medium: traffic.medium,
-      campaign: traffic.campaign,
-      country: geoInfo.country,
-      region: geoInfo.region,
-      city: geoInfo.city,
-      deviceType: clientInfo.deviceType,
-      browser: clientInfo.browser,
-      os: clientInfo.os,
-      language,
-      timezone,
-    },
-  });
+  try {
+    const session = await prisma.analyticsSession.create({
+      data: {
+        sessionId: sessionPublicId,
+        visitorId: visitor.id,
+        startedAt: now,
+        lastSeenAt: now,
+        entryPath: path,
+        exitPath: path,
+        referrer,
+        source: traffic.source,
+        medium: traffic.medium,
+        campaign: traffic.campaign,
+        country: geoInfo.country,
+        region: geoInfo.region,
+        city: geoInfo.city,
+        deviceType: clientInfo.deviceType,
+        browser: clientInfo.browser,
+        os: clientInfo.os,
+        language,
+        timezone,
+      },
+    });
 
-  return { visitor, session, geoInfo, clientInfo, language, timezone, referrer };
+    return { visitor, session, geoInfo, clientInfo, language, timezone, referrer };
+  } catch (error: any) {
+    if (error.code === "P2002") {
+      const retrySession = await prisma.analyticsSession.findUnique({
+        where: { sessionId: sessionPublicId },
+        select: { id: true, startedAt: true },
+      });
+      if (retrySession) {
+        const durationSeconds = Math.max(
+          0,
+          Math.round((now.getTime() - retrySession.startedAt.getTime()) / 1000),
+        );
+        const session = await prisma.analyticsSession.update({
+          where: { id: retrySession.id },
+          data: {
+            lastSeenAt: now,
+            durationSeconds,
+            exitPath: path,
+            country: geoInfo.country,
+            region: geoInfo.region,
+            city: geoInfo.city,
+            deviceType: clientInfo.deviceType,
+            browser: clientInfo.browser,
+            os: clientInfo.os,
+            language,
+            timezone,
+          },
+        });
+        return { visitor, session, geoInfo, clientInfo, language, timezone, referrer };
+      }
+    }
+    throw error;
+  }
 }
 
 export async function recordAnalyticsPayload(request: NextRequest, payload: AnalyticsPayload) {

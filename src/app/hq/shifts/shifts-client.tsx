@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import {
   Clock, Users, Timer, Square, XCircle, Edit3,
   AlertTriangle, ChevronDown,
@@ -54,6 +54,12 @@ export default function ShiftsClient({
 }) {
   const [filterMod, setFilterMod] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const filteredHistory = filterMod
     ? recentShifts.filter((s) => s.modId === filterMod)
@@ -103,7 +109,14 @@ export default function ShiftsClient({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {activeShifts.map((shift, i) => {
               const color = SHIFT_TYPE_COLORS[shift.shiftType] || "#4ecdc4";
-              const elapsed = Math.floor((Date.now() - new Date(shift.clockIn).getTime()) / 1000);
+              
+              const totalElapsed = Math.floor((now - new Date(shift.clockIn).getTime()) / 1000);
+              let openBreakSeconds = 0;
+              const openBreak = shift.breaks?.find((b) => !b.endedAt);
+              if (openBreak) {
+                openBreakSeconds = Math.floor((now - new Date(openBreak.startedAt).getTime()) / 1000);
+              }
+              const elapsed = Math.max(0, totalElapsed - (shift.breakSeconds || 0) - openBreakSeconds);
 
               return (
                 <Card

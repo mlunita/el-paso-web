@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, AlertTriangle, BookOpen, FileText, LogOut, Shield,
-  Clock, ClipboardList, Search,
+  Clock, ClipboardList, Search, Trophy,
 } from "lucide-react";
 import { ModLoader } from "@/components/mod-loader";
 import { useEffect, useState } from "react";
@@ -35,6 +35,7 @@ export default function ModLayout({ children }: { children: React.ReactNode }) {
     { href: "/mod/actions", label: "Actions", icon: ClipboardList, perm: "create_mod_actions" },
     { href: "/mod/ban-requests", label: t.mod.nav.banRequests, icon: AlertTriangle, perm: "create_ban_requests" },
     { href: "/mod/roblox-lookup", label: "Roblox Lookup", icon: Search, perm: "roblox_lookup" },
+    { href: "/mod/leaderboard", label: "Leaderboard", icon: Trophy, perm: "view_mod_panel" },
     { href: "/mod/wiki", label: t.mod.nav.wiki, icon: BookOpen, perm: "create_wiki_items" },
     { href: "/mod/posts", label: t.mod.nav.posts, icon: FileText, perm: "create_posts" },
   ];
