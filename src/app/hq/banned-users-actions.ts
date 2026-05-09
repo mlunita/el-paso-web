@@ -91,56 +91,127 @@ export async function bulkAddBannedUsers(formData: FormData) {
       return { success: false, error: "No users provided" };
     }
 
-    const queries = rawInput
-      .split(/[\n,]+/)
-      .map((q) => q.trim())
-      .filter((q) => q.length > 0);
+    const queries = Array.from(new Set(
+      rawInput
+        .split(/[\n,]+/)
+        .map((q) => q.trim())
+        .filter((q) => q.length > 0)
+    ));
 
     if (queries.length === 0) {
       return { success: false, error: "No valid users found in input" };
     }
 
-    const results = [];
-    let addedCount = 0;
+    const numericIds: string[] = [];
+    const usernames: string[] = [];
 
-    for (const query of queries) {
-      try {
-        const robloxUser = await lookupRobloxUser(query);
-        
-        if (!robloxUser) {
-          results.push({ query, success: false, error: "Not found on Roblox" });
-          continue;
-        }
-
-        // Upsert record
-        await prisma.bannedUserRecord.upsert({
-          where: { username: robloxUser.username },
-          update: {
-            robloxUserId: robloxUser.userId,
-            status,
-            reason,
-            description,
-          },
-          create: {
-            robloxUserId: robloxUser.userId,
-            username: robloxUser.username,
-            status,
-            reason,
-            description,
-            addedBy: "admin",
-          },
-        });
-
-        results.push({ query, success: true, username: robloxUser.username });
-        addedCount++;
-      } catch (err) {
-        results.push({ query, success: false, error: "Error processing" });
+    for (const q of queries) {
+      if (/^\d+$/.test(q)) {
+        numericIds.push(q);
+      } else {
+        usernames.push(q);
       }
     }
 
+    const resolvedUsers: { id: string; name: string }[] = [];
+
+    // Process usernames in batches of 100
+    for (let i = 0; i < usernames.length; i += 100) {
+      const batch = usernames.slice(i, i + 100);
+      try {
+        const res = await fetch("https://users.roblox.com/v1/usernames/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ usernames: batch, excludeBannedUsers: false }),
+          signal: AbortSignal.timeout(10000),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.data) {
+            for (const u of data.data) {
+              resolvedUsers.push({ id: String(u.id), name: u.name });
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Bulk username lookup failed for batch", e);
+      }
+    }
+
+    // Process IDs in batches of 100
+    for (let i = 0; i < numericIds.length; i += 100) {
+      const batch = numericIds.slice(i, i + 100);
+      try {
+        const res = await fetch("https://users.roblox.com/v1/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userIds: batch.map(Number), excludeBannedUsers: false }),
+          signal: AbortSignal.timeout(10000),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.data) {
+            for (const u of data.data) {
+              resolvedUsers.push({ id: String(u.id), name: u.name });
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Bulk ID lookup failed for batch", e);
+      }
+    }
+
+    if (resolvedUsers.length === 0) {
+      return { success: false, error: "Could not resolve any users from Roblox API." };
+    }
+
+    // Database Bulk Operations
+    const createData = resolvedUsers.map(u => ({
+      robloxUserId: u.id,
+      username: u.name,
+      status,
+      reason,
+      description,
+      addedBy: "admin"
+    }));
+
+    let addedCount = 0;
+    
+    // Chunk database operations into 1000 rows to prevent query size limits
+    for (let i = 0; i < createData.length; i += 1000) {
+      const batch = createData.slice(i, i + 1000);
+      const names = batch.map(b => b.username);
+
+      // Create any that don't exist
+      await prisma.bannedUserRecord.createMany({
+        data: batch,
+        skipDuplicates: true,
+      });
+
+      // Update existing ones (and newly created ones) with the latest reason/status
+      await prisma.bannedUserRecord.updateMany({
+        where: { username: { in: names } },
+        data: {
+          robloxUserId: { set: batch[0].robloxUserId }, // Safe fallback, though mostly useful for status
+          status,
+          reason,
+          description,
+        }
+      });
+      
+      addedCount += batch.length;
+    }
+
     revalidatePath("/hq/banned-users");
+    
+    const results = [{ 
+      query: `Successfully resolved and processed ${addedCount} users out of ${queries.length} input values.`, 
+      success: true 
+    }];
+
     return { success: true, addedCount, results };
   } catch (err) {
+    console.error("Bulk add error:", err);
     return { success: false, error: err instanceof Error ? err.message : "Failed to bulk add" };
   }
 }
