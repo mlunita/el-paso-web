@@ -190,6 +190,18 @@ export async function adminCancelShift(shiftId: string) {
   revalidatePath("/mod/shifts");
 }
 
+/** Reset all shifts for all users */
+export async function adminResetAllShifts() {
+  await requireAdminSession();
+
+  await prisma.modShiftBreak.deleteMany({});
+  await prisma.modShift.deleteMany({});
+
+  revalidatePath("/hq/shifts");
+  revalidatePath("/hq/shift-hours");
+  revalidatePath("/mod/shifts");
+}
+
 // =====================================================
 // Admin Mod Action Management
 // =====================================================

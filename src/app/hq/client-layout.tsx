@@ -28,6 +28,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/hq/tokens", label: t.admin.nav.tokens, icon: Key },
     { href: "/hq/ban-requests", label: t.admin.nav.banRequests, icon: AlertTriangle },
     { href: "/hq/shifts", label: "Shifts", icon: Clock },
+    { href: "/hq/shift-hours", label: "Shift Hours", icon: Clock },
+    { href: "/hq/shift-reset", label: "Reset Shifts", icon: AlertTriangle },
     { href: "/hq/mod-actions", label: "Mod Actions", icon: ClipboardList },
     { href: "/hq/roblox-lookup", label: "Roblox Lookup", icon: Search },
     { href: "/hq/staff-analytics", label: "Staff Analytics", icon: TrendingUp },
