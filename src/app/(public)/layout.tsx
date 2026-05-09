@@ -13,6 +13,7 @@ export default async function PublicLayout({ children }: { children: React.React
     { href: "/news", label: t.nav.news },
     { href: "/wiki", label: t.nav.wiki },
     { href: "/team", label: t.nav.team },
+    { href: "/database", label: "Database" },
   ];
 
   const communityLinks = [

@@ -502,3 +502,23 @@ model RobloxUserCache {
   @@index([username])
   @@index([lastFetched])
 }
+
+// =====================================================
+// Banned Users Database
+// =====================================================
+
+model BannedUserRecord {
+  id             String   @id @default(cuid())
+  robloxUserId   String?  @unique // Optional to allow fallback if API fails
+  username       String   @unique
+  status         String   @default("BANNED") // BANNED, REPORTED, CLEAN
+  reason         String?
+  description    String?
+  addedBy        String   // Admin or Mod identifier
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([username])
+  @@index([robloxUserId])
+  @@index([status])
+}

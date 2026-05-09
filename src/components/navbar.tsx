@@ -19,6 +19,7 @@ export function Navbar() {
     { href: "/news", label: t.nav.news },
     { href: "/wiki", label: t.nav.wiki },
     { href: "/team", label: t.nav.team },
+    { href: "/database", label: "Database" },
     { href: "/ticket-status", label: t.nav.tickets },
   ];
 
