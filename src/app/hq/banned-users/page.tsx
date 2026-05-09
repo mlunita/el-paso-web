@@ -2,6 +2,8 @@ import { requireAdminSession } from "@/lib/auth";
 import { getBannedUsers } from "../banned-users-actions";
 import BannedUsersClient from "./banned-users-client";
 
+export const dynamic = "force-dynamic";
+
 export default async function BannedUsersPage(props: {
   searchParams: Promise<{ page?: string }>;
 }) {

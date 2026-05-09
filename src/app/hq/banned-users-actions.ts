@@ -78,28 +78,17 @@ export async function removeBannedUser(id: string) {
   revalidatePath("/hq/banned-users");
 }
 
-export async function bulkAddBannedUsers(formData: FormData) {
+export async function processBannedUsersChunk(
+  queries: string[],
+  status: string,
+  reason: string | null,
+  description: string | null
+) {
   try {
     await requireAdminSession();
 
-    const rawInput = formData.get("users") as string;
-    const status = (formData.get("status") as string) || "BANNED";
-    const reason = (formData.get("reason") as string) || null;
-    const description = (formData.get("description") as string) || null;
-
-    if (!rawInput || rawInput.trim() === "") {
-      return { success: false, error: "No users provided" };
-    }
-
-    const queries = Array.from(new Set(
-      rawInput
-        .split(/[\n,]+/)
-        .map((q) => q.trim())
-        .filter((q) => q.length > 0)
-    ));
-
-    if (queries.length === 0) {
-      return { success: false, error: "No valid users found in input" };
+    if (!queries || queries.length === 0) {
+      return { success: false, error: "No queries provided" };
     }
 
     const numericIds: string[] = [];
@@ -115,14 +104,13 @@ export async function bulkAddBannedUsers(formData: FormData) {
 
     const resolvedUsers: { id: string; name: string }[] = [];
 
-    // Process usernames in batches of 100
-    for (let i = 0; i < usernames.length; i += 100) {
-      const batch = usernames.slice(i, i + 100);
+    // Process usernames (usually up to 100)
+    if (usernames.length > 0) {
       try {
         const res = await fetch("https://users.roblox.com/v1/usernames/users", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ usernames: batch, excludeBannedUsers: false }),
+          body: JSON.stringify({ usernames, excludeBannedUsers: false }),
           signal: AbortSignal.timeout(10000),
         });
         if (res.ok) {
@@ -138,14 +126,13 @@ export async function bulkAddBannedUsers(formData: FormData) {
       }
     }
 
-    // Process IDs in batches of 100
-    for (let i = 0; i < numericIds.length; i += 100) {
-      const batch = numericIds.slice(i, i + 100);
+    // Process IDs (usually up to 100)
+    if (numericIds.length > 0) {
       try {
         const res = await fetch("https://users.roblox.com/v1/users", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userIds: batch.map(Number), excludeBannedUsers: false }),
+          body: JSON.stringify({ userIds: numericIds.map(Number), excludeBannedUsers: false }),
           signal: AbortSignal.timeout(10000),
         });
         if (res.ok) {
@@ -162,7 +149,7 @@ export async function bulkAddBannedUsers(formData: FormData) {
     }
 
     if (resolvedUsers.length === 0) {
-      return { success: false, error: "Could not resolve any users from Roblox API." };
+      return { success: true, addedCount: 0, results: [] };
     }
 
     // Database Bulk Operations
@@ -175,43 +162,45 @@ export async function bulkAddBannedUsers(formData: FormData) {
       addedBy: "admin"
     }));
 
-    let addedCount = 0;
-    
-    // Chunk database operations into 1000 rows to prevent query size limits
-    for (let i = 0; i < createData.length; i += 1000) {
-      const batch = createData.slice(i, i + 1000);
-      const names = batch.map(b => b.username);
+    const names = createData.map(b => b.username);
 
-      // Create any that don't exist
-      await prisma.bannedUserRecord.createMany({
-        data: batch,
-        skipDuplicates: true,
-      });
+    // Create any that don't exist
+    await prisma.bannedUserRecord.createMany({
+      data: createData,
+      skipDuplicates: true,
+    });
 
-      // Update existing ones (and newly created ones) with the latest reason/status
-      await prisma.bannedUserRecord.updateMany({
-        where: { username: { in: names } },
-        data: {
-          robloxUserId: { set: batch[0].robloxUserId }, // Safe fallback, though mostly useful for status
-          status,
-          reason,
-          description,
-        }
-      });
-      
-      addedCount += batch.length;
-    }
+    // Update existing ones (and newly created ones) with the latest reason/status
+    await prisma.bannedUserRecord.updateMany({
+      where: { username: { in: names } },
+      data: {
+        status,
+        reason,
+        description,
+      }
+    });
 
     revalidatePath("/hq/banned-users");
-    
-    const results = [{ 
-      query: `Successfully resolved and processed ${addedCount} users out of ${queries.length} input values.`, 
-      success: true 
-    }];
 
-    return { success: true, addedCount, results };
+    return { 
+      success: true, 
+      addedCount: createData.length, 
+      results: [] 
+    };
   } catch (err) {
-    console.error("Bulk add error:", err);
-    return { success: false, error: err instanceof Error ? err.message : "Failed to bulk add" };
+    console.error("Chunk add error:", err);
+    return { success: false, error: err instanceof Error ? err.message : "Failed to bulk add chunk" };
   }
+}
+
+export async function bulkAddBannedUsers(formData: FormData) {
+  // This is kept for backward compatibility if needed, but the client will use processBannedUsersChunk
+  return { success: false, error: "Please use the client-side chunk processor." };
+}
+
+export async function deleteAllBannedUsers() {
+  await requireAdminSession();
+  await prisma.bannedUserRecord.deleteMany();
+  revalidatePath("/hq/banned-users");
+  return { success: true };
 }
