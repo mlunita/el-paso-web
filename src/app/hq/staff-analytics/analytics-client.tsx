@@ -387,42 +387,42 @@ export default function StaffAnalyticsClient({
       {/* Alerts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Anomalies */}
-        <div className="p-5 rounded-xl bg-white/[0.03] border border-[var(--ep-border)]">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-4 flex items-center gap-2">
+        <div className="p-5 rounded-xl bg-white/[0.03] border border-[var(--ep-border)] flex flex-col max-h-[350px]">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-4 flex items-center gap-2 shrink-0">
             <AlertTriangle className="w-4 h-4 text-yellow-400" /> Anomalies & Alerts
           </h3>
-          {anomalies.length === 0 ? (
-            <p className="text-white/20 text-sm">No anomalies detected. ✓</p>
-          ) : (
-            <div className="space-y-2">
-              {anomalies.map((a, i) => (
+          <div className="overflow-y-auto pr-2 space-y-2">
+            {anomalies.length === 0 ? (
+              <p className="text-white/20 text-sm">No anomalies detected. ✓</p>
+            ) : (
+              anomalies.map((a, i) => (
                 <div key={i} className="flex items-start gap-2 p-3 rounded-lg bg-yellow-500/[0.06] border border-yellow-500/10">
                   <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
                   <span className="text-xs text-white/60">{a}</span>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </div>
 
         {/* Inactive Mods */}
-        <div className="p-5 rounded-xl bg-white/[0.03] border border-[var(--ep-border)]">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-4 flex items-center gap-2">
+        <div className="p-5 rounded-xl bg-white/[0.03] border border-[var(--ep-border)] flex flex-col max-h-[350px]">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-4 flex items-center gap-2 shrink-0">
             <Shield className="w-4 h-4 text-red-400" /> Inactive Moderators (14d)
           </h3>
-          {inactiveMods.length === 0 ? (
-            <p className="text-white/20 text-sm">All active moderators have recent shifts. ✓</p>
-          ) : (
-            <div className="space-y-2">
-              {inactiveMods.map((m) => (
+          <div className="overflow-y-auto pr-2 space-y-2">
+            {inactiveMods.length === 0 ? (
+              <p className="text-white/20 text-sm">All active moderators have recent shifts. ✓</p>
+            ) : (
+              inactiveMods.map((m) => (
                 <div key={m.modId} className="flex items-center gap-2 p-3 rounded-lg bg-red-500/[0.06] border border-red-500/10">
-                  <div className="w-2 h-2 rounded-full bg-red-400" />
-                  <span className="text-sm text-white/60">{m.modName}</span>
-                  <span className="text-[10px] text-white/20 ml-auto">No shifts in 14 days</span>
+                  <div className="w-2 h-2 rounded-full bg-red-400 shrink-0" />
+                  <span className="text-sm text-white/60 truncate">{m.modName}</span>
+                  <span className="text-[10px] text-white/20 ml-auto shrink-0">No shifts in 14 days</span>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>

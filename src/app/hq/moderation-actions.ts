@@ -680,12 +680,27 @@ export async function getStaffAnalytics(dateRange?: { from?: string; to?: string
     }),
   ]);
 
-  const shiftTrend = lastWeekShiftCount > 0
-    ? Math.round(((thisWeekShifts - lastWeekShiftCount) / lastWeekShiftCount) * 100)
-    : 0;
-  const actionTrend = lastWeekActionCount > 0
-    ? Math.round(((thisWeekActions - lastWeekActionCount) / lastWeekActionCount) * 100)
-    : 0;
+  // If baseline is very low, percentages are artificially massive. Cap them to 100% if baseline < 10.
+  const calculateTrend = (current: number, previous: number) => {
+    if (previous === 0) return current > 0 ? 100 : 0;
+    if (previous <= 10 && current > 50) return 100; // Prevent +5000% spikes when starting out
+    return Math.max(-100, Math.min(999, Math.round(((current - previous) / previous) * 100)));
+  };
+
+  const shiftTrend = calculateTrend(thisWeekShifts, lastWeekShiftCount);
+  const actionTrend = calculateTrend(thisWeekActions, lastWeekActionCount);
+
+  // For estimation, use a dampened linear approach so it doesn't predict insane numbers
+  // Caps estimated growth/loss to +/- 20% of current volume
+  const calculateEstimate = (current: number, previous: number) => {
+    if (current === 0) return 0;
+    const diff = current - previous;
+    const dampenedDiff = diff > 0 ? Math.min(diff, current * 0.2) : Math.max(diff, -current * 0.2);
+    return Math.max(0, Math.round(current + dampenedDiff));
+  };
+
+  const estShifts = calculateEstimate(thisWeekShifts, lastWeekShiftCount);
+  const estActions = calculateEstimate(thisWeekActions, lastWeekActionCount);
 
   return {
     overview: {
@@ -716,8 +731,8 @@ export async function getStaffAnalytics(dateRange?: { from?: string; to?: string
     predictions: {
       shiftTrend,
       actionTrend,
-      estimatedNextWeekShifts: Math.max(0, thisWeekShifts + Math.round(thisWeekShifts * shiftTrend / 100)),
-      estimatedNextWeekActions: Math.max(0, thisWeekActions + Math.round(thisWeekActions * actionTrend / 100)),
+      estimatedNextWeekShifts: estShifts,
+      estimatedNextWeekActions: estActions,
     },
   };
 }
