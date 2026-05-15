@@ -493,6 +493,33 @@ export async function adminDeleteModeratorToken(id: string) {
   revalidatePath("/hq");
 }
 
+/** Update the role assigned to a moderator token */
+export async function adminUpdateTokenRole(tokenId: string, newRoleId: string) {
+  await requireAdminSession();
+
+  const role = await prisma.role.findUnique({
+    where: { id: newRoleId },
+    include: { permissions: true },
+  });
+
+  if (!role) {
+    throw new Error("Role not found");
+  }
+
+  const permSnapshot = JSON.stringify(role.permissions.map((p: { key: string }) => p.key));
+
+  await prisma.moderatorToken.update({
+    where: { id: tokenId },
+    data: {
+      roleId: newRoleId,
+      permSnapshot,
+    },
+  });
+
+  revalidatePath("/hq/tokens");
+  revalidatePath("/hq");
+}
+
 // =====================================================
 // Ban Request Management (Admin side)
 // =====================================================

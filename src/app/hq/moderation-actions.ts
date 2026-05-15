@@ -11,6 +11,13 @@ import {
 import { lookupRobloxUser, getInternalUserData, checkLookupRateLimit } from "@/lib/roblox";
 import { z } from "zod";
 
+/** Adjust a date string to the very end of that day (23:59:59.999) */
+function endOfDay(dateStr: string): Date {
+  const d = new Date(dateStr);
+  d.setUTCHours(23, 59, 59, 999);
+  return d;
+}
+
 // =====================================================
 // Admin Shift Management
 // =====================================================
@@ -483,7 +490,7 @@ export async function getStaffAnalytics(dateRange?: { from?: string; to?: string
   if (dateRange?.from || dateRange?.to) {
     dateFilter.createdAt = {
       ...(dateRange.from ? { gte: new Date(dateRange.from) } : {}),
-      ...(dateRange.to ? { lte: new Date(dateRange.to) } : {}),
+      ...(dateRange.to ? { lte: endOfDay(dateRange.to) } : {}),
     };
   }
 
@@ -491,7 +498,7 @@ export async function getStaffAnalytics(dateRange?: { from?: string; to?: string
   if (dateRange?.from || dateRange?.to) {
     shiftDateFilter.clockIn = {
       ...(dateRange.from ? { gte: new Date(dateRange.from) } : {}),
-      ...(dateRange.to ? { lte: new Date(dateRange.to) } : {}),
+      ...(dateRange.to ? { lte: endOfDay(dateRange.to) } : {}),
     };
   }
 
@@ -748,7 +755,7 @@ export async function getLeaderboardData(dateRange?: { from?: string; to?: strin
   if (dateRange?.from || dateRange?.to) {
     dateFilter.createdAt = {
       ...(dateRange.from ? { gte: new Date(dateRange.from) } : {}),
-      ...(dateRange.to ? { lte: new Date(dateRange.to) } : {}),
+      ...(dateRange.to ? { lte: endOfDay(dateRange.to) } : {}),
     };
   }
 
@@ -785,4 +792,82 @@ export async function getLeaderboardData(dateRange?: { from?: string; to?: strin
 
   const leaderboard = Array.from(modMap.values()).sort((a, b) => b.points - a.points);
   return leaderboard;
+}
+
+// =====================================================
+// Staff Data Management (Delete All + Export)
+// =====================================================
+
+/** Delete ALL staff-related data. Order respects foreign key constraints. */
+export async function adminDeleteAllStaffData() {
+  await requireAdminSession();
+
+  // 1. Audit logs first (depend on parent records)
+  await prisma.modActionAuditLog.deleteMany({});
+  await prisma.banRequestAuditLog.deleteMany({});
+
+  // 2. Evidence (depends on BanRequest)
+  await prisma.banRequestEvidence.deleteMany({});
+
+  // 3. Main records
+  await prisma.modAction.deleteMany({});
+  await prisma.modShiftBreak.deleteMany({});
+  await prisma.modShift.deleteMany({});
+  await prisma.banRequest.deleteMany({});
+  await prisma.robloxLookupLog.deleteMany({});
+
+  // Revalidate all related paths
+  revalidatePath("/hq/staff-analytics");
+  revalidatePath("/hq/leaderboard");
+  revalidatePath("/hq/mod-actions");
+  revalidatePath("/hq/shifts");
+  revalidatePath("/hq/shift-hours");
+  revalidatePath("/hq/ban-requests");
+  revalidatePath("/hq");
+  revalidatePath("/mod");
+
+  return { success: true };
+}
+
+/** Fetch all staff data for export (actions, shifts, ban requests, lookups) */
+export async function getStaffDataExport() {
+  await requireAdminSession();
+
+  const [actions, shifts, banRequests, lookups] = await Promise.all([
+    prisma.modAction.findMany({
+      where: { deletedAt: null },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true, modName: true, modId: true, modRole: true,
+        actionType: true, targetUser: true, reason: true,
+        evidenceLink: true, reviewStatus: true, createdAt: true,
+      },
+    }),
+    prisma.modShift.findMany({
+      orderBy: { clockIn: "desc" },
+      select: {
+        id: true, modName: true, modId: true, modRole: true,
+        shiftType: true, status: true, clockIn: true, clockOut: true,
+        totalSeconds: true, breakSeconds: true, notes: true,
+      },
+    }),
+    prisma.banRequest.findMany({
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true, modName: true, modId: true, modRole: true,
+        targetUserId: true, targetUsername: true, reason: true,
+        status: true, createdAt: true,
+      },
+    }),
+    prisma.robloxLookupLog.findMany({
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true, performedBy: true, performerName: true,
+        query: true, resultUserId: true, resultName: true,
+        success: true, createdAt: true,
+      },
+    }),
+  ]);
+
+  return { actions, shifts, banRequests, lookups };
 }

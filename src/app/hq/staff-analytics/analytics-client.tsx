@@ -5,8 +5,10 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   BarChart3, Users, Clock, ClipboardList, TrendingUp, TrendingDown,
   AlertTriangle, Shield, Trophy, Zap, Activity, Search,
-  ArrowUpRight, ArrowDownRight, Minus, Calendar, Download, X, Loader2
+  ArrowUpRight, ArrowDownRight, Minus, Calendar, Download, X, Loader2,
+  Trash2, DatabaseBackup
 } from "lucide-react";
+import { adminDeleteAllStaffData } from "@/app/hq/moderation-actions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -71,6 +73,10 @@ export default function StaffAnalyticsClient({
   const [dateFrom, setDateFrom] = useState(initialDateRange?.from || "");
   const [dateTo, setDateTo] = useState(initialDateRange?.to || "");
   const [exporting, setExporting] = useState(false);
+  const [exportingAll, setExportingAll] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const { overview, moderators, actionTypeBreakdown, shiftTypeBreakdown, dailyData, anomalies, inactiveMods, predictions } = analytics;
 
@@ -424,6 +430,121 @@ export default function StaffAnalyticsClient({
             )}
           </div>
         </div>
+      </div>
+
+      {/* Data Management Section */}
+      <div className="mt-10 p-6 rounded-2xl bg-white/[0.02] border border-[var(--ep-border)]">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-5 flex items-center gap-2">
+          <DatabaseBackup className="w-4 h-4" /> Staff Data Management
+        </h3>
+        <div className="flex flex-col sm:flex-row items-start gap-4">
+          {/* Download All Data */}
+          <button
+            onClick={async () => {
+              try {
+                setExportingAll(true);
+                const res = await fetch("/api/hq/export-staff-data");
+                if (!res.ok) throw new Error("Failed to export");
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `Staff_Data_Export_${new Date().toISOString().slice(0, 10)}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+              } catch {
+                alert("Error downloading staff data.");
+              } finally {
+                setExportingAll(false);
+              }
+            }}
+            disabled={exportingAll}
+            className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 hover:bg-emerald-500/20 transition-all disabled:opacity-50"
+          >
+            {exportingAll ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Downloading...</>
+            ) : (
+              <><Download className="w-4 h-4" /> Download All Staff Data</>
+            )}
+          </button>
+
+          {/* Delete All Data */}
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold bg-red-500/10 border border-red-500/20 text-red-300 hover:bg-red-500/20 transition-all"
+          >
+            <Trash2 className="w-4 h-4" /> Delete All Staff Data
+          </button>
+        </div>
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+            <div className="bg-[#12151a] border border-red-500/30 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-red-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-red-300">Delete All Staff Data</h3>
+                  <p className="text-xs text-red-300/60">This action cannot be undone</p>
+                </div>
+              </div>
+
+              <p className="text-sm text-white/60 mb-4">
+                This will permanently delete <strong className="text-white">all mod actions, shifts, ban requests, lookups, and their audit logs</strong>. 
+                Download a backup first if needed.
+              </p>
+
+              <div className="mb-4">
+                <label className="text-xs text-white/40 font-bold uppercase tracking-wider mb-1.5 block">
+                  Type <span className="text-red-400 font-mono">DELETE</span> to confirm
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder="DELETE"
+                  className="w-full px-3 py-2 rounded-lg bg-black/50 border border-white/10 text-white text-sm font-mono focus:outline-none focus:border-red-500/50"
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => { setShowDeleteModal(false); setDeleteConfirmText(""); }}
+                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-bold bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      setDeleting(true);
+                      await adminDeleteAllStaffData();
+                      setShowDeleteModal(false);
+                      setDeleteConfirmText("");
+                      router.refresh();
+                    } catch {
+                      alert("Error deleting staff data.");
+                    } finally {
+                      setDeleting(false);
+                    }
+                  }}
+                  disabled={deleteConfirmText !== "DELETE" || deleting}
+                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-bold bg-red-600 text-white hover:bg-red-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  {deleting ? (
+                    <span className="flex items-center justify-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Deleting...</span>
+                  ) : (
+                    "Confirm Delete"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

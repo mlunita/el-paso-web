@@ -10,13 +10,20 @@ import { getTranslations } from "@/lib/i18n/server";
 
 export default async function TokensPage() {
   const t = await getTranslations();
-  const tokens = await prisma.moderatorToken.findMany({
-    include: {
-      role: true,
-      _count: { select: { loginLogs: true, banRequests: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+
+  const [tokens, roles] = await Promise.all([
+    prisma.moderatorToken.findMany({
+      include: {
+        role: true,
+        _count: { select: { loginLogs: true, banRequests: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.role.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+  ]);
 
   return (
     <div>
@@ -81,7 +88,12 @@ export default async function TokensPage() {
                   {new Date(token.createdAt).toLocaleDateString()}
                 </TableCell>
                 <TableCell>
-                  <TokenActions id={token.id} status={token.status} />
+                  <TokenActions
+                    id={token.id}
+                    status={token.status}
+                    currentRoleId={token.roleId}
+                    roles={roles}
+                  />
                 </TableCell>
               </TableRow>
             ))}
