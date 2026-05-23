@@ -6,7 +6,7 @@ import {
   AlertTriangle, ChevronDown,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { adminForceClockOut, adminCancelShift } from "@/app/hq/moderation-actions";
+import { adminForceClockOut, adminCancelShift, adminEditShift } from "@/app/hq/moderation-actions";
 
 function formatDuration(seconds: number) {
   const h = Math.floor(seconds / 3600);
@@ -56,6 +56,9 @@ export default function ShiftsClient({
   const [isPending, startTransition] = useTransition();
   const [now, setNow] = useState(Date.now());
 
+  const [editingShift, setEditingShift] = useState<ShiftData | null>(null);
+  const [editError, setEditError] = useState("");
+
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
@@ -79,6 +82,28 @@ export default function ShiftsClient({
       await adminCancelShift(shiftId);
       window.location.reload();
     });
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setEditError("");
+    const formData = new FormData(e.currentTarget);
+    startTransition(async () => {
+      const res = await adminEditShift(null, formData);
+      if (res?.error) {
+        setEditError(res.error);
+      } else {
+        setEditingShift(null);
+        window.location.reload();
+      }
+    });
+  };
+
+  const formatForInput = (d: string | null) => {
+    if (!d) return "";
+    const date = new Date(d);
+    const tzOffset = date.getTimezoneOffset() * 60000;
+    return new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
   };
 
   return (
@@ -208,6 +233,7 @@ export default function ShiftsClient({
                 <th className="text-right text-[10px] font-bold uppercase tracking-wider text-white/30 pb-3 pr-4">Work Time</th>
                 <th className="text-right text-[10px] font-bold uppercase tracking-wider text-white/30 pb-3 pr-4">Breaks</th>
                 <th className="text-center text-[10px] font-bold uppercase tracking-wider text-white/30 pb-3">Status</th>
+                <th className="text-right text-[10px] font-bold uppercase tracking-wider text-white/30 pb-3 pr-4">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -264,6 +290,18 @@ export default function ShiftsClient({
                       <Edit3 className="w-3 h-3 text-yellow-400/50 inline ml-1" />
                     )}
                   </td>
+                  <td className="py-3 pr-4 text-right">
+                    <button
+                      onClick={() => {
+                        setEditError("");
+                        setEditingShift(shift);
+                      }}
+                      className="p-1.5 rounded bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+                      title="Edit Shift"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -274,6 +312,122 @@ export default function ShiftsClient({
           )}
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {editingShift && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#12151a] border border-[var(--ep-border)] rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-5 border-b border-[var(--ep-border)] flex items-center justify-between">
+              <h3 className="font-bold text-white text-lg">Edit Shift</h3>
+              <button
+                onClick={() => setEditingShift(null)}
+                className="text-white/50 hover:text-white transition-colors"
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleEditSubmit} className="p-5 flex flex-col gap-4">
+              <input type="hidden" name="shiftId" value={editingShift.id} />
+              
+              {editError && (
+                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{editError}</span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-white/50 uppercase">Clock In</label>
+                  <input
+                    type="datetime-local"
+                    name="clockIn"
+                    defaultValue={formatForInput(editingShift.clockIn)}
+                    required
+                    className="px-3 py-2 rounded-lg bg-white/5 border border-[var(--ep-border)] text-white text-sm focus:outline-none focus:border-[var(--ep-accent)]"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-white/50 uppercase">Clock Out</label>
+                  <input
+                    type="datetime-local"
+                    name="clockOut"
+                    defaultValue={formatForInput(editingShift.clockOut)}
+                    className="px-3 py-2 rounded-lg bg-white/5 border border-[var(--ep-border)] text-white text-sm focus:outline-none focus:border-[var(--ep-accent)]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5 relative">
+                  <label className="text-xs font-bold text-white/50 uppercase">Shift Type</label>
+                  <select
+                    name="shiftType"
+                    defaultValue={editingShift.shiftType}
+                    className="appearance-none px-3 py-2 rounded-lg bg-white/5 border border-[var(--ep-border)] text-white text-sm focus:outline-none focus:border-[var(--ep-accent)]"
+                  >
+                    {Object.keys(SHIFT_TYPE_LABELS).map((type) => (
+                      <option key={type} value={type} className="bg-[#12151a]">{SHIFT_TYPE_LABELS[type]}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-2 bottom-2.5 w-4 h-4 text-white/30 pointer-events-none" />
+                </div>
+                <div className="flex flex-col gap-1.5 relative">
+                  <label className="text-xs font-bold text-white/50 uppercase">Status</label>
+                  <select
+                    name="status"
+                    defaultValue={editingShift.status}
+                    className="appearance-none px-3 py-2 rounded-lg bg-white/5 border border-[var(--ep-border)] text-white text-sm focus:outline-none focus:border-[var(--ep-accent)]"
+                  >
+                    {["ACTIVE", "PAUSED", "COMPLETED", "CANCELLED", "EDITED"].map((s) => (
+                      <option key={s} value={s} className="bg-[#12151a]">{s}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-2 bottom-2.5 w-4 h-4 text-white/30 pointer-events-none" />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-white/50 uppercase">Notes (Mod)</label>
+                <textarea
+                  name="notes"
+                  defaultValue={editingShift.notes || ""}
+                  rows={2}
+                  className="px-3 py-2 rounded-lg bg-white/5 border border-[var(--ep-border)] text-white text-sm focus:outline-none focus:border-[var(--ep-accent)] resize-none"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-white/50 uppercase">Admin Notes</label>
+                <textarea
+                  name="adminNotes"
+                  defaultValue={editingShift.adminNotes || ""}
+                  rows={2}
+                  className="px-3 py-2 rounded-lg bg-white/5 border border-[var(--ep-border)] text-white text-sm focus:outline-none focus:border-[var(--ep-accent)] resize-none"
+                />
+              </div>
+
+              <div className="mt-2 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setEditingShift(null)}
+                  className="px-4 py-2 rounded-lg font-bold text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                  disabled={isPending}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className="px-4 py-2 rounded-lg font-bold text-sm bg-[var(--ep-accent)] text-[var(--ep-bg-deep)] hover:bg-[var(--ep-accent-hover)] transition-colors disabled:opacity-50"
+                >
+                  {isPending ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

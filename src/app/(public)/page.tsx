@@ -5,6 +5,7 @@ import { ChevronRight, Gamepad2, Shield, Users, Zap } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getRequestLocale, getTranslations } from "@/lib/i18n/server";
 import { createLocalizedMetadata } from "@/lib/seo";
+import { DiscordWidget } from "@/components/discord-widget";
 
 export const dynamic = "force-dynamic";
 
@@ -228,6 +229,12 @@ export default async function HomePage() {
               </Link>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section aria-label="Discord Server Status" className="ep-section py-4 sm:py-6">
+        <div className="ep-section-inner flex justify-center ep-fade-up" style={{ animationDelay: "300ms" }}>
+          <DiscordWidget />
         </div>
       </section>
 
