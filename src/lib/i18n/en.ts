@@ -907,6 +907,26 @@ const en = {
     video: "Video",
     close: "Close evidence viewer",
   },
+  specialRequests: {
+    title: "Special Requests",
+    subtitle: "Submit a custom request to our administration team",
+    formTitle: "Special Request Form",
+    formSubtitle: "Please fill out all required fields",
+    discordLabel: "Discord Username",
+    discordPlaceholder: "e.g. username#1234",
+    robloxLabel: "Roblox Username",
+    robloxPlaceholder: "e.g. builderman",
+    submitButton: "Submit Request",
+    submitting: "Submitting...",
+    successTitle: "Request Submitted Successfully!",
+    successDesc: "Your reference code is:",
+    trackInfo: "Please save this code to check the status of your request at",
+    backToHome: "Back to Home",
+    statusTitle: "Special Request Status",
+    statusSubtitle: "Check the status of your custom requests",
+    noForms: "There are currently no special request forms available.",
+    selectForm: "Select a form to begin",
+  },
 };
 
 type WidenStrings<T> = T extends (...args: infer Args) => infer Return

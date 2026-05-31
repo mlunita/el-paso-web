@@ -909,6 +909,26 @@ const es = {
     video: "Video",
     close: "Cerrar visor de evidencia",
   },
+  specialRequests: {
+    title: "Peticiones Especiales",
+    subtitle: "Envía una solicitud personalizada a nuestra administración",
+    formTitle: "Formulario de Petición Especial",
+    formSubtitle: "Por favor, completa todos los campos requeridos",
+    discordLabel: "Usuario de Discord",
+    discordPlaceholder: "ej. usuario#1234",
+    robloxLabel: "Usuario de Roblox",
+    robloxPlaceholder: "ej. builderman",
+    submitButton: "Enviar Petición",
+    submitting: "Enviando...",
+    successTitle: "¡Petición Enviada Exitosamente!",
+    successDesc: "Tu código de referencia es:",
+    trackInfo: "Por favor guarda este código para revisar el estado de tu petición en",
+    backToHome: "Volver al Inicio",
+    statusTitle: "Estado de Petición Especial",
+    statusSubtitle: "Revisa el estado de tus solicitudes personalizadas",
+    noForms: "Actualmente no hay formularios de peticiones especiales disponibles.",
+    selectForm: "Selecciona un formulario para comenzar",
+  },
 } satisfies Strings;
 
 export default es;

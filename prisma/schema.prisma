@@ -522,3 +522,32 @@ model BannedUserRecord {
   @@index([robloxUserId])
   @@index([status])
 }
+
+// =====================================================
+// Special Requests Dynamic Forms
+// =====================================================
+
+model SpecialRequestForm {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  isActive    Boolean  @default(true)
+  fields      String   // JSON string: { id: string, label: string, type: "text" | "textarea" | "select", required: boolean, options?: string[] }[]
+  submissions SpecialRequestSubmission[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SpecialRequestSubmission {
+  id        String   @id @default(cuid())
+  refCode   String   @unique
+  formId    String
+  form      SpecialRequestForm @relation(fields: [formId], references: [id])
+  discord   String
+  roblox    String
+  responses String   // JSON string of fieldId -> user's value
+  status    String   @default("PENDING") // PENDING, REVIEWED, APPROVED, REJECTED
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

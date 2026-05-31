@@ -18,6 +18,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/hq/posts", label: t.admin.nav.posts, icon: FileText },
     { href: "/hq/support", label: t.admin.nav.support, icon: LifeBuoy },
     { href: "/hq/applications", label: t.admin.nav.applications, icon: FileBadge },
+    { href: "/hq/special-requests", label: "Special Requests", icon: FileText },
     { href: "/hq/staff", label: t.admin.nav.staff, icon: Users },
     { href: "/hq/wiki", label: t.admin.nav.wiki, icon: BookOpen },
     { href: "/hq/settings", label: t.admin.nav.settings, icon: Settings },
