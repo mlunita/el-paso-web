@@ -39,10 +39,9 @@ function withLocale(response: NextResponse, locale: Locale) {
 }
 
 function responseInit(request: NextRequest, locale: Locale) {
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set(localeHeaderName, locale);
-  requestHeaders.set(pathHeaderName, request.nextUrl.pathname);
-  return { request: { headers: requestHeaders } };
+  request.headers.set(localeHeaderName, locale);
+  request.headers.set(pathHeaderName, request.nextUrl.pathname);
+  return { request: { headers: request.headers } };
 }
 
 function isProtectedAdminPath(pathname: string) {
