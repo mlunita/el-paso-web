@@ -61,6 +61,7 @@ interface BlacklistUser {
     severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
     communities: CommunityBan[];
     evidence: string[];
+    declarationPdf?: string;
   };
 }
 
@@ -885,6 +886,23 @@ function DetailModal({
 
 
 
+            {/* Declaration PDF */}
+            {user.moderation.declarationPdf && (
+              <div className="mb-5">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[#666] mb-2">Declaration</p>
+                <a
+                  href={user.moderation.declarationPdf}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold text-[#c0392b] hover:bg-white/5 transition-colors"
+                  style={{ background: "rgba(192,57,43,0.1)", border: "1px solid rgba(192,57,43,0.2)" }}
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  View PDF Declaration
+                </a>
+              </div>
+            )}
+
             {/* Evidence */}
             {user.moderation.evidence.length > 0 && (
               <div className="mb-5">
@@ -968,6 +986,7 @@ function emptyUser(): BlacklistUser {
       severity: "MEDIUM",
       communities: [{ name: "", date: new Date().toISOString() }],
       evidence: [""],
+      declarationPdf: "",
     },
   };
 }
@@ -1381,6 +1400,18 @@ function FormModal({
                     + Add reason
                   </button>
                 </div>
+              </div>
+
+              {/* Declaration PDF */}
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-widest text-[#666] mb-3">Declaration PDF URL</h3>
+                <input
+                  className={inputCls}
+                  style={inputStyle}
+                  placeholder="https://... (Link to PDF)"
+                  value={form.moderation.declarationPdf || ""}
+                  onChange={(e) => updateMod({ declarationPdf: e.target.value })}
+                />
               </div>
 
               {/* Evidence */}

@@ -571,6 +571,7 @@ model BlacklistEntry {
   tags              String[] // Arrays are supported in PostgreSQL
   reasons           String[]
   evidence          String[]
+  declarationPdf    String?
 
   addedBy           String   // The admin/mod who added this user
 

@@ -34,6 +34,7 @@ export async function addBlacklistUser(data: any) {
       tags: data.moderation.tags,
       reasons: data.moderation.reasons,
       evidence: data.moderation.evidence,
+      declarationPdf: data.moderation.declarationPdf || null,
 
       addedBy: admin.name || "admin",
 
@@ -90,6 +91,7 @@ export async function updateBlacklistUser(id: string, data: any) {
       tags: data.moderation.tags,
       reasons: data.moderation.reasons,
       evidence: data.moderation.evidence,
+      declarationPdf: data.moderation.declarationPdf || null,
 
       nameHistory: {
         create: [
