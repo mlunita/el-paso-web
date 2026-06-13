@@ -22,6 +22,7 @@ export function Navbar() {
     { href: "/database", label: "Database" },
     { href: "/ticket-status", label: t.nav.tickets },
     { href: "/special-requests", label: t.specialRequests?.title || "Special Requests" },
+    { href: "/blacklist", label: "Blacklist" },
   ];
 
   useEffect(() => {

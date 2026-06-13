@@ -551,3 +551,57 @@ model SpecialRequestSubmission {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// =====================================================
+// Blacklist Manager Database
+// =====================================================
+
+model BlacklistEntry {
+  id                String   @id @default(cuid())
+  discordUsername   String?
+  discordUserId     String?
+  discordAvatarUrl  String?
+  
+  robloxUsername    String?
+  robloxDisplayName String?
+  robloxUserId      String?
+  robloxAvatarUrl   String?
+
+  severity          String   @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+  tags              String[] // Arrays are supported in PostgreSQL
+  reasons           String[]
+  evidence          String[]
+
+  addedBy           String   // The admin/mod who added this user
+
+  nameHistory       BlacklistNameHistory[]
+  communities       BlacklistCommunityBan[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([discordUserId])
+  @@index([robloxUserId])
+  @@index([severity])
+}
+
+model BlacklistNameHistory {
+  id              String   @id @default(cuid())
+  blacklistId     String
+  blacklist       BlacklistEntry @relation(fields: [blacklistId], references: [id], onDelete: Cascade)
+  platform        String   // "DISCORD" or "ROBLOX"
+  name            String
+  detectedAt      DateTime @default(now())
+
+  @@index([blacklistId])
+}
+
+model BlacklistCommunityBan {
+  id              String   @id @default(cuid())
+  blacklistId     String
+  blacklist       BlacklistEntry @relation(fields: [blacklistId], references: [id], onDelete: Cascade)
+  name            String
+  bannedAt        DateTime @default(now())
+
+  @@index([blacklistId])
+}

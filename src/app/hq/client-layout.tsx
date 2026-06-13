@@ -29,6 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/hq/tokens", label: t.admin.nav.tokens, icon: Key },
     { href: "/hq/ban-requests", label: t.admin.nav.banRequests, icon: AlertTriangle },
     { href: "/hq/banned-users", label: "Player Database", icon: Database },
+    { href: "/hq/blacklist", label: "Blacklist Manager", icon: AlertTriangle },
     { href: "/hq/shifts", label: "Shifts", icon: Clock },
     { href: "/hq/shift-hours", label: "Shift Hours", icon: Clock },
     { href: "/hq/shift-reset", label: "Reset Shifts", icon: AlertTriangle },
