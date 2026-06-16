@@ -37,16 +37,15 @@ export function ModLoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6 mt-8">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       {error && (
-        <div className="bg-[var(--ep-danger)]/5 text-[var(--ep-danger)] p-3 rounded-xl border border-[var(--ep-danger)]/15 flex items-center gap-2 text-sm font-medium animate-in slide-in-from-top-2 duration-300">
-          <div className="w-2 h-2 bg-[var(--ep-danger)] rounded-full animate-pulse" />
+        <div className="bg-red-500/10 text-red-500 p-3 rounded-xl border border-red-500/20 text-sm">
           {error}
         </div>
       )}
-      <div className="space-y-2">
-        <Label htmlFor="token" className="text-[var(--ep-text-muted)] uppercase tracking-widest text-xs font-bold">
-          {t.auth.mod.tokenLabel}
+      <div className="space-y-1">
+        <Label htmlFor="token" className="text-white text-base md:text-lg font-normal">
+          Enter your acces token
         </Label>
         <Input
           id="token"
@@ -54,30 +53,10 @@ export function ModLoginForm() {
           value={token}
           onChange={(e) => setToken(e.target.value)}
           required
-          placeholder={t.auth.mod.tokenPlaceholder}
-          className="bg-[var(--ep-bg-deep)] border-[var(--ep-border)] text-[var(--ep-text-primary)] placeholder:text-[var(--ep-text-muted)] h-12 transition-all duration-300"
+          className="bg-white border-none text-black h-12 rounded-xl focus-visible:ring-0 w-full px-4 text-lg mt-2"
         />
-        <p className="text-xs text-[var(--ep-text-muted)] mt-1">
-          {t.auth.mod.tokenHint}
-        </p>
       </div>
-      <Button
-        type="submit"
-        disabled={loading || !token.trim()}
-        className="w-full bg-[var(--ep-secondary)] hover:bg-[var(--ep-secondary)]/90 text-[var(--ep-bg-deep)] py-6 text-sm font-extrabold uppercase tracking-widest shadow-lg shadow-[var(--ep-secondary)]/20 hover:shadow-xl hover:shadow-[var(--ep-secondary)]/30 transition-all duration-300 hover:-translate-y-0.5 mt-2 disabled:opacity-50 disabled:hover:translate-y-0 rounded-xl"
-      >
-        {loading ? (
-          <span className="flex items-center gap-2">
-            <div className="w-4 h-4 border-2 border-[var(--ep-bg-deep)]/30 border-t-[var(--ep-bg-deep)] rounded-full animate-spin" />
-            {t.auth.mod.authenticating}
-          </span>
-        ) : (
-          <span className="flex items-center gap-2">
-            <LogIn className="w-4 h-4" />
-            {t.auth.mod.accessPanel}
-          </span>
-        )}
-      </Button>
+      <button type="submit" disabled={loading} className="hidden">Submit</button>
     </form>
   );
 }
